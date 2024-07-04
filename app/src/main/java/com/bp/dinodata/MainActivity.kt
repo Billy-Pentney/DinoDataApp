@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Text(text = "This is the text message", color= Color.White)
+//            Text(text = "This is the text message", color= Color.White)
             ListGenusScreen(listGenusViewModel = hiltViewModel())
         }
     }

@@ -12,8 +12,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -58,7 +60,8 @@ fun GenusListItem(genus: Genus) {
 fun ListGenusScreenContent(listGenus: List<Genus>) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth().padding(12.dp)
     ) {
         items(listGenus) { genus ->
             GenusListItem(genus)
@@ -71,7 +74,7 @@ fun ListGenusScreenContent(listGenus: List<Genus>) {
 fun ListGenusScreen(
     listGenusViewModel: ListGenusViewModel
 ) {
-    val genera by remember { listGenusViewModel.getListOfGenera() }
+    val genera by listGenusViewModel.getListOfGenera().collectAsState()
     ListGenusScreenContent(genera)
 }
 

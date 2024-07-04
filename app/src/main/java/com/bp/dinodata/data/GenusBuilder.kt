@@ -50,11 +50,22 @@ class GenusBuilderImpl(
 
     override fun setDiet(dietStr: String): GenusBuilder {
         this.diet = when(dietStr.lowercase()) {
-            "herbivorous" -> Diet.Herbivore
-            "carnivorous" -> Diet.Carnivore
-            "piscivorous" -> Diet.Piscivore
-            "omnivorous" -> Diet.Omnivore
-            else -> Diet.Unknown
+            "herbivorous",
+            "herbivore"
+                -> Diet.Herbivore
+            "carnivorous",
+            "carnivore"
+                -> Diet.Carnivore
+            "piscivorous",
+            "piscivore"
+                -> Diet.Piscivore
+            "omnivorous",
+            "omnivore"
+                -> Diet.Omnivore
+            else -> {
+                Log.d("GenusBuilder", "Saw unknown diet value \'${dietStr}\'")
+                Diet.Unknown
+            }
         }
         return this
     }
