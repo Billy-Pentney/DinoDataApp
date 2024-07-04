@@ -8,9 +8,21 @@ data class Genus(
     val timePeriod: String? = null,
     val nameMeaning: String? = null,
     val namePronunciation: String? = null,
-    val length: String?,
-    val weight: String?,
+    private val length: String?,
+    private val weight: String?,
+    val taxonomy: List<String>
 ) {
+    fun getTaxonomy(): String {
+        return taxonomy.joinToString(", ")
+    }
+
+    fun getLength(): String? {
+        return length?.let { "$it metres" }
+    }
+
+    fun getWeight(): String? {
+        return weight?.let { "$it kg" }
+    }
 }
 
 

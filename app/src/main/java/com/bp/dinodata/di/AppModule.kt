@@ -3,6 +3,7 @@ package com.bp.dinodata.di
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.GetAllGenera
+import com.bp.dinodata.use_cases.GetGenusByName
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -42,7 +43,8 @@ object AppModule {
         genusRepo: GenusRepository
     ): GenusUseCases {
         return GenusUseCases(
-            GetAllGenera(genusRepo)
+            GetAllGenera(genusRepo),
+            GetGenusByName(genusRepo)
         )
     }
 

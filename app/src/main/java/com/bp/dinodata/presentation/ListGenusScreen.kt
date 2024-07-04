@@ -1,6 +1,5 @@
 package com.bp.dinodata.presentation
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,10 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,22 +24,21 @@ import androidx.compose.ui.unit.sp
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.vm.ListGenusViewModel
-import com.bp.dinodata.theme.SurfaceGrey
 
 @Composable
-fun GenusListItem(genus: Genus) {
+fun GenusListItem(genus: Genus, onClick: () -> Unit = {}) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = SurfaceGrey,
+            containerColor = Color.DarkGray,
             contentColor = Color.White
         ),
         modifier = Modifier.fillMaxWidth(),
-        border = BorderStroke(2.dp, Color.White),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 genus.name,
@@ -50,21 +46,29 @@ fun GenusListItem(genus: Genus) {
                 fontSize = 22.sp,
                 fontStyle = FontStyle.Italic
             )
-            genus.diet?.let { Text(it.toString(), modifier = Modifier.alpha(0.6f)) }
+            genus.diet?.let { DietIconThin(diet = it) }
         }
     }
 }
 
 
 @Composable
-fun ListGenusScreenContent(listGenus: List<Genus>) {
+fun ListGenusScreenContent(
+    listGenus: List<Genus>,
+    navigateToGenus: (String) -> Unit = {}
+) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth().padding(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
     ) {
         items(listGenus) { genus ->
-            GenusListItem(genus)
+            GenusListItem(
+                genus,
+                onClick = { navigateToGenus(genus.name) }
+            )
         }
     }
 }
@@ -72,10 +76,14 @@ fun ListGenusScreenContent(listGenus: List<Genus>) {
 
 @Composable
 fun ListGenusScreen(
-    listGenusViewModel: ListGenusViewModel
+    listGenusViewModel: ListGenusViewModel,
+    navigateToGenus: (String) -> Unit
 ) {
     val genera by listGenusViewModel.getListOfGenera().collectAsState()
-    ListGenusScreenContent(genera)
+    ListGenusScreenContent(
+        genera,
+        navigateToGenus
+    )
 }
 
 @Preview

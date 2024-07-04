@@ -15,6 +15,9 @@ interface GenusBuilder {
     fun setWeight(weight: String): GenusBuilder
     fun setCreatureType(type: String): GenusBuilder
     fun splitTimePeriodAndYears(periodAndYears: String): GenusBuilder
+    fun setTaxonomy(taxonomy: String): GenusBuilder
+    fun setStartMya(startMya: String): GenusBuilder
+    fun setEndMya(endMya: String): GenusBuilder
 }
 
 
@@ -30,22 +33,49 @@ class GenusBuilderImpl(
     private var length: String? = null
     private var weight: String? = null
     private var type: CreatureType = CreatureType.Other
+    private var taxonomy: MutableList<String> = mutableListOf()
+    private var startMya: Int? = null
+    private var endMya: Int? = null
 
     companion object {
+        const val TAG = "GenusBuilder"
+
         fun fromDict(dict: MutableMap<String, Any>): GenusBuilder? {
             val name = dict["name"]
             // Only proceed if a name is given
             return name?.let {
                 val builder = GenusBuilderImpl(name.toString())
-                dict["timePeriod"]?.let { builder.setTimePeriod(it.toString()) }
+                dict["time_period"]?.let { builder.setTimePeriod(it.toString()) }
                 dict["diet"]?.let { builder.setDiet(it.toString()) }
-                dict["yearsLived"]?.let { builder.setYearsLived(it.toString()) }
+                dict["years_lived"]?.let { builder.setYearsLived(it.toString()) }
                 dict["weight"]?.let { builder.setWeight(it.toString()) }
                 dict["length"]?.let { builder.setLength(it.toString()) }
                 dict["type"]?.let { builder.setCreatureType(it.toString()) }
+                dict["nameMeaning"]?.let { builder.setNameMeaning(it.toString()) }
+                dict["taxonomy"]?.let { builder.setTaxonomy(it.toString()) }
                 builder
             }
         }
+    }
+
+    override fun setStartMya(startMya: String): GenusBuilder {
+        try {
+            this.startMya = startMya.toInt()
+        }
+        catch (ex: NumberFormatException) {
+            Log.d(TAG, "Unable to convert \'$startMya\' to integer")
+        }
+        return this
+    }
+
+    override fun setEndMya(endMya: String): GenusBuilder {
+        try {
+            this.endMya = endMya.toInt()
+        }
+        catch (ex: NumberFormatException) {
+            Log.d(TAG, "Unable to convert \'$endMya\' to integer")
+        }
+        return this
     }
 
     override fun setDiet(dietStr: String): GenusBuilder {
@@ -72,7 +102,8 @@ class GenusBuilderImpl(
 
     override fun setCreatureType(type: String): GenusBuilder {
         when (type.lowercase()) {
-            "theropod"    -> CreatureType.Theropod_Large
+            "large theropod"    -> CreatureType.Theropod_Large
+            "small theropod"    -> CreatureType.Theropod_Small
             "ceratopsian" -> CreatureType.Ceratopsian
             "armoured"    -> CreatureType.Armoured
             "sauropod"    -> CreatureType.Sauropod
@@ -105,6 +136,14 @@ class GenusBuilderImpl(
               .setYearsLived(splits[1])
     }
 
+    override fun setTaxonomy(taxonomy: String): GenusBuilder {
+        for (taxon in taxonomy.split(" ")) {
+            val cleanTaxon = taxon.trim(',', ' ', ';')
+            this.taxonomy.add(cleanTaxon)
+        }
+        return this
+    }
+
     override fun setNameMeaning(meaning: String): GenusBuilder {
         nameMeaning = meaning
         return this
@@ -126,6 +165,15 @@ class GenusBuilderImpl(
     }
 
     override fun build(): Genus {
+
+        if (yearsLived == null) {
+            yearsLived = if (startMya != null && endMya != null) {
+                "$startMya-$endMya MYA"
+            } else {
+                (startMya?.toString() ?: "") + (endMya?.toString() ?: "")
+            }
+        }
+
         return Genus(
             name = name,
             diet = diet,
@@ -135,7 +183,8 @@ class GenusBuilderImpl(
             timePeriod = timePeriod,
             nameMeaning = nameMeaning,
             namePronunciation = namePronunciation,
-            type = type
+            type = type,
+            taxonomy = taxonomy
         )
     }
 }

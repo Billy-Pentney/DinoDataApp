@@ -3,6 +3,8 @@ package com.bp.dinodata.presentation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -26,27 +28,34 @@ import com.bp.dinodata.theme.SurfaceGrey
 @Composable
 fun LabelAttributeRow(
     label: String,
-    value: String?
+    value: String?,
+    units: String? = null
 ) {
     Row {
         Text("$label: ", modifier=Modifier.alpha(0.6f))
         Text(value ?: "Unknown")
+        units?.let { Text(units, modifier=Modifier.alpha(0.6f)) }
     }
 }
 
 @Composable
-fun GenusDetail(genus: Genus) {
+fun GenusDetail(
+    genus: Genus,
+    modifier: Modifier = Modifier
+) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = SurfaceGrey,
             contentColor = Color.White
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
     ) {
         Column (
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            Spacer(modifier.height(40.dp))
             Text(
                 genus.name,
                 fontWeight = FontWeight.Bold,
@@ -57,13 +66,15 @@ fun GenusDetail(genus: Genus) {
                 Text(it, modifier=Modifier.alpha(0.6f))
             }
             LabelAttributeRow(label = "Meaning", value = genus.nameMeaning)
+            LabelAttributeRow(label = "Creature Type", value = genus.type.toString())
             HorizontalDivider(Modifier.padding(8.dp).alpha(0.4f))
             LabelAttributeRow(label = "Diet", value = genus.diet.toString())
-            LabelAttributeRow(label = "Length", value = genus.length)
-            LabelAttributeRow(label = "Weight", value = genus.weight)
+            LabelAttributeRow(label = "Length", value = genus.getLength())
+            LabelAttributeRow(label = "Weight", value = genus.getWeight())
             HorizontalDivider(Modifier.padding(8.dp).alpha(0.4f))
             LabelAttributeRow(label = "Time Period", value = genus.timePeriod)
             LabelAttributeRow(label = "Years Lived", value = genus.yearsLived)
+            LabelAttributeRow(label = "Taxonomy", value = genus.getTaxonomy())
         }
     }
 }
