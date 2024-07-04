@@ -100,9 +100,9 @@ class GenusBuilderImpl(
         return this
     }
 
-    override fun setCreatureType(type: String): GenusBuilder {
-        when (type.lowercase()) {
-            "large theropod"    -> CreatureType.Theropod_Large
+    override fun setCreatureType(typeStr: String): GenusBuilder {
+        this.type = when (typeStr.lowercase()) {
+            "large theropod"    -> CreatureType.LargeTheropod
             "small theropod"    -> CreatureType.Theropod_Small
             "ceratopsian" -> CreatureType.Ceratopsian
             "armoured"    -> CreatureType.Armoured

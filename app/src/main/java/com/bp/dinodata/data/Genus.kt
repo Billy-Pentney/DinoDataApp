@@ -27,7 +27,7 @@ data class Genus(
 
 
 enum class CreatureType {
-    Theropod_Large,
+    LargeTheropod,
     Theropod_Small,
     Ceratopsian,
     Armoured,
