@@ -18,9 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.Genus
-import com.bp.dinodata.data.GenusBuilder
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.theme.SurfaceGrey
 
@@ -72,7 +70,7 @@ fun GenusDetail(genus: Genus) {
 
 @Preview(widthDp = 300, heightDp = 1000)
 @Composable
-fun PreviewGenusView() {
+fun PreviewGenusDetail() {
     val acro = GenusBuilderImpl("Acrocanthosaurus")
         .setDiet("Carnivorous")
         .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")

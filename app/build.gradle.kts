@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlinAndroidKsp)
     alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -39,6 +41,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.11"
+    }
     kotlinOptions {
         jvmTarget = "1.8"
     }
@@ -55,9 +60,12 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.ui.tooling.preview.android)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.media3.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -72,10 +80,16 @@ dependencies {
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+//    implementation(libs.androidx.hilt.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.extensions)
 
     // Dagger-Hilt
     implementation(libs.hilt.android)
-    implementation(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Material Design 3
     implementation(libs.androidx.material3)
@@ -83,4 +97,5 @@ dependencies {
     // Android Studio Preview support
     implementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.tooling)
+
 }

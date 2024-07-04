@@ -20,24 +20,41 @@ interface GenusBuilder {
 
 
 class GenusBuilderImpl(
-    val name: String
+    private val name: String
 ): GenusBuilder {
-    var nameMeaning: String? = null
-    var namePronunciation: String? = null
-    var diet: Diet? = null
-    var yearsLived: String? = null
-    var timePeriod: String? = null
-    var length: String? = null
-    var weight: String? = null
-    var type: CreatureType = CreatureType.Other
+    private var nameMeaning: String? = null
+    private var namePronunciation: String? = null
+    private var diet: Diet? = null
+    private var yearsLived: String? = null
+    private var timePeriod: String? = null
+    private var length: String? = null
+    private var weight: String? = null
+    private var type: CreatureType = CreatureType.Other
+
+    companion object {
+        fun fromDict(dict: MutableMap<String, Any>): GenusBuilder? {
+            val name = dict["name"]
+            // Only proceed if a name is given
+            return name?.let {
+                val builder = GenusBuilderImpl(name.toString())
+                dict["timePeriod"]?.let { builder.setTimePeriod(it.toString()) }
+                dict["diet"]?.let { builder.setDiet(it.toString()) }
+                dict["yearsLived"]?.let { builder.setYearsLived(it.toString()) }
+                dict["weight"]?.let { builder.setWeight(it.toString()) }
+                dict["length"]?.let { builder.setLength(it.toString()) }
+                dict["type"]?.let { builder.setCreatureType(it.toString()) }
+                builder
+            }
+        }
+    }
 
     override fun setDiet(dietStr: String): GenusBuilder {
         this.diet = when(dietStr.lowercase()) {
-            "herbivorous" -> Diet.Herbivorous
-            "carnivorous" -> Diet.Carnivorous
-            "piscivorous" -> Diet.Piscivorous
-            "omnivorous" -> Diet.Omnivorous
-            else -> null
+            "herbivorous" -> Diet.Herbivore
+            "carnivorous" -> Diet.Carnivore
+            "piscivorous" -> Diet.Piscivore
+            "omnivorous" -> Diet.Omnivore
+            else -> Diet.Unknown
         }
         return this
     }
@@ -52,6 +69,7 @@ class GenusBuilderImpl(
             "aquatic"     -> CreatureType.Aquatic
             "avian"       -> CreatureType.Avian
             "cenezoic"    -> CreatureType.Cenezoic
+            else          -> CreatureType.Other
         }
         return this
     }
