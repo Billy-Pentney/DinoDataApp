@@ -103,10 +103,12 @@ class GenusBuilderImpl(
     override fun setCreatureType(typeStr: String): GenusBuilder {
         this.type = when (typeStr.lowercase()) {
             "large theropod"    -> CreatureType.LargeTheropod
-            "small theropod"    -> CreatureType.Theropod_Small
+            "small theropod"    -> CreatureType.SmallTheropod
             "ceratopsian" -> CreatureType.Ceratopsian
             "armoured"    -> CreatureType.Armoured
+            "stegosaur"   -> CreatureType.Stegosaur
             "sauropod"    -> CreatureType.Sauropod
+            "spinosaur"   -> CreatureType.Spinosaur
             "hadrosaur"   -> CreatureType.Hadrosaur
             "aquatic"     -> CreatureType.Aquatic
             "avian"       -> CreatureType.Avian

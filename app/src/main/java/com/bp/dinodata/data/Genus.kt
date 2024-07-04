@@ -21,20 +21,22 @@ data class Genus(
     }
 
     fun getWeight(): String? {
-        return weight?.let { "$it kg" }
+        return weight
     }
 }
 
 
 enum class CreatureType {
     LargeTheropod,
-    Theropod_Small,
+    SmallTheropod,
     Ceratopsian,
     Armoured,
+    Stegosaur,
     Sauropod,
     Hadrosaur,
     Avian,
     Aquatic,
     Cenezoic,
-    Other
+    Other,
+    Spinosaur
 }
