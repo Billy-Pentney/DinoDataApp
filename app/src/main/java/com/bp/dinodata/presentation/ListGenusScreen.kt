@@ -25,7 +25,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -37,6 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
+import com.bp.dinodata.presentation.icons.DietIconThin
+import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.ConvertCreatureTypeToSilhouette
 import com.bp.dinodata.presentation.vm.ListGenusViewModel
 
@@ -75,6 +79,7 @@ fun GenusListItem(genus: Genus, onClick: () -> Unit = {}) {
                     fontStyle = FontStyle.Italic
                 )
                 genus.diet?.let { DietIconThin(diet = it) }
+                genus.timePeriod?.let { TimePeriodIcon(timePeriod = it) }
             }
             Box(
                 modifier = Modifier
@@ -88,12 +93,13 @@ fun GenusListItem(genus: Genus, onClick: () -> Unit = {}) {
                     modifier = Modifier
                         .alpha(0.15f)
                         .zIndex(0f)
-                        .padding(top=10.dp)
+                        .padding(top = 5.dp)
                         .fillMaxWidth(0.6f)
-                        .absoluteOffset(x = 60.dp, y = 5.dp)
-                        .heightIn(max = 90.dp),
+                        .absoluteOffset(x = 50.dp, y = 15.dp)
+                        .heightIn(max = 110.dp),
                     alignment = Alignment.TopStart,
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+//                    colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
                 )
             }
         }
@@ -113,7 +119,9 @@ fun ListGenusScreenContent(
         columns = GridCells.Fixed(columns),
         verticalArrangement = Arrangement.spacedBy(spacing),
         horizontalArrangement = Arrangement.spacedBy(spacing),
-        modifier = Modifier.fillMaxWidth().padding(outerPadding)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(outerPadding)
     ) {
         items(listGenus) { genus ->
             GenusListItem(

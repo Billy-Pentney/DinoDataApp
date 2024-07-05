@@ -6,23 +6,32 @@ data class Genus(
     val type: CreatureType = CreatureType.Other,
     val yearsLived: String? = null,
     val timePeriod: String? = null,
-    val nameMeaning: String? = null,
+    private val nameMeaning: String? = null,
     val namePronunciation: String? = null,
     private val length: String?,
     private val weight: String?,
     val taxonomy: List<String>
 ) {
-    fun getTaxonomy(): String {
-        return taxonomy.joinToString(", ")
+    fun getTaxonomy(): String = taxonomy.joinToString("\n")
+
+    fun getTaxonomicList(): List<String> = taxonomy
+
+    fun getTaxonomicTree(): String {
+        var tree = taxonomy[0]
+        var indent = "└"
+        for (taxon in taxonomy.drop(1)) {
+            tree += "\n$indent $taxon"
+            indent = "   $indent"
+        }
+        tree += "\n$indent $name"
+        return tree
     }
 
-    fun getLength(): String? {
-        return length?.let { "$it metres" }
-    }
+    fun getLength(): String? = length?.let { "$it metres" }
 
-    fun getWeight(): String? {
-        return weight
-    }
+    fun getWeight(): String? = weight
+
+    fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
 }
 
 

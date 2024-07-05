@@ -1,13 +1,12 @@
-package com.bp.dinodata.presentation
+package com.bp.dinodata.presentation.icons
 
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -18,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -40,7 +40,7 @@ import com.bp.dinodata.theme.Piscivore400
 import com.bp.dinodata.theme.Piscivore700
 
 @Composable
-fun DietIconThin(diet: Diet) {
+fun DietIconThin(diet: Diet?) {
 
     val img =
         when(diet) {
@@ -60,31 +60,30 @@ fun DietIconThin(diet: Diet) {
     }
     val iconShape = remember { RoundedCornerShape(10.dp) }
 
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Gray,
-            contentColor = Color.Black
-        ),
-        modifier = Modifier.height(40.dp).width(130.dp)
+    Surface(
+        color = Color.White,
+        shape = iconShape,
+        contentColor = Color.Black,
+        modifier = Modifier.height(36.dp).width(110.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.padding(2.dp).background(
+            modifier = Modifier.padding(1.dp).background(
                 brush = iconBrush,
-                shape = iconShape
-            ).border(1.dp, Color.White, iconShape).fillMaxSize()
+                shape = RoundedCornerShape(9.dp)
+            ).fillMaxSize()
         ) {
             Image(
                 painter = painterResource(id = img),
                 contentDescription = "diet_icon",
-                modifier = Modifier.padding(2.dp).heightIn(max=30.dp)
+                modifier = Modifier.padding(2.dp).height(IntrinsicSize.Min)
             )
             Text(
                 text,
                 fontWeight = FontWeight.Bold,
                 color=Color.White,
-                fontSize=17.sp,
+                fontSize=14.sp,
                 modifier = Modifier.padding(end=8.dp)
             )
         }
