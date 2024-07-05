@@ -46,7 +46,11 @@ import com.bp.dinodata.presentation.vm.ListGenusViewModel
 
 
 @Composable
-fun GenusListItem(genus: Genus, onClick: () -> Unit = {}) {
+fun GenusListItem(
+    genus: Genus,
+    onClick: () -> Unit = {},
+    showDietText: Boolean = true
+) {
     val silhouetteId = ConvertCreatureTypeToSilhouette(genus.type)
 
     Card(
@@ -78,7 +82,7 @@ fun GenusListItem(genus: Genus, onClick: () -> Unit = {}) {
                     fontSize = 22.sp,
                     fontStyle = FontStyle.Italic
                 )
-                genus.diet?.let { DietIconThin(diet = it) }
+                genus.diet?.let { DietIconThin(diet = it, showText = showDietText) }
                 genus.timePeriod?.let { TimePeriodIcon(timePeriod = it) }
             }
             Box(
@@ -113,7 +117,8 @@ fun ListGenusScreenContent(
     navigateToGenus: (String) -> Unit = {},
     columns: Int = 1,
     spacing: Dp = 8.dp,
-    outerPadding: PaddingValues = PaddingValues(12.dp)
+    outerPadding: PaddingValues = PaddingValues(12.dp),
+    showDietText: Boolean = true
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
@@ -125,8 +130,9 @@ fun ListGenusScreenContent(
     ) {
         items(listGenus) { genus ->
             GenusListItem(
-                genus,
-                onClick = { navigateToGenus(genus.name) }
+                genus = genus,
+                onClick = { navigateToGenus(genus.name) },
+                showDietText = showDietText
             )
         }
     }
@@ -136,12 +142,12 @@ fun ListGenusScreenContent(
 @Composable
 fun ListGenusScreen(
     listGenusViewModel: ListGenusViewModel,
-    navigateToGenus: (String) -> Unit
+    navigateToGenus: (String) -> Unit,
 ) {
     val genera by listGenusViewModel.getListOfGenera().collectAsState()
     ListGenusScreenContent(
         genera,
-        navigateToGenus
+        navigateToGenus,
     )
 }
 
@@ -190,11 +196,16 @@ fun PreviewListGenusScreen() {
     val spino = GenusBuilderImpl("Spinosaurus").setDiet("Piscivorous")
         .setTimePeriod("Cretaceous")
         .setCreatureType("spinosaur").build()
+    val unkn = GenusBuilderImpl("Othersaurus").setDiet("Nuts")
+        .setTimePeriod("Other")
+        .setCreatureType("other").build()
 
     ListGenusScreenContent(
         listOf(
-            acro, trike, dipl, raptor, ptero, edmon, ankylo, stego, spino
+            acro, trike, dipl, raptor, ptero, edmon,
+            ankylo, stego, spino, unkn
         ),
-        columns = 2
+        columns = 2,
+        showDietText = false
     )
 }

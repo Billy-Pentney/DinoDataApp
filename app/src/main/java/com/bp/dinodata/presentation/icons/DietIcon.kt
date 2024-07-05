@@ -39,16 +39,22 @@ import com.bp.dinodata.theme.Herbivore700
 import com.bp.dinodata.theme.Piscivore400
 import com.bp.dinodata.theme.Piscivore700
 
-@Composable
-fun DietIconThin(diet: Diet?) {
+fun DietImageFromObject(diet: Diet?): Int {
+    return when(diet) {
+        Diet.Carnivore -> R.drawable.carn
+        Diet.Herbivore -> R.drawable.herb
+        Diet.Piscivore -> R.drawable.pisc
+        else -> R.drawable.unkn
+    }
+}
 
-    val img =
-        when(diet) {
-            Diet.Carnivore -> R.drawable.carn
-            Diet.Herbivore -> R.drawable.herb
-            Diet.Piscivore -> R.drawable.pisc
-            else -> R.drawable.unkn
-        }
+@Composable
+fun DietIconThin(
+    diet: Diet?,
+    showText: Boolean = true
+) {
+
+    val img = DietImageFromObject(diet)
 
     val text = diet.toString()
 
@@ -64,7 +70,7 @@ fun DietIconThin(diet: Diet?) {
         color = Color.White,
         shape = iconShape,
         contentColor = Color.Black,
-        modifier = Modifier.height(36.dp).width(110.dp)
+        modifier = Modifier.height(36.dp).width(IntrinsicSize.Min)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -79,13 +85,15 @@ fun DietIconThin(diet: Diet?) {
                 contentDescription = "diet_icon",
                 modifier = Modifier.padding(2.dp).height(IntrinsicSize.Min)
             )
-            Text(
-                text,
-                fontWeight = FontWeight.Bold,
-                color=Color.White,
-                fontSize=14.sp,
-                modifier = Modifier.padding(end=8.dp)
-            )
+            if (showText) {
+                Text(
+                    text,
+                    fontWeight = FontWeight.Bold,
+                    color=Color.White,
+                    fontSize=14.sp,
+                    modifier = Modifier.padding(end=8.dp)
+                )
+            }
         }
     }
 }
@@ -95,7 +103,10 @@ fun DietIconThin(diet: Diet?) {
 fun PreviewDietIcon() {
     LazyColumn (verticalArrangement = Arrangement.spacedBy(4.dp)) {
         items(listOf(Diet.Carnivore, Diet.Piscivore, Diet.Herbivore, Diet.Unknown)) {
-            DietIconThin(diet = it)
+            Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DietIconThin(diet = it)
+                DietIconThin(diet = it, showText = false)
+            }
         }
     }
 }
