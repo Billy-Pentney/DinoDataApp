@@ -44,4 +44,5 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
     <string name="placeholder_unknown_period">Unknown Period</string>
+    <string name="title_creature_list">Creature List</string>
 </resources>

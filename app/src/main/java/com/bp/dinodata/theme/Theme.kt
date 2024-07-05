@@ -7,17 +7,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // Material 3 color schemes
-private val DarkColorScheme = darkColorScheme()
-//    primary = Purple80,
-//    secondary = PurpleGrey80,
-//    tertiary = Pink80
-//)
-//
-private val LightColorScheme = lightColorScheme()
-//    primary = Purple40,
-//    secondary = PurpleGrey40,
-//    tertiary = Pink40
-//)
+private val DarkColorScheme = darkColorScheme(
+    background = MyGrey800,
+    onBackground = MyGrey50,
+    surface = MyGrey600,
+    onSurface = MyGrey50,
+    onSurfaceVariant = HighlightYellow
+)
+
+private val LightColorScheme = lightColorScheme(
+    background = MyGrey50,
+    onBackground = MyGrey900,
+    surface = MyGrey400,
+    onSurface = Color.White,
+    onSurfaceVariant = HighlightYellowLight
+)
 
 @Composable
 fun DinoDataTheme(

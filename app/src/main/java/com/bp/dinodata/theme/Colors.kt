@@ -2,8 +2,27 @@ package com.bp.dinodata.theme
 
 import androidx.compose.ui.graphics.Color
 
+val MyGrey50 = Color(0xFFDDDDE0)
+val MyGrey100 = Color(0xFFBBBBC0)
+val MyGrey200 = Color(0xFF99999B)
+val MyGrey300 = Color(0xFF77777B)
+val MyGrey400 = Color(0xFF66666B)
+val MyGrey500 = Color(0xFF55555B)
+val MyGrey600 = Color(0xFF44444B)
+val MyGrey700 = Color(0xFF33333B)
+val MyGrey800 = Color(0xFF22222B)
+val MyGrey900 = Color(0xFF11111B)
+
 val SurfaceGrey = Color(0xFF222222)
 val TextGrey = Color(0xFFAAAAAA)
+
+val HighlightYellowLight = Color(0xFFFFFF66)
+val HighlightYellow = Color(0xFFFFFF33)
+val HighlightOrangeLight = Color(0xFFFF8855)
+val HighlightOrange = Color(0xFFFF6622)
+val HighlightOrangeDark = Color(0xFFBB5522)
+val HighlightRed = Color(0xFFDD2222)
+val HighlightRedDark = Color(0xFFBB1111)
 
 val Carnivore50 = Color(0xFFFFDDDD)
 val Carnivore100 = Color(0xFFEEBBBB)

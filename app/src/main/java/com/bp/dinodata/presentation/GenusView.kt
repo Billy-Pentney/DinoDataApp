@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,13 +35,16 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.UiMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.ConvertCreatureTypeToSilhouette
+import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.SurfaceGrey
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
 
@@ -58,13 +63,13 @@ fun LabelAttributeRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("$label: ", modifier=Modifier.alpha(0.6f))
+        Text("$label: ", modifier=Modifier.alpha(0.75f))
         Text(
             value ?: "Unknown",
             fontStyle = valueStyle,
             textAlign = valueTextAlign
         )
-        units?.let { Text(units, modifier=Modifier.alpha(0.6f)) }
+        units?.let { Text(units, modifier=Modifier.alpha(0.75f)) }
     }
 }
 
@@ -94,8 +99,8 @@ fun GenusDetail(
     val horizontalPadding = 12.dp
 
     Surface(
-        color = SurfaceGrey,
-        contentColor = Color.White,
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         modifier = modifier
     ) {
         LazyColumn (
@@ -104,10 +109,10 @@ fun GenusDetail(
             item {
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.DarkGray
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     elevation = CardDefaults.elevatedCardElevation(
-                        defaultElevation = 10.dp
+                        defaultElevation = 16.dp
                     ),
                     shape = RoundedCornerShape(
                         topStart = 0f,
@@ -174,8 +179,7 @@ fun GenusDetail(
                     HorizontalDivider(
                         Modifier
                             .padding(8.dp)
-                            .alpha(0.4f)
-                    )
+                            .alpha(0.4f))
 
                     LabelContentRow(
                         label = "Time Period",
@@ -184,6 +188,10 @@ fun GenusDetail(
                     )
                     LabelAttributeRow(label = "Years Lived", value = genus.yearsLived)
 
+                    HorizontalDivider(
+                        Modifier
+                            .padding(8.dp)
+                            .alpha(0.4f))
                     Text("Taxonomy:", modifier = Modifier.alpha(0.6f))
                     ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
                 }
@@ -204,18 +212,22 @@ fun ShowTaxonomicTree(
     var indent = "└"
     for (taxon in taxonomy.drop(1)) {
         tree += "\n$indent $taxon"
-        indent = "   $indent"
+        indent = "  $indent"
     }
 
     Card (
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color.DarkGray
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
         )
     ) {
         LazyRow (
-            modifier = Modifier.padding(internalCardPadding)
-                                .fillMaxWidth()
+            modifier = Modifier
+                .padding(internalCardPadding)
+                .fillMaxWidth()
         ) {
             item {
                 Column {
@@ -223,7 +235,7 @@ fun ShowTaxonomicTree(
                     Text(
                         "$indent ${genus.name}",
                         fontWeight = FontWeight.Bold,
-                        color = Color.Yellow
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -231,7 +243,10 @@ fun ShowTaxonomicTree(
     }
 }
 
-@Preview(widthDp = 300, heightDp = 800)
+@Preview(
+    widthDp = 300,
+    heightDp = 800
+)
 @Composable
 fun PreviewGenusDetail() {
     val acro = GenusBuilderImpl("Acrocanthosaurus")
@@ -245,5 +260,7 @@ fun PreviewGenusDetail() {
         .setTaxonomy("Dinosauria Saurischia Theropoda Carcharodontosauridae")
         .build()
 
-    GenusDetail(acro)
+    DinoDataTheme(darkTheme = true) {
+        GenusDetail(acro)
+    }
 }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,10 +68,11 @@ fun DietIconThin(
     val iconShape = remember { RoundedCornerShape(10.dp) }
 
     Surface(
-        color = Color.White,
+        color = MaterialTheme.colorScheme.onBackground,
         shape = iconShape,
         contentColor = Color.Black,
-        modifier = Modifier.height(36.dp).width(IntrinsicSize.Min)
+        modifier = Modifier.height(36.dp).width(IntrinsicSize.Min),
+        shadowElevation = 4.dp
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
