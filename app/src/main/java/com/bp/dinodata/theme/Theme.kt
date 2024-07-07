@@ -12,6 +12,7 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = MyGrey50,
     surface = MyGrey600,
     onSurface = MyGrey50,
+    primary = MyGrey700,
     onSurfaceVariant = HighlightYellow
 )
 
@@ -20,6 +21,7 @@ private val LightColorScheme = lightColorScheme(
     onBackground = MyGrey900,
     surface = MyGrey400,
     onSurface = Color.White,
+    primary = MyGrey400,
     onSurfaceVariant = HighlightYellowLight
 )
 

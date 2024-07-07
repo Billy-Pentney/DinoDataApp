@@ -1,5 +1,8 @@
 package com.bp.dinodata.data
 
+import com.bp.dinodata.data.quantities.IDescribesLength
+import com.bp.dinodata.data.quantities.IDescribesWeight
+
 data class Genus(
     val name: String,
     val diet: Diet? = null,
@@ -7,10 +10,10 @@ data class Genus(
     val yearsLived: String? = null,
     val timePeriod: String? = null,
     private val nameMeaning: String? = null,
-    val namePronunciation: String? = null,
-    private val length: String?,
-    private val weight: String?,
-    val taxonomy: List<String>
+    private val namePronunciation: String? = null,
+    private val length: IDescribesLength?,
+    private val weight: IDescribesWeight?,
+    private val taxonomy: List<String>
 ) {
     fun getTaxonomy(): String = taxonomy.joinToString("\n")
 
@@ -27,11 +30,13 @@ data class Genus(
         return tree
     }
 
-    fun getLength(): String? = length?.let { "$it metres" }
+    fun getLength(): String? = length?.toString()
 
-    fun getWeight(): String? = weight
+    fun getWeight(): String? = weight?.toString()
 
     fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
+
+    fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 }
 
 

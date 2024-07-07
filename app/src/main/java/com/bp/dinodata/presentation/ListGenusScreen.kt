@@ -4,14 +4,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,9 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,7 +42,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.icons.DietIconThin
-import com.bp.dinodata.presentation.utils.ConvertCreatureTypeToSilhouette
+import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.presentation.vm.ListGenusViewModel
 import com.bp.dinodata.theme.DinoDataTheme
 
@@ -58,7 +53,7 @@ fun GenusListItem(
     onClick: () -> Unit = {},
     showDietText: Boolean = true
 ) {
-    val silhouetteId = ConvertCreatureTypeToSilhouette(genus.type)
+    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
     Card(
         colors = CardDefaults.cardColors(
@@ -103,20 +98,21 @@ fun GenusListItem(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .absoluteOffset(y=5.dp),
                 contentAlignment = Alignment.BottomEnd
             ) {
                 Image(
                     painterResource(id = silhouetteId),
                     contentDescription = null,
                     modifier = Modifier
-                        .alpha(0.2f)
+                        .alpha(0.5f)
                         .zIndex(0f)
-                        .padding(top = 5.dp)
-                        .fillMaxWidth(0.3f)
-                        .absoluteOffset(x = 30.dp, y = 5.dp)
+//                        .padding(top = 5.dp)
+                        .fillMaxWidth(0.33f)
+                        .absoluteOffset(x = 25.dp, y = 0.dp)
                         .fillMaxHeight(),
-                    alignment = Alignment.TopStart,
+                    alignment = Alignment.BottomStart,
                     contentScale = ContentScale.Crop,
 //                    colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
                 )
@@ -223,7 +219,7 @@ fun PreviewListGenus() {
         .setTimePeriod("Other")
         .setCreatureType("other").build()
 
-    DinoDataTheme (darkTheme = false) {
+    DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
             listOf(
                 acro, trike, dipl, raptor, ptero, edmon,

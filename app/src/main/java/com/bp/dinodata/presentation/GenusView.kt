@@ -1,9 +1,7 @@
 package com.bp.dinodata.presentation
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,28 +23,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.UiMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
-import com.bp.dinodata.presentation.utils.ConvertCreatureTypeToSilhouette
+import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.theme.DinoDataTheme
-import com.bp.dinodata.theme.SurfaceGrey
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
 
 
 @Composable
@@ -89,75 +79,83 @@ fun LabelContentRow(
     }
 }
 
+
+@Composable
+fun GenusTitleCard(
+    genus: Genus,
+    padding: PaddingValues
+) {
+    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
+
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 16.dp
+        ),
+        shape = RoundedCornerShape(
+            topStart = 0f,
+            topEnd = 0f,
+            bottomEnd = 50f,
+            bottomStart = 50f
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding)
+        ) {
+            Image(
+                painterResource(id = silhouetteId),
+                contentDescription = null,
+                modifier = Modifier
+                    .alpha(0.4f)
+                    .padding(top = 10.dp, bottom = 0.dp)
+                    .offset(x = 20.dp, y = 0.dp)
+                    .fillMaxWidth(),
+                alignment = Alignment.CenterStart,
+                contentScale = ContentScale.Fit,
+//                        colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                genus.name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp,
+                fontStyle = FontStyle.Italic
+            )
+            genus.getNamePronunciation()?.let {
+                Text(it, modifier = Modifier.alpha(0.6f), fontStyle = FontStyle.Italic)
+            }
+            Spacer(modifier = Modifier.height(15.dp))
+        }
+    }
+}
+
+
 @Composable
 fun GenusDetail(
     genus: Genus,
     modifier: Modifier = Modifier
 ) {
-    val silhouetteId = ConvertCreatureTypeToSilhouette(genus.type)
-
     val horizontalPadding = 12.dp
 
     Surface(
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
-        modifier = modifier
     ) {
         LazyColumn (
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = horizontalPadding)
         ) {
             item {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.elevatedCardElevation(
-                        defaultElevation = 16.dp
-                    ),
-                    shape = RoundedCornerShape(
-                        topStart = 0f,
-                        topEnd = 0f,
-                        bottomEnd = 50f,
-                        bottomStart = 50f
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = horizontalPadding)
-                            .padding(top = 40.dp)
-                    ) {
-                        Image(
-                            painterResource(id = silhouetteId),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .alpha(0.4f)
-                                .padding(top = 10.dp, bottom = 0.dp)
-                                .offset(x = 20.dp, y = 0.dp)
-                                .fillMaxWidth(),
-                            alignment = Alignment.CenterStart,
-                            contentScale = ContentScale.Fit,
-//                        colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
-                        )
-                        Spacer(modifier.height(20.dp))
-                        Text(
-                            genus.name,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp,
-                            fontStyle = FontStyle.Italic
-                        )
-                        genus.namePronunciation?.let {
-                            Text(it, modifier = Modifier.alpha(0.6f))
-                        }
-                        Spacer(modifier = Modifier.height(15.dp))
-                    }
-                }
+                GenusTitleCard(genus, padding = PaddingValues(horizontal = horizontalPadding))
             }
-
             item {
                 Column(
-                    modifier = Modifier.padding(horizontal = horizontalPadding),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(horizontal = horizontalPadding)
                 ) {
                     LabelAttributeRow(
                         label = "Meaning",
@@ -165,37 +163,56 @@ fun GenusDetail(
                         valueStyle = FontStyle.Italic
                     )
                     LabelAttributeRow(label = "Creature Type", value = genus.type.toString())
-
-                    HorizontalDivider(
-                        Modifier
-                            .padding(8.dp)
-                            .alpha(0.4f)
-                    )
-
+                }
+            }
+            item {
+                HorizontalDivider(
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .alpha(0.4f))
+            }
+            item{
+                Column (
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier=Modifier.padding(horizontal=horizontalPadding)
+                ) {
                     LabelContentRow(label = "Diet", valueContent = { DietIconThin(genus.diet) })
-                    LabelAttributeRow(label = "Length (metres)", value = genus.getLength())
-                    LabelAttributeRow(label = "Weight (tonnes)", value = genus.getWeight())
-
-                    HorizontalDivider(
-                        Modifier
-                            .padding(8.dp)
-                            .alpha(0.4f))
-
+                    LabelAttributeRow(label = "Length", value = genus.getLength())
+                    LabelAttributeRow(label = "Weight", value = genus.getWeight())
+                }
+            }
+            item { HorizontalDivider(
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .alpha(0.4f)) }
+            item {
+                Column (
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(horizontal=horizontalPadding)
+                ) {
                     LabelContentRow(
                         label = "Time Period",
                         valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
                         horizontalArrangement = Arrangement.SpaceBetween
                     )
                     LabelAttributeRow(label = "Years Lived", value = genus.yearsLived)
-
-                    HorizontalDivider(
-                        Modifier
-                            .padding(8.dp)
-                            .alpha(0.4f))
+                }
+            }
+            item { HorizontalDivider(
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .alpha(0.4f)) }
+            item {
+                Column (
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(horizontal=horizontalPadding)
+                ) {
                     Text("Taxonomy:", modifier = Modifier.alpha(0.6f))
                     ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
                 }
             }
+
+            item { Spacer(Modifier.height(40.dp)) }
         }
     }
 }
@@ -245,22 +262,46 @@ fun ShowTaxonomicTree(
 
 @Preview(
     widthDp = 300,
-    heightDp = 800
+    heightDp = 800,
+    name = "Light"
 )
 @Composable
 fun PreviewGenusDetail() {
     val acro = GenusBuilderImpl("Acrocanthosaurus")
         .setDiet("Carnivorous")
         .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")
-        .setNamePronunciation("'ACK-row-CAN-thoh-SORE-us'")
+        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
         .setNameMeaning("high-spined lizard")
-        .setLength("11-11.5")
-        .setWeight("4.4-6.6")
+        .setLength("11-11.5 metres")
+        .setWeight("4.4 tonnes")
         .setCreatureType("large theropod")
         .setTaxonomy("Dinosauria Saurischia Theropoda Carcharodontosauridae")
         .build()
 
-    DinoDataTheme(darkTheme = true) {
+    DinoDataTheme(darkTheme = false) {
         GenusDetail(acro)
+    }
+}
+
+@Preview(
+    widthDp = 300,
+    heightDp = 800,
+    name = "Dark"
+)
+@Composable
+fun PreviewGenusDetailDark() {
+    val styraco = GenusBuilderImpl("Styracosaurus")
+        .setDiet("Herbivorous")
+        .splitTimePeriodAndYears("Early Cretaceous, 70-65.5 mya")
+        .setNamePronunciation("'sty-RAK-oh-SORE-us'")
+        .setNameMeaning("spiked lizard")
+        .setLength("5 metres")
+        .setWeight("2500 kg")
+        .setCreatureType("ceratopsian")
+        .setTaxonomy("Dinosauria Saurischia Ceratopsidae Centrosaurinae")
+        .build()
+
+    DinoDataTheme(darkTheme = true) {
+        GenusDetail(styraco)
     }
 }

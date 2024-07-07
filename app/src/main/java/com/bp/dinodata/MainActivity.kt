@@ -14,6 +14,7 @@ import com.bp.dinodata.presentation.DetailGenusScreen
 import com.bp.dinodata.presentation.ListGenusScreen
 import com.bp.dinodata.presentation.MyNavigation
 import com.bp.dinodata.presentation.Screens
+import com.bp.dinodata.theme.DinoDataTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,7 +23,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyNavigation()
+            DinoDataTheme {
+                MyNavigation()
+            }
         }
     }
 }

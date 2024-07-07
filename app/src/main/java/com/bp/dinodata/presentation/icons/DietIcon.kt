@@ -68,7 +68,7 @@ fun DietIconThin(
     val iconShape = remember { RoundedCornerShape(10.dp) }
 
     Surface(
-        color = MaterialTheme.colorScheme.onBackground,
+        color = MaterialTheme.colorScheme.onSurface,
         shape = iconShape,
         contentColor = Color.Black,
         modifier = Modifier.height(36.dp).width(IntrinsicSize.Min),

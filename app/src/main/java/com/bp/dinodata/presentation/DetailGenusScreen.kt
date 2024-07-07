@@ -20,6 +20,5 @@ fun DetailGenusScreen(
             genus = it,
             modifier = Modifier.padding(8.dp)
         )
-        Spacer(Modifier.height(40.dp))
     }
 }
