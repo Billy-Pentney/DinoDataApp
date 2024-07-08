@@ -50,8 +50,10 @@ sealed class Weight(
     override fun toString(): String = "${this.value} ${this.unit.toString().lowercase()}"
 
     override fun getUnit(): Units.Weight = this.unit
-
     override fun getValue(): Float = value
+
+    override fun isAtLeast(minValue: Float): Boolean = this.value >= minValue
+    override fun isAtMost(maxValue: Float): Boolean = this.value <= maxValue
 
     companion object {
         fun make(floatValue: Float, units: Units.Weight): IWeight {

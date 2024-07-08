@@ -109,8 +109,8 @@ class GenusBuilderImpl(
         return this
     }
 
-    override fun setCreatureType(typeStr: String): GenusBuilder {
-        this.type = when (typeStr.lowercase()) {
+    override fun setCreatureType(type: String): GenusBuilder {
+        this.type = when (type.lowercase()) {
             "large theropod"    -> CreatureType.LargeTheropod
             "small theropod"    -> CreatureType.SmallTheropod
             "ceratopsian" -> CreatureType.Ceratopsian
@@ -203,6 +203,9 @@ class GenusBuilderImpl(
             val valueOnly = length.substringBefore("m").trim()
             tryParseLength(valueOnly, Units.Length.Metres)
         }
+        else {
+            Log.d(TAG, "Unable to parse length units for string \'$length\'")
+        }
         return this
     }
 
@@ -222,25 +225,33 @@ class GenusBuilderImpl(
             }
         }
         catch (nfe:NumberFormatException) {
-            Log.e("GenusBuilder", "Failed to parse \'$weightValue\' as float")
+            Log.e(TAG, "Failed to parse \'$weightValue\' as float")
+            return
+        }
+
+        if (units == Units.Weight.Kg && this.weight?.isAtLeast(1000f) == true) {
+            this.weight = this.weight?.convert(Units.Weight.Tonnes)
+        }
+        else if (units == Units.Weight.Tonnes && this.weight?.isAtMost(1f) == true) {
+            this.weight = this.weight?.convert(Units.Weight.Kg)
         }
     }
 
     override fun setWeight(weight: String): GenusBuilder {
         if (weight.endsWith("tonnes", ignoreCase = true)) {
-            // Drop the units from the end
             val valueOnly = weight.substringBefore("tonnes").trim()
             tryParseWeight(valueOnly, Units.Weight.Tonnes)
         }
         else if (weight.endsWith("kg", ignoreCase = true)) {
-            // Drop the units from the end
             val valueOnly = weight.substringBefore("kg").trim()
             tryParseWeight(valueOnly, Units.Weight.Kg)
         }
         else if (weight.endsWith("tons", ignoreCase = true)) {
-            // Drop the units from the end
             val valueOnly = weight.substringBefore("tons").trim()
             tryParseWeight(valueOnly, Units.Weight.TonsImperial)
+        }
+        else {
+            Log.d(TAG, "Unable to parse weight units for string \'$weight\'")
         }
         return this
     }

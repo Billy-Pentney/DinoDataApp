@@ -6,6 +6,9 @@ interface IQuantity
 interface IDescribesWeight: IQuantity {
     fun convert(to: Units.Weight): IDescribesWeight
     fun getUnit(): Units.Weight
+
+    fun isAtLeast(minValue: Float): Boolean
+    fun isAtMost(maxValue: Float): Boolean
 }
 
 interface IDescribesLength: IQuantity {

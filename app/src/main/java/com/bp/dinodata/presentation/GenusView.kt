@@ -296,7 +296,7 @@ fun PreviewGenusDetailDark() {
         .setNamePronunciation("'sty-RAK-oh-SORE-us'")
         .setNameMeaning("spiked lizard")
         .setLength("5 metres")
-        .setWeight("2500 kg")
+        .setWeight("1 tonnes")
         .setCreatureType("ceratopsian")
         .setTaxonomy("Dinosauria Saurischia Ceratopsidae Centrosaurinae")
         .build()
