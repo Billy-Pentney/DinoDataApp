@@ -7,7 +7,5 @@ import kotlinx.coroutines.flow.Flow
 class GetGenusByName(
     private val genusRepository: GenusRepository
 ) {
-    operator fun invoke(genusName: String): Flow<Genus?> {
-        return genusRepository.getGenus(genusName)
-    }
+
 }

@@ -39,6 +39,5 @@ fun MyNavigation(
                 detailGenusViewModel = hiltViewModel(),
             )
         }
-
     }
 }

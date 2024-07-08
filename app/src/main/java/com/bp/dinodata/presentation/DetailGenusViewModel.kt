@@ -28,16 +28,10 @@ class DetailGenusViewModel @Inject constructor(
 
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
 
-    private var _visibleGenus: StateFlow<Genus?> = MutableStateFlow(null)
-
-    init {
-        // Retrieve the flow containing this genus
-        _visibleGenus = genusUseCases.getGenusByName(currentGenusName).stateIn(
-            viewModelScope, SharingStarted.Lazily, null
-        )
-    }
+    // Retrieve the flow containing this genus
+    private var _visibleGenus: StateFlow<Genus?> = genusUseCases.getGenusByName(currentGenusName)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun getVisibleGenus(): StateFlow<Genus?> = _visibleGenus
-
 
 }

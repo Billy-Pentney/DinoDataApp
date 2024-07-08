@@ -1,13 +1,19 @@
 package com.bp.dinodata.presentation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,14 +29,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.icons.DietIconThin
@@ -83,52 +94,53 @@ fun LabelContentRow(
 @Composable
 fun GenusTitleCard(
     genus: Genus,
-    padding: PaddingValues
+    padding: Dp
 ) {
     val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 16.dp
-        ),
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 16.dp,
         shape = RoundedCornerShape(
             topStart = 0f,
             topEnd = 0f,
             bottomEnd = 50f,
             bottomStart = 50f
-        )
+        ),
+        modifier = Modifier.heightIn(175.dp, 225.dp).fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(padding)
+            modifier = Modifier.fillMaxHeight().padding(top=20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Image(
                 painterResource(id = silhouetteId),
                 contentDescription = null,
                 modifier = Modifier
                     .alpha(0.4f)
-                    .padding(top = 10.dp, bottom = 0.dp)
+                    .padding(top = 10.dp, bottom = 0.dp, start=40.dp)
                     .offset(x = 20.dp, y = 0.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .weight(1f),
                 alignment = Alignment.CenterStart,
                 contentScale = ContentScale.Fit,
 //                        colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
             )
-            Spacer(Modifier.height(20.dp))
+//            Spacer(Modifier.height(4.dp))
             Text(
                 genus.name,
                 fontWeight = FontWeight.Bold,
-                fontSize = 22.sp,
-                fontStyle = FontStyle.Italic
+                fontSize = 26.sp,
+                fontStyle = FontStyle.Italic,
+                modifier = Modifier.padding(top=padding, start=padding, end=padding)
             )
             genus.getNamePronunciation()?.let {
-                Text(it, modifier = Modifier.alpha(0.6f), fontStyle = FontStyle.Italic)
+                Text(
+                    it,
+                    modifier = Modifier.alpha(0.6f).padding(bottom=padding, start=padding, end=padding),
+                    fontStyle = FontStyle.Italic
+                )
             }
-            Spacer(modifier = Modifier.height(15.dp))
         }
     }
 }
@@ -144,13 +156,14 @@ fun GenusDetail(
     Surface(
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
+        modifier = modifier
     ) {
         LazyColumn (
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(horizontal = horizontalPadding)
         ) {
             item {
-                GenusTitleCard(genus, padding = PaddingValues(horizontal = horizontalPadding))
+                GenusTitleCard(genus, padding = horizontalPadding)
             }
             item {
                 Column(
@@ -283,11 +296,7 @@ fun PreviewGenusDetail() {
     }
 }
 
-@Preview(
-    widthDp = 300,
-    heightDp = 800,
-    name = "Dark"
-)
+@Preview(widthDp = 300, heightDp = 800, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
     val styraco = GenusBuilderImpl("Styracosaurus")

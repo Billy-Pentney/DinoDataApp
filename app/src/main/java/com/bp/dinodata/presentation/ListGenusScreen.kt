@@ -1,34 +1,49 @@
 package com.bp.dinodata.presentation
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -99,7 +114,7 @@ fun GenusListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .absoluteOffset(y=5.dp),
+                    .absoluteOffset(y = 5.dp),
                 contentAlignment = Alignment.BottomEnd
             ) {
                 Image(
@@ -125,33 +140,76 @@ fun GenusListItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListGenusScreenContent(
+    loadState: LoadState,
     listGenus: List<Genus>,
     navigateToGenus: (String) -> Unit = {},
     columns: Int = 1,
     spacing: Dp = 8.dp,
     outerPadding: PaddingValues = PaddingValues(12.dp),
-    showDietText: Boolean = true
+    showDietText: Boolean = true,
 ) {
+    val scrollState = rememberLazyGridState()
+    val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
+    var lowestScrollIndex by remember { mutableIntStateOf(0) }
+
+//    LaunchedEffect(scrollPosition) {
+//        if (listGenus.size-15 in (lowestScrollIndex + 1)..<scrollPosition) {
+//            lowestScrollIndex = scrollPosition
+//            Log.d("ListGenusScreen","Trigger load")
+//            triggerNextPageLoad()
+//        }
+//    }
+
+//    LaunchedEffect(key1 = loadState) {
+//        if (loadState is LoadState.IsLoaded) {
+//            val pageNum = loadState.pageNum
+//            Toast.makeText(context, "Loaded page $pageNum with ${listGenus.size} items total",
+//                Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.title_creature_list)) }) }
     ) { pad ->
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(columns),
-            verticalArrangement = Arrangement.spacedBy(spacing),
-            horizontalArrangement = Arrangement.spacedBy(spacing),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(outerPadding)
-                .padding(pad)
-        ) {
-            items(listGenus) { genus ->
-                GenusListItem(
-                    genus = genus,
-                    onClick = { navigateToGenus(genus.name) },
-                    showDietText = showDietText
-                )
+        when (loadState) {
+            is LoadState.IsLoaded -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    verticalArrangement = Arrangement.spacedBy(spacing),
+                    horizontalArrangement = Arrangement.spacedBy(spacing),
+                    state = scrollState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(outerPadding)
+                        .padding(pad)
+                ) {
+                    items(listGenus) { genus ->
+                        GenusListItem(
+                            genus = genus,
+                            onClick = { navigateToGenus(genus.name) },
+                            showDietText = showDietText
+                        )
+                    }
+                }
             }
+            is LoadState.LoadingPage -> {
+                // Loading items Placeholder
+                Column (
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(color=Cyan)
+                    Spacer(modifier=Modifier.height(8.dp))
+                    Text("loading...")
+                }
+            }
+
+            is LoadState.Error -> {
+                Text("Sorry! An error occurred. Reason: ${loadState.reason}")
+            }
+
+            else -> { }
         }
     }
 }
@@ -163,10 +221,20 @@ fun ListGenusScreen(
     navigateToGenus: (String) -> Unit,
 ) {
     val genera by listGenusViewModel.getListOfGenera().collectAsState()
+//    val genera by remember { listGenusViewModel.getListOfGenera() }
+    val hasLoaded by remember { listGenusViewModel.getIsLoadedState() }
+
+//    val context = LocalContext.current
+
     ListGenusScreenContent(
-        genera,
-        navigateToGenus,
-        showDietText = false
+        loadState = hasLoaded,
+        listGenus = genera,
+        navigateToGenus = navigateToGenus,
+        showDietText = false,
+//        triggerNextPageLoad = {
+////            Toast.makeText(context, "Loading new page...", Toast.LENGTH_SHORT).show()
+//            listGenusViewModel.initiateNextPageLoad()
+//        }
     )
 }
 
@@ -221,12 +289,14 @@ fun PreviewListGenus() {
 
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
+            loadState = LoadState.IsLoaded(0),
             listOf(
                 acro, trike, dipl, raptor, ptero, edmon,
                 ankylo, stego, spino, unkn
             ),
             columns = 1,
-            showDietText = false
+            showDietText = false,
+//            triggerNextPageLoad = {  }
         )
     }
 }

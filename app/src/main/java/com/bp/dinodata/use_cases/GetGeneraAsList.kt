@@ -4,10 +4,8 @@ import com.bp.dinodata.data.Genus
 import com.bp.dinodata.repo.GenusRepository
 import kotlinx.coroutines.flow.Flow
 
-class GetAllGenera(
+class GetGeneraAsList(
     val genusRepository: GenusRepository
 ) {
-    operator fun invoke(): Flow<List<Genus>> {
-        return genusRepository.getGeneraFlow()
-    }
+
 }
