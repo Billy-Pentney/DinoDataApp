@@ -10,17 +10,29 @@ sealed class Weight(
         override fun convert(to: Units.Weight): IWeight {
             return when (to) {
                 Units.Weight.Tonnes -> this
-                Units.Weight.Tons -> Tons(getValue() / UnitConversions.TONNES_PER_TON)
+                Units.Weight.TonsImperial -> TonsImperial(getValue() / UnitConversions.TONNES_PER_TON_IMP)
                 Units.Weight.Kg -> Kg(getValue() * 1000f)
+                Units.Weight.TonsUS -> TonsUS(getValue() / UnitConversions.TONNES_PER_TON_US)
             }
         }
     }
-    class Tons(value: Float): Weight(value, Units.Weight.Tons) {
+    class TonsImperial(value: Float): Weight(value, Units.Weight.TonsImperial) {
         override fun convert(to: Units.Weight): IWeight {
             return when (to) {
-                Units.Weight.Tonnes -> Tonnes(getValue() * UnitConversions.TONNES_PER_TON)
-                Units.Weight.Tons -> this
-                Units.Weight.Kg -> Kg(getValue() * UnitConversions.KG_PER_TON)
+                Units.Weight.TonsImperial -> this
+                Units.Weight.Tonnes -> Tonnes(getValue() * UnitConversions.TONNES_PER_TON_IMP)
+                Units.Weight.Kg -> Kg(getValue() * UnitConversions.KG_PER_TON_IMP)
+                Units.Weight.TonsUS -> TonsUS(getValue() * UnitConversions.TONNES_PER_TON_IMP / UnitConversions.TONNES_PER_TON_US)
+            }
+        }
+    }
+    class TonsUS(value: Float): Weight(value, Units.Weight.TonsUS) {
+        override fun convert(to: Units.Weight): IWeight {
+            return when (to) {
+                Units.Weight.TonsUS -> this
+                Units.Weight.Tonnes -> Tonnes(getValue() * UnitConversions.TONNES_PER_TON_US)
+                Units.Weight.Kg -> Kg(getValue() * UnitConversions.KG_PER_TON_US)
+                Units.Weight.TonsImperial -> TonsImperial(getValue() * UnitConversions.TONNES_PER_TON_US / UnitConversions.TONNES_PER_TON_IMP)
             }
         }
     }
@@ -28,8 +40,9 @@ sealed class Weight(
         override fun convert(to: Units.Weight): IWeight {
             return when (to) {
                 Units.Weight.Tonnes -> Tonnes(getValue() / 1000f)
-                Units.Weight.Tons -> Tons(getValue() / UnitConversions.KG_PER_TON)
+                Units.Weight.TonsImperial -> TonsImperial(getValue() / UnitConversions.KG_PER_TON_IMP)
                 Units.Weight.Kg -> this
+                Units.Weight.TonsUS -> TonsUS(getValue() / UnitConversions.KG_PER_TON_US)
             }
         }
     }
@@ -45,7 +58,8 @@ sealed class Weight(
             return when (units) {
                 Units.Weight.Kg -> Kg(floatValue)
                 Units.Weight.Tonnes -> Tonnes(floatValue)
-                Units.Weight.Tons -> Tons(floatValue)
+                Units.Weight.TonsImperial -> TonsImperial(floatValue)
+                Units.Weight.TonsUS -> TonsUS(floatValue)
             }
         }
     }

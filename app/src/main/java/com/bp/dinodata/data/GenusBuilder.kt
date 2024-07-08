@@ -240,7 +240,7 @@ class GenusBuilderImpl(
         else if (weight.endsWith("tons", ignoreCase = true)) {
             // Drop the units from the end
             val valueOnly = weight.substringBefore("tons").trim()
-            tryParseWeight(valueOnly, Units.Weight.Tons)
+            tryParseWeight(valueOnly, Units.Weight.TonsImperial)
         }
         return this
     }

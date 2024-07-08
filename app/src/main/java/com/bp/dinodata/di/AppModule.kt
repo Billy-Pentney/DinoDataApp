@@ -8,6 +8,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.storage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,5 +50,10 @@ object AppModule {
             GetGenusByName(genusRepo)
         )
     }
+
+//    @Provides
+//    fun ProvidesFirebaseStorage(): FirebaseStorage {
+//        return Firebase.storage
+//    }
 
 }
