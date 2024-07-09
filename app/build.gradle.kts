@@ -73,6 +73,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    implementation("androidx.compose.animation:animation:1.0.0")
+    implementation("androidx.compose.material:material-icons-extended")
+
     implementation(libs.glide)
     implementation(libs.glideCompose)
 
@@ -92,7 +95,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-//    implementation(libs.androidx.hilt.lifecycle.viewmodel)
     implementation(libs.androidx.lifecycle.extensions)
 
     // Dagger-Hilt

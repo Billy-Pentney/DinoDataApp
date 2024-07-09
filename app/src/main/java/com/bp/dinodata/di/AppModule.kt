@@ -1,10 +1,13 @@
 package com.bp.dinodata.di
 
+import android.content.Context
+import android.speech.tts.TextToSpeech
 import com.bp.dinodata.repo.GenusImageRepository
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.GetGeneraAsList
 import com.bp.dinodata.use_cases.GetGenusByName
+import com.bp.dinodata.use_cases.TextToSpeechUseCases
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,6 +15,7 @@ import com.google.firebase.firestore.firestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 
 @Module
@@ -49,5 +53,13 @@ object AppModule {
 //    fun ProvidesFirebaseStorage(): FirebaseStorage {
 //        return Firebase.storage
 //    }
+
+
+    @Provides
+    fun providesTextUseCases(
+        @ApplicationContext context: Context
+    ): TextToSpeechUseCases {
+        return TextToSpeechUseCases(context)
+    }
 
 }

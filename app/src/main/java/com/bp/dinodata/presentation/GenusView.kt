@@ -1,43 +1,48 @@
 package com.bp.dinodata.presentation
 
 import android.util.Log
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import android.view.WindowInsets.Side
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageShader
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,7 +50,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
@@ -59,6 +63,7 @@ import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
+import kotlin.math.exp
 
 
 @Composable
@@ -110,20 +115,20 @@ fun LoadAsyncImageOrReserveDrawable(
     contentDescription: String? = null,
     alignment: Alignment,
     contentScale: ContentScale,
-    drawableIfImageFailed: Int
+    drawableIfImageFailed: Int,
+    visible: Boolean = true
 ) {
-    GlideImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(imageUrl)
-            .crossfade(true)
-            .build(),
-        loading = placeholder(drawableIfImageFailed),
-        failure = placeholder(drawableIfImageFailed),
-        contentDescription = contentDescription,
-        modifier = modifier,
-        alignment = alignment,
-        contentScale = contentScale,
-    )
+    if (visible) {
+        GlideImage(
+            model = imageUrl,
+            loading = placeholder(drawableIfImageFailed),
+            failure = placeholder(drawableIfImageFailed),
+            contentDescription = contentDescription,
+            modifier = modifier,
+            alignment = alignment,
+            contentScale = contentScale,
+        )
+    }
 }
 
 
@@ -143,16 +148,27 @@ fun LoadAsyncImageOrReserveDrawable(
 @Composable
 fun GenusTitleCard(
     genus: Genus,
-    padding: Dp
+    padding: Dp,
+    scrollState: LazyListState,
+    onPlayNamePronunciation: () -> Unit
 ) {
     val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
     val genusImageUrl = genus.getImageUrl()
 
+    var expanded by remember { mutableStateOf(true) }
+    val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemScrollOffset } }
+
+//    Side(key1 = scrollPosition) {
+//        if (scrollPosition > 1) {
+//            expanded = true
+//        }
+//    }
+
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 16.dp,
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.elevatedCardElevation(16.dp),
         shape = RoundedCornerShape(
             topStart = 0f,
             topEnd = 0f,
@@ -160,43 +176,67 @@ fun GenusTitleCard(
             bottomStart = 50f
         ),
         modifier = Modifier
-            .heightIn(175.dp, 225.dp)
             .fillMaxWidth()
+            .animateContentSize()
+            .fillMaxHeight()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(top = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp, alignment = Alignment.Bottom),
         ) {
-            LoadAsyncImageOrReserveDrawable(
-                imageUrl = genusImageUrl,
-                alignment = Alignment.CenterStart,
-                contentScale = ContentScale.Fit,
-                drawableIfImageFailed = R.drawable.unkn,
-                modifier = Modifier
-                    .alpha(0.4f)
-                    .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
-//                    .offset(x = 20.dp, y = 0.dp)
-                    .fillMaxWidth()
-                    .weight(0.75f),
-            )
-//            Spacer(Modifier.height(4.dp))
-            Text(
-                genus.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 26.sp,
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(top=padding, start=padding, end=padding)
-            )
-            genus.getNamePronunciation()?.let {
-                Text(
-                    it,
+            AnimatedVisibility(visible = expanded) {
+                LoadAsyncImageOrReserveDrawable(
+                    imageUrl = genusImageUrl,
+                    alignment = Alignment.CenterStart,
+                    contentScale = ContentScale.Fit,
+                    drawableIfImageFailed = R.drawable.unkn,
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .padding(bottom = padding, start = padding, end = padding),
-                    fontStyle = FontStyle.Italic
+                        .alpha(0.4f)
+                        .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
+//                    .offset(x = 20.dp, y = 0.dp)
+                        .fillMaxWidth()
+                        .weight(1f),
                 )
+            }
+//            Spacer(Modifier.height(4.dp))
+            Column (
+                modifier = Modifier
+                    .fillMaxHeight(1f)
+                    .padding(bottom = 20.dp),
+                verticalArrangement = Arrangement.Top
+            ) {
+                Text(
+                    genus.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier
+                        .padding(start = padding, end = padding)
+                        .offset(y = 8.dp)
+                )
+//                genus.getNamePronunciation()?.let { pronunciation ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .padding(start = padding)
+                            .alpha(0.6f)
+                    ) {
+                        Text(
+                            genus.getNamePronunciation() ?: "al-ee-oh-ray-mus",
+                            fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(vertical=12.dp)
+                        )
+                        IconButton(onClick = onPlayNamePronunciation) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = "play name pronunciation"
+                            )
+                        }
+                    }
+//                }
             }
         }
     }
@@ -206,9 +246,12 @@ fun GenusTitleCard(
 @Composable
 fun GenusDetail(
     genus: Genus,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPlayNamePronunciation: () -> Unit
 ) {
     val horizontalPadding = 12.dp
+
+    val scrollState = rememberLazyListState()
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -217,12 +260,15 @@ fun GenusDetail(
     ) {
         LazyColumn (
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(horizontal = horizontalPadding)
+            contentPadding = PaddingValues(horizontal = horizontalPadding),
+            state = scrollState
         ) {
             item {
                 GenusTitleCard(
                     genus,
-                    padding = horizontalPadding
+                    padding = horizontalPadding,
+                    scrollState = scrollState,
+                    onPlayNamePronunciation = onPlayNamePronunciation
                 )
             }
             item {
@@ -352,7 +398,7 @@ fun PreviewGenusDetail() {
         .build()
 
     DinoDataTheme(darkTheme = false) {
-        GenusDetail(acro)
+        GenusDetail(acro, onPlayNamePronunciation = {})
     }
 }
 
@@ -382,6 +428,6 @@ fun PreviewGenusDetailDark() {
         .build()
 
     DinoDataTheme(darkTheme = true) {
-        GenusDetail(styraco)
+        GenusDetail(styraco, onPlayNamePronunciation = {})
     }
 }
