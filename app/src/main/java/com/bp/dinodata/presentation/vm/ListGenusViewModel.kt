@@ -9,7 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.presentation.LoadState
-import com.bp.dinodata.repo.GenusPageResult
+import com.bp.dinodata.repo.GeneraPageResult
+import com.bp.dinodata.repo.PageResult
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,12 +48,12 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    private fun appendToListOfGenera(fetchResult: GenusPageResult) {
+    private fun appendToListOfGenera(fetchResult: PageResult<Genus>) {
         viewModelScope.launch {
-            val newGenera = fetchResult.genera
+            val newGenera = fetchResult.data
 
             // Append the new data to the end of the old list
-            val existingGenera = _listOfGenera.value.toMutableList() ?: mutableListOf()
+            val existingGenera = _listOfGenera.value.toMutableList()
             existingGenera.addAll(newGenera)
             _listOfGenera.value = existingGenera
 
@@ -64,7 +65,7 @@ class ListGenusViewModel @Inject constructor(
             _isLoaded.value = LoadState.IsLoaded(nextPageNum.value)
             nextPageNum.value++
 
-            _allPagesLoaded.value = fetchResult.allDataRetrieved
+            _allPagesLoaded.value = fetchResult.isAllDataRetrieved
         }
     }
 

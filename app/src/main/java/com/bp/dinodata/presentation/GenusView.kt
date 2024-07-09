@@ -30,10 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +45,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
@@ -53,6 +58,7 @@ import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.placeholder
 
 
 @Composable
@@ -106,25 +112,18 @@ fun LoadAsyncImageOrReserveDrawable(
     contentScale: ContentScale,
     drawableIfImageFailed: Int
 ) {
-    if (imageUrl != null) {
-        GlideImage(
-            model = { imageUrl },
-            contentDescription = contentDescription,
-            modifier = modifier,
-            alignment = alignment,
-            contentScale = contentScale
-        )
-    }
-    else {
-        Image(
-            painterResource(id = drawableIfImageFailed),
-            contentDescription = contentDescription,
-            modifier = modifier,
-            contentScale = contentScale,
-            alignment = alignment
-//                        colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
-        )
-    }
+    GlideImage(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(imageUrl)
+            .crossfade(true)
+            .build(),
+        loading = placeholder(drawableIfImageFailed),
+        failure = placeholder(drawableIfImageFailed),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        alignment = alignment,
+        contentScale = contentScale,
+    )
 }
 
 
@@ -173,14 +172,14 @@ fun GenusTitleCard(
             LoadAsyncImageOrReserveDrawable(
                 imageUrl = genusImageUrl,
                 alignment = Alignment.CenterStart,
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Fit,
                 drawableIfImageFailed = R.drawable.unkn,
                 modifier = Modifier
                     .alpha(0.4f)
-//                    .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
+                    .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
 //                    .offset(x = 20.dp, y = 0.dp)
-                    .fillMaxSize()
-                    .weight(1f),
+                    .fillMaxWidth()
+                    .weight(0.75f),
             )
 //            Spacer(Modifier.height(4.dp))
             Text(
@@ -298,7 +297,7 @@ fun ShowTaxonomicTree(
     internalCardPadding: PaddingValues = PaddingValues(16.dp)
 ) {
 
-    val taxonomy = genus.getTaxonomicList()
+    val taxonomy = genus.getListOfTaxonomy()
     var tree = taxonomy[0]
     var indent = "└"
     for (taxon in taxonomy.drop(1)) {

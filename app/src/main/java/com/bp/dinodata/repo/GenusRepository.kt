@@ -58,7 +58,8 @@ class GenusRepository(
 
                 // Now, get the images (if any)
 
-                genusImageCollection.document(genusName)
+                genusImageCollection
+                    .document(genusName)
                     .get()
                     .addOnSuccessListener { imgDoc ->
                         val imageUrlMap = mapToImageUrlDTOs(imgDoc.data)
@@ -81,7 +82,7 @@ class GenusRepository(
     fun getNextPage(
         startAfter: String?,
         pageSize: Long = DEFAULT_PAGE_SIZE,
-        callback: (GenusPageResult) -> Unit,
+        callback: (PageResult<Genus>) -> Unit,
         onException: (Exception) -> Unit
     ) {
         val first = genusCollection
@@ -98,9 +99,9 @@ class GenusRepository(
                     GenusBuilderImpl.fromDict(doc.data)?.build()
                 }
                 callback(
-                    GenusPageResult(
-                        genera = nextPageGenera,
-                        allDataRetrieved = snapshot.documents.size < pageSize
+                    PageResult(
+                        data = nextPageGenera,
+                        isAllDataRetrieved = snapshot.documents.size < pageSize
                     )
                 )
             }

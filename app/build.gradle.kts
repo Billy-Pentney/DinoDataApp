@@ -76,6 +76,8 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.glideCompose)
 
+    implementation(libs.coil.compose)
+
     // Import the BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
 

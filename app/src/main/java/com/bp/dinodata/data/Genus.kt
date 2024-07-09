@@ -3,6 +3,19 @@ package com.bp.dinodata.data
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
+interface IGenus {
+    fun getTaxonomy(): String
+    fun getListOfTaxonomy(): List<String>
+    fun getTaxonomyAsPrintableTree(): String
+
+    fun getLength(): String?
+    fun getWeight(): String?
+
+    fun getNameMeaning(): String?
+    fun getNamePronunciation(): String?
+}
+
+
 data class Genus(
     val name: String,
     val diet: Diet? = null,
@@ -15,12 +28,12 @@ data class Genus(
     private val weight: IDescribesWeight?,
     private val taxonomy: List<String>,
     private val imageUrlDataMap: Map<String, MultiImageUrlData>? = null
-) {
-    fun getTaxonomy(): String = taxonomy.joinToString("\n")
+): IGenus {
+    override fun getTaxonomy(): String = taxonomy.joinToString("\n")
 
-    fun getTaxonomicList(): List<String> = taxonomy
+    override fun getListOfTaxonomy(): List<String> = taxonomy
 
-    fun getTaxonomicTree(): String {
+    override fun getTaxonomyAsPrintableTree(): String {
         var tree = taxonomy[0]
         var indent = "└"
         for (taxon in taxonomy.drop(1)) {
@@ -31,10 +44,10 @@ data class Genus(
         return tree
     }
 
-    fun getLength(): String? = length?.toString()
-    fun getWeight(): String? = weight?.toString()
-    fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
-    fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
+    override fun getLength(): String? = length?.toString()
+    override fun getWeight(): String? = weight?.toString()
+    override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
+    override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 
     fun getImageUrl(): String? {
         val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()

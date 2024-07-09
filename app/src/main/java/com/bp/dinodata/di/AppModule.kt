@@ -23,15 +23,15 @@ object AppModule {
         return Firebase.firestore
     }
 
-    @Provides
-    fun provideFirebaseGenusCollection(storage: FirebaseFirestore): CollectionReference {
-        return storage.collection("genera")
-    }
-
-    @Provides
-    fun provideFirebaseGenusImageCollection(storage: FirebaseFirestore): CollectionReference {
-        return storage.collection("images")
-    }
+//    @Provides
+//    fun provideFirebaseGenusCollection(storage: FirebaseFirestore): CollectionReference {
+//        return storage.collection("genera")
+//    }
+//
+//    @Provides
+//    fun provideFirebaseGenusImageCollection(storage: FirebaseFirestore): CollectionReference {
+//        return storage.collection("images")
+//    }
 
     @Provides
     fun providesGenusRepository(storage: FirebaseFirestore): GenusRepository {

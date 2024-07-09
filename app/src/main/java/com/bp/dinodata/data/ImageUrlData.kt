@@ -1,26 +1,46 @@
 package com.bp.dinodata.data
 
+import android.util.Log
+
 class SingleImageUrlData(
     private val id: String,
-    private val imageSizes: List<String>,
-    private val thumbSizes: List<String>
+    imageSizes: List<String>,
+    thumbSizes: List<String>
 ) {
-    fun numImages(): Int = imageSizes.size
-    fun numThumbnails(): Int = thumbSizes.size
+    private val imageSizesAsc = imageSizes.sortedBy { extractFirstDimension(it) }
+    private val thumbSizesAsc = thumbSizes.sortedBy { extractFirstDimension(it) }
+
+    fun numImages(): Int = imageSizesAsc.size
+    fun numThumbnails(): Int = thumbSizesAsc.size
 
     fun getImageUrl(index: Int): String? {
-        if (index > numImages()) {
+        if (index >= numImages()) {
             return null
         }
 
-        return ImageUrlBuilder.buildUrl(id, imageSizes[index], type=PhylopicImageType.Raster)
+        return ImageUrlBuilder.buildUrl(id, imageSizesAsc[index], type=PhylopicImageType.Raster)
     }
 
     fun getThumbnailUrl(index: Int): String? {
-        if (index > numThumbnails()) {
+        if (index >= numThumbnails()) {
             return null
         }
-        return ImageUrlBuilder.buildUrl(id, thumbSizes[index], type=PhylopicImageType.Thumbnail)
+        return ImageUrlBuilder.buildUrl(id, thumbSizesAsc[index], type=PhylopicImageType.Thumbnail)
+    }
+
+    companion object {
+        fun extractFirstDimension(size: String): Int {
+            // Extract the first dimension from a string of the form "AxB", where A and B are integers
+            // e.g. "4501x1928" -> 4501
+
+            val splits = size.split("x")
+            return try {
+                splits[0].toInt()
+            } catch (exception: NumberFormatException) {
+                Log.d("ImageUrlData", "Unable to parse dimensions $size")
+                0
+            }
+        }
     }
 }
 

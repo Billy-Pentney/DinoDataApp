@@ -117,8 +117,9 @@ fun GenusListItem(
                     .absoluteOffset(y = 5.dp),
                 contentAlignment = Alignment.BottomEnd
             ) {
-                Image(
-                    painterResource(id = silhouetteId),
+                LoadAsyncImageOrReserveDrawable(
+                    imageUrl = genus.getThumbnailUrl(),
+                    drawableIfImageFailed = silhouetteId,
                     contentDescription = null,
                     modifier = Modifier
                         .alpha(0.5f)
@@ -147,11 +148,10 @@ fun ListGenusScreenContent(
     spacing: Dp = 8.dp,
     outerPadding: Dp = 12.dp,
     showDietText: Boolean = true,
-    triggerNextPageLoad: () -> Unit = {}
+    requestNextPage: () -> Unit = {}
 ) {
     val scrollState = rememberLazyGridState()
     val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
-    var lowestScrollIndex by remember { mutableIntStateOf(0) }
     var loadTriggered by remember { mutableStateOf(false) }
 
     LaunchedEffect(scrollPosition) {
@@ -160,7 +160,7 @@ fun ListGenusScreenContent(
             && !loadTriggered)
         {
             Log.d("ListGenusScreen","Trigger load")
-            triggerNextPageLoad()
+            requestNextPage()
             loadTriggered = true
         }
     }
@@ -232,7 +232,7 @@ fun ListGenusScreen(
         listGenus = genera,
         navigateToGenus = navigateToGenus,
         showDietText = false,
-        triggerNextPageLoad = {
+        requestNextPage = {
             Toast.makeText(context, "Loading new page...", Toast.LENGTH_SHORT).show()
             listGenusViewModel.initiateNextPageLoad()
         }
