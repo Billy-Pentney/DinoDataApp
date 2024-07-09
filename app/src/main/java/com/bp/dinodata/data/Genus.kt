@@ -13,7 +13,8 @@ data class Genus(
     private val namePronunciation: String? = null,
     private val length: IDescribesLength?,
     private val weight: IDescribesWeight?,
-    private val taxonomy: List<String>
+    private val taxonomy: List<String>,
+    private val imageUrlDataMap: Map<String, MultiImageUrlData>? = null
 ) {
     fun getTaxonomy(): String = taxonomy.joinToString("\n")
 
@@ -31,12 +32,23 @@ data class Genus(
     }
 
     fun getLength(): String? = length?.toString()
-
     fun getWeight(): String? = weight?.toString()
-
     fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
-
     fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
+
+    fun getImageUrl(): String? {
+        val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()
+        val firstImageData = firstSpeciesData?.getFirstUrlData()
+        val firstImageUrl = firstImageData?.getImageUrl(0)
+        return firstImageUrl
+    }
+
+    fun getThumbnailUrl(): String? {
+        val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()
+        val firstImageData = firstSpeciesData?.getFirstUrlData()
+        val firstImageUrl = firstImageData?.getThumbnailUrl(0)
+        return firstImageUrl
+    }
 }
 
 

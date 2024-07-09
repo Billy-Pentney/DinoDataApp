@@ -2,6 +2,7 @@ package com.bp.dinodata.presentation
 
 sealed class LoadState {
     data object NotLoading: LoadState()
+    data object LoadingFirstPage: LoadState()
     data class LoadingPage(val pageNum: Int): LoadState()
     data class IsLoaded(val pageNum: Int): LoadState()
     data class Error(val reason: String? = null): LoadState()

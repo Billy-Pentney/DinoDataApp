@@ -1,6 +1,6 @@
 package com.bp.dinodata
 
-import com.bp.dinodata.data.ParseImageUrlData
+import com.bp.dinodata.data.ImageUrlData
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
@@ -183,11 +183,15 @@ class ImageParsingUnitTest {
             "thumb_sizes" to listOf("200x200", "50x50")
         )
 
-        val result = ParseImageUrlData.parseImageUrlData(singleImageRawMap)
+        val result = ImageUrlData.fromMap(singleImageRawMap)
 
-        assertEquals("b7879e57-baca-4cd2-83c5-e85e8971a85f", result?.id)
-        assertEquals("5000x2000", result?.imageSizes?.get(0))
-        assertEquals("50x50", result?.thumbSizes?.last())
+//        assertEquals("b7879e57-baca-4cd2-83c5-e85e8971a85f", result?.id)
+//        assertEquals("5000x2000", result?.imageSizes?.get(0))
+//        assertEquals("50x50", result?.thumbSizes?.last())
+
+        val firstImageUrl = result?.getImageUrl(0)
+        val expectedImageUrl = "https://images.phylopic.org/images/b7879e57-baca-4cd2-83c5-e85e8971a85f/raster/5000x2000.png"
+        assertEquals(expectedImageUrl, firstImageUrl)
     }
 
 }

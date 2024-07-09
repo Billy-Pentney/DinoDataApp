@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,10 +45,14 @@ import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
+import com.bp.dinodata.data.MultiImageUrlData
+import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.theme.DinoDataTheme
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 
 
 @Composable
@@ -92,11 +97,59 @@ fun LabelContentRow(
 
 
 @Composable
+@OptIn(ExperimentalGlideComposeApi::class)
+fun LoadAsyncImageOrReserveDrawable(
+    imageUrl: String?,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    alignment: Alignment,
+    contentScale: ContentScale,
+    drawableIfImageFailed: Int
+) {
+    if (imageUrl != null) {
+        GlideImage(
+            model = { imageUrl },
+            contentDescription = contentDescription,
+            modifier = modifier,
+            alignment = alignment,
+            contentScale = contentScale
+        )
+    }
+    else {
+        Image(
+            painterResource(id = drawableIfImageFailed),
+            contentDescription = contentDescription,
+            modifier = modifier,
+            contentScale = contentScale,
+            alignment = alignment
+//                        colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
+        )
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Composable
 fun GenusTitleCard(
     genus: Genus,
     padding: Dp
 ) {
     val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
+    val genusImageUrl = genus.getImageUrl()
+
+    Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -107,24 +160,27 @@ fun GenusTitleCard(
             bottomEnd = 50f,
             bottomStart = 50f
         ),
-        modifier = Modifier.heightIn(175.dp, 225.dp).fillMaxWidth()
+        modifier = Modifier
+            .heightIn(175.dp, 225.dp)
+            .fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.fillMaxHeight().padding(top=20.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 20.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Image(
-                painterResource(id = silhouetteId),
-                contentDescription = null,
+            LoadAsyncImageOrReserveDrawable(
+                imageUrl = genusImageUrl,
+                alignment = Alignment.CenterStart,
+                contentScale = ContentScale.FillBounds,
+                drawableIfImageFailed = R.drawable.unkn,
                 modifier = Modifier
                     .alpha(0.4f)
-                    .padding(top = 10.dp, bottom = 0.dp, start=40.dp)
-                    .offset(x = 20.dp, y = 0.dp)
-                    .fillMaxWidth()
+//                    .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
+//                    .offset(x = 20.dp, y = 0.dp)
+                    .fillMaxSize()
                     .weight(1f),
-                alignment = Alignment.CenterStart,
-                contentScale = ContentScale.Fit,
-//                        colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
             )
 //            Spacer(Modifier.height(4.dp))
             Text(
@@ -137,7 +193,9 @@ fun GenusTitleCard(
             genus.getNamePronunciation()?.let {
                 Text(
                     it,
-                    modifier = Modifier.alpha(0.6f).padding(bottom=padding, start=padding, end=padding),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .padding(bottom = padding, start = padding, end = padding),
                     fontStyle = FontStyle.Italic
                 )
             }
@@ -163,7 +221,10 @@ fun GenusDetail(
             contentPadding = PaddingValues(horizontal = horizontalPadding)
         ) {
             item {
-                GenusTitleCard(genus, padding = horizontalPadding)
+                GenusTitleCard(
+                    genus,
+                    padding = horizontalPadding
+                )
             }
             item {
                 Column(
@@ -308,6 +369,17 @@ fun PreviewGenusDetailDark() {
         .setWeight("1 tonnes")
         .setCreatureType("ceratopsian")
         .setTaxonomy("Dinosauria Saurischia Ceratopsidae Centrosaurinae")
+        .addImageUrlMap(imageData = mapOf(
+            "sty" to MultiImageUrlData(
+                "styracosaurus",
+                listOf(
+                    SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
+                        imageSizes = listOf("4895x1877", "512x196"),
+                        thumbSizes = listOf("192x192", "64x64")
+                    )
+                )
+            )
+        ))
         .build()
 
     DinoDataTheme(darkTheme = true) {

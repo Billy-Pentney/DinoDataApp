@@ -1,89 +1,112 @@
 package com.bp.dinodata.repo
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
-import com.bp.dinodata.presentation.LoadState
+import com.bp.dinodata.data.ImageUrlData.mapToImageUrlDTOs
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.EventListener
-import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.dataObjects
-import com.google.firebase.firestore.snapshots
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 
 class GenusRepository(
-    val genusCollection: CollectionReference
+    val genusCollection: CollectionReference,
+    val genusImageCollection: CollectionReference
 ) {
     private val TAG = "GenusRepository"
-
-    private var generaList: Flow<List<Genus>> = genusCollection
-        .orderBy("name")
-        .snapshots().map { snapshot ->
-            snapshot.mapNotNull { doc ->
-                GenusBuilderImpl.fromDict(doc.data)?.build()
-            }
-        }
-
-    private var lastVisible: DocumentSnapshot? = null
-    private var pageNumber: Int = 0
 
     companion object {
         const val DEFAULT_PAGE_SIZE: Long = 25
     }
 
-    suspend fun addGeneraListener(
-        pageSize: Long = DEFAULT_PAGE_SIZE,
-        startAfterName: String? = null,
+    fun getAllGenera(
         callback: (List<Genus>) -> Unit,
-        onError: (FirebaseFirestoreException) -> Unit
+        onError: (Exception) -> Unit
     ) {
-        Log.d(TAG, "Starting at ${lastVisible?.id}")
-
         val first = genusCollection
             .orderBy("name")
-            .startAfter(startAfterName)
-            .limit(pageSize)
 
-        first.addSnapshotListener { snapshot, exception ->
-            if (snapshot == null || snapshot.isEmpty) {
-                return@addSnapshotListener
+        first.get()
+            .addOnSuccessListener { snapshot ->
+                val lastVisible = snapshot.documents.last()
+                Log.d(TAG, "Converting documents up to ${lastVisible?.id}")
+
+                // Convert the results to Genus objects
+                val nextPageGenera = snapshot.mapNotNull { doc ->
+                    GenusBuilderImpl.fromDict(doc.data)?.build()
+                }
+                callback(nextPageGenera)
             }
-
-            if (exception != null) {
-                Log.d(TAG, "Error getting genera.", exception)
-                onError(exception)
-            }
-
-            lastVisible = snapshot.documents.last()
-            Log.d(TAG, "Converting documents up to ${lastVisible?.id}")
-
-            // Convert the results to Genus objects
-            val nextPageGenera = snapshot.mapNotNull { doc ->
-                GenusBuilderImpl.fromDict(doc.data)?.build()
-            }
-
-            callback(nextPageGenera)
-            pageNumber++
-        }
+            .addOnFailureListener { onError(it) }
     }
 
-    fun getGeneraFlow(): Flow<List<Genus>> {
-        return generaList
-    }
 
     /** Attempt to get the first genus with the given name  */
-    fun getGenus(genusName: String): Flow<Genus?> {
-        return generaList.map { list -> list.first { it.name == genusName } }
+    fun getGenus(
+        genusName: String,
+        callback: (Genus?) -> Unit,
+        onFailure: () -> Unit
+    ) {
+        genusCollection
+            .document(genusName)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val genusBuilder = snapshot?.data?.let { GenusBuilderImpl.fromDict(it) }
+
+                if (genusBuilder == null) {
+                    Log.d(TAG, "No data for genera.")
+                    onFailure()
+                    return@addOnSuccessListener
+                }
+
+                // Now, get the images (if any)
+
+                genusImageCollection.document(genusName)
+                    .get()
+                    .addOnSuccessListener { imgDoc ->
+                        val imageUrlMap = mapToImageUrlDTOs(imgDoc.data)
+                        if (imageUrlMap != null) {
+                            genusBuilder.addImageUrlMap(imageUrlMap)
+                        }
+                        callback(genusBuilder.build())
+                    }
+                    .addOnFailureListener { exc ->
+                        Log.d(TAG, "No images for genera $genusName", exc)
+                        callback(genusBuilder.build())
+                    }
+            }
+            .addOnFailureListener { exc ->
+                Log.d(TAG, "Genus $genusName not found", exc)
+                onFailure()
+            }
     }
+
+    fun getNextPage(
+        startAfter: String?,
+        pageSize: Long = DEFAULT_PAGE_SIZE,
+        callback: (GenusPageResult) -> Unit,
+        onException: (Exception) -> Unit
+    ) {
+        val first = genusCollection
+            .orderBy("name")
+            .startAfter(startAfter)
+            .limit(pageSize)
+
+        first.get()
+            .addOnSuccessListener { snapshot ->
+                val lastVisible = snapshot.documents.lastOrNull()
+                Log.d(TAG, "Converting documents up to ${lastVisible?.id}")
+                // Convert the results to Genus objects
+                val nextPageGenera = snapshot.mapNotNull { doc ->
+                    GenusBuilderImpl.fromDict(doc.data)?.build()
+                }
+                callback(
+                    GenusPageResult(
+                        genera = nextPageGenera,
+                        allDataRetrieved = snapshot.documents.size < pageSize
+                    )
+                )
+            }
+            .addOnFailureListener(onException)
+    }
+
 }
+
+

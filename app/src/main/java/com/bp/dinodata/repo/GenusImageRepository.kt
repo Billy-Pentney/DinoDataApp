@@ -1,7 +1,7 @@
 package com.bp.dinodata.repo
 
 import android.util.Log
-import com.bp.dinodata.data.ParseImageUrlData.mapToImageUrlDTOs
+import com.bp.dinodata.data.ImageUrlData.mapToImageUrlDTOs
 import com.google.firebase.firestore.CollectionReference
 
 class GenusImageRepository(

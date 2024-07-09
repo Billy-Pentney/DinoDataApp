@@ -145,42 +145,46 @@ fun ListGenusScreenContent(
     navigateToGenus: (String) -> Unit = {},
     columns: Int = 1,
     spacing: Dp = 8.dp,
-    outerPadding: PaddingValues = PaddingValues(12.dp),
+    outerPadding: Dp = 12.dp,
     showDietText: Boolean = true,
+    triggerNextPageLoad: () -> Unit = {}
 ) {
     val scrollState = rememberLazyGridState()
     val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
     var lowestScrollIndex by remember { mutableIntStateOf(0) }
+    var loadTriggered by remember { mutableStateOf(false) }
 
-//    LaunchedEffect(scrollPosition) {
-//        if (listGenus.size-15 in (lowestScrollIndex + 1)..<scrollPosition) {
-//            lowestScrollIndex = scrollPosition
-//            Log.d("ListGenusScreen","Trigger load")
-//            triggerNextPageLoad()
-//        }
-//    }
+    LaunchedEffect(scrollPosition) {
+        if (listGenus.isNotEmpty()
+            && listGenus.size-15 <= scrollPosition
+            && !loadTriggered)
+        {
+            Log.d("ListGenusScreen","Trigger load")
+            triggerNextPageLoad()
+            loadTriggered = true
+        }
+    }
 
-//    LaunchedEffect(key1 = loadState) {
-//        if (loadState is LoadState.IsLoaded) {
-//            val pageNum = loadState.pageNum
-//            Toast.makeText(context, "Loaded page $pageNum with ${listGenus.size} items total",
-//                Toast.LENGTH_SHORT).show()
-//        }
-//    }
+    SideEffect {
+        if (loadState is LoadState.IsLoaded) {
+            loadTriggered = false
+        }
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.title_creature_list)) }) }
     ) { pad ->
         when (loadState) {
-            is LoadState.IsLoaded -> {
+            is LoadState.IsLoaded,
+            is LoadState.LoadingPage -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(columns),
                     verticalArrangement = Arrangement.spacedBy(spacing),
                     horizontalArrangement = Arrangement.spacedBy(spacing),
                     state = scrollState,
+                    contentPadding = PaddingValues(outerPadding),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(outerPadding)
                         .padding(pad)
                 ) {
                     items(listGenus) { genus ->
@@ -192,7 +196,7 @@ fun ListGenusScreenContent(
                     }
                 }
             }
-            is LoadState.LoadingPage -> {
+            is LoadState.LoadingFirstPage -> {
                 // Loading items Placeholder
                 Column (
                     modifier = Modifier.fillMaxSize(),
@@ -204,11 +208,9 @@ fun ListGenusScreenContent(
                     Text("loading...")
                 }
             }
-
             is LoadState.Error -> {
                 Text("Sorry! An error occurred. Reason: ${loadState.reason}")
             }
-
             else -> { }
         }
     }
@@ -221,20 +223,19 @@ fun ListGenusScreen(
     navigateToGenus: (String) -> Unit,
 ) {
     val genera by listGenusViewModel.getListOfGenera().collectAsState()
-//    val genera by remember { listGenusViewModel.getListOfGenera() }
     val hasLoaded by remember { listGenusViewModel.getIsLoadedState() }
 
-//    val context = LocalContext.current
+    val context = LocalContext.current
 
     ListGenusScreenContent(
         loadState = hasLoaded,
         listGenus = genera,
         navigateToGenus = navigateToGenus,
         showDietText = false,
-//        triggerNextPageLoad = {
-////            Toast.makeText(context, "Loading new page...", Toast.LENGTH_SHORT).show()
-//            listGenusViewModel.initiateNextPageLoad()
-//        }
+        triggerNextPageLoad = {
+            Toast.makeText(context, "Loading new page...", Toast.LENGTH_SHORT).show()
+            listGenusViewModel.initiateNextPageLoad()
+        }
     )
 }
 

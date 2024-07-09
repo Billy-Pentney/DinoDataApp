@@ -6,7 +6,8 @@ object ImageUrlBuilder {
         imgSize: String,
         type: PhylopicImageType
     ): String {
-        return "https://api.phylopic.org/images/${id}/${type}/$imgSize.png"
+        val typeLower = type.toString().lowercase()
+        return "https://images.phylopic.org/images/$id/$typeLower/$imgSize.png"
     }
 }
 

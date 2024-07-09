@@ -25,7 +25,12 @@ interface GenusBuilder {
     fun setTaxonomy(taxonomy: String): GenusBuilder
     fun setStartMya(startMya: String): GenusBuilder
     fun setEndMya(endMya: String): GenusBuilder
+
+    fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder
 }
+
+
+
 
 
 
@@ -43,6 +48,9 @@ class GenusBuilderImpl(
     private var taxonomy: MutableList<String> = mutableListOf()
     private var startMya: Int? = null
     private var endMya: Int? = null
+
+    private var multiImageUrlMap: Map<String, MultiImageUrlData> = emptyMap()
+
 
     companion object {
         const val TAG = "GenusBuilder"
@@ -87,8 +95,13 @@ class GenusBuilderImpl(
         return this
     }
 
+    override fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder {
+        this.multiImageUrlMap = imageData
+        return this
+    }
+
     override fun setDiet(dietStr: String): GenusBuilder {
-        this.diet = when(dietStr.lowercase()) {
+        this.diet = when(dietStr.trim().lowercase()) {
             "herbivorous",
             "herbivore"
                 -> Diet.Herbivore
@@ -276,7 +289,8 @@ class GenusBuilderImpl(
             nameMeaning = nameMeaning,
             namePronunciation = namePronunciation,
             type = type,
-            taxonomy = taxonomy
+            taxonomy = taxonomy,
+            imageUrlDataMap = multiImageUrlMap
         )
     }
 }

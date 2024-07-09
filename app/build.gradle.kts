@@ -68,9 +68,13 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.androidx.media3.common)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
+    implementation(libs.firebase.database.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    implementation(libs.glide)
+    implementation(libs.glideCompose)
 
     // Import the BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))

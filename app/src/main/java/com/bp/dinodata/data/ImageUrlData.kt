@@ -1,10 +1,28 @@
 package com.bp.dinodata.data
 
 class SingleImageUrlData(
-    val id: String,
-    val imageSizes: List<String>,
-    val thumbSizes: List<String>
-)
+    private val id: String,
+    private val imageSizes: List<String>,
+    private val thumbSizes: List<String>
+) {
+    fun numImages(): Int = imageSizes.size
+    fun numThumbnails(): Int = thumbSizes.size
+
+    fun getImageUrl(index: Int): String? {
+        if (index > numImages()) {
+            return null
+        }
+
+        return ImageUrlBuilder.buildUrl(id, imageSizes[index], type=PhylopicImageType.Raster)
+    }
+
+    fun getThumbnailUrl(index: Int): String? {
+        if (index > numThumbnails()) {
+            return null
+        }
+        return ImageUrlBuilder.buildUrl(id, thumbSizes[index], type=PhylopicImageType.Thumbnail)
+    }
+}
 
 class MultiImageUrlData(
     val name: String,
@@ -15,9 +33,9 @@ class MultiImageUrlData(
     }
 }
 
-object ParseImageUrlData {
+object ImageUrlData {
 
-    fun parseImageUrlData(imageData: Map<String, Any>): SingleImageUrlData? {
+    fun fromMap(imageData: Map<String, Any>): SingleImageUrlData? {
         // Extract the data for each image
 
         val id = imageData["id"] as String?
@@ -41,7 +59,7 @@ object ParseImageUrlData {
             if (listOfImageDatas != null) {
                 // Store the data for all images belonging to this species
                 val imageUrlData = listOfImageDatas.mapNotNull {
-                    parseImageUrlData(it)
+                    fromMap(it)
                 }
 
                 // Only make a DTO if there was at least one image found

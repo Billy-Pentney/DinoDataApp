@@ -36,13 +36,8 @@ object AppModule {
     @Provides
     fun providesGenusRepository(storage: FirebaseFirestore): GenusRepository {
         val genusCollection = storage.collection("genera")
-        return GenusRepository(genusCollection)
-    }
-
-    @Provides
-    fun providesGenusImageRepository(storage: FirebaseFirestore): GenusImageRepository {
         val genusImageCollection = storage.collection("images")
-        return GenusImageRepository(genusImageCollection)
+        return GenusRepository(genusCollection, genusImageCollection)
     }
 
     @Provides
