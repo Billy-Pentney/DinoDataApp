@@ -1,21 +1,16 @@
 package com.bp.dinodata.presentation
 
 import android.util.Log
-import android.view.WindowInsets.Side
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,12 +46,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.request.ImageRequest
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
+import com.bp.dinodata.data.TaxonTreeBuilder
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
@@ -66,7 +59,6 @@ import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
-import kotlin.math.exp
 
 
 @Composable
@@ -76,14 +68,20 @@ fun LabelAttributeRow(
     units: String? = null,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
     valueStyle: FontStyle = FontStyle.Normal,
-    valueTextAlign: TextAlign = TextAlign.End
+    valueTextAlign: TextAlign = TextAlign.End,
+    labelAlpha: Float = 0.6f,
+    labelFontWeight: FontWeight = FontWeight.Bold
 ) {
     Row (
         horizontalArrangement = horizontalArrangement,
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("$label: ", modifier=Modifier.alpha(0.75f))
+        Text(
+            "$label: ",
+            modifier = Modifier.alpha(labelAlpha),
+            fontWeight = labelFontWeight
+        )
         Text(
             value ?: "Unknown",
             fontStyle = valueStyle,
@@ -97,14 +95,19 @@ fun LabelAttributeRow(
 fun LabelContentRow(
     label: String,
     valueContent: @Composable () -> Unit,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
+    labelAlpha: Float = 0.6f,
+    labelFontWeight: FontWeight = FontWeight.Bold
 ) {
     Row (
         horizontalArrangement=horizontalArrangement,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("$label: ", modifier=Modifier.alpha(0.6f))
+        Text(
+            "$label: ", modifier=Modifier.alpha(labelAlpha),
+            fontWeight = labelFontWeight
+        )
         valueContent.invoke()
     }
 }
@@ -193,7 +196,8 @@ fun GenusTitleCard(
         ) {
             AnimatedVisibility(
                 visible = expanded,
-                modifier = Modifier.weight(0.6f)
+                modifier = Modifier
+                    .weight(0.6f)
                     .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
 //                    .offset(x = 20.dp, y = 0.dp)
                     .fillMaxWidth(),
@@ -211,7 +215,8 @@ fun GenusTitleCard(
             Spacer(Modifier.height(8.dp))
 
             Row (
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(start = innerPadding),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
@@ -239,7 +244,9 @@ fun GenusTitleCard(
                         Text(
                             pronunciation,
                             fontStyle = FontStyle.Italic,
-                            modifier = Modifier.alpha(0.6f).padding(bottom=innerPadding)
+                            modifier = Modifier
+                                .alpha(0.6f)
+                                .padding(bottom = innerPadding)
                         )
                     }
                 }
@@ -298,12 +305,16 @@ fun GenusDetail(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(horizontal = innerPadding)
                     ) {
+                        val type =
                         LabelAttributeRow(
-                            label = "Meaning",
+                            label = stringResource(R.string.label_meaning),
                             value = genus.getNameMeaning(),
                             valueStyle = FontStyle.Italic
                         )
-                        LabelAttributeRow(label = "Creature Type", value = genus.type.toString())
+                        LabelAttributeRow(
+                            label = stringResource(R.string.label_creature_type),
+                            value = convertCreatureTypeToString(genus.type)
+                        )
                     }
                 }
                 item {
@@ -318,9 +329,9 @@ fun GenusDetail(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(horizontal = innerPadding)
                     ) {
-                        LabelContentRow(label = "Diet", valueContent = { DietIconThin(genus.diet) })
-                        LabelAttributeRow(label = "Length", value = genus.getLength())
-                        LabelAttributeRow(label = "Weight", value = genus.getWeight())
+                        LabelContentRow(label = stringResource(R.string.label_diet), valueContent = { DietIconThin(genus.diet) })
+                        LabelAttributeRow(label = stringResource(R.string.label_length), value = genus.getLength())
+                        LabelAttributeRow(label = stringResource(R.string.label_weight), value = genus.getWeight())
                     }
                 }
                 item {
@@ -336,11 +347,11 @@ fun GenusDetail(
                         modifier = Modifier.padding(horizontal = innerPadding)
                     ) {
                         LabelContentRow(
-                            label = "Time Period",
+                            label = stringResource(R.string.label_time_period),
                             valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
                             horizontalArrangement = Arrangement.SpaceBetween
                         )
-                        LabelAttributeRow(label = "Years Lived", value = genus.yearsLived)
+                        LabelAttributeRow(label = stringResource(R.string.label_years_lived), value = genus.yearsLived)
                     }
                 }
                 item {
@@ -355,7 +366,10 @@ fun GenusDetail(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(horizontal = innerPadding)
                     ) {
-                        Text("Taxonomy:", modifier = Modifier.alpha(0.6f))
+                        LabelContentRow(
+                            label = stringResource(R.string.label_taxonomy),
+                            valueContent = {}
+                        )
                         ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
                     }
                 }
@@ -374,12 +388,10 @@ fun ShowTaxonomicTree(
 ) {
 
     val taxonomy = genus.getListOfTaxonomy()
-    var tree = taxonomy[0]
-    var indent = "└"
-    for (taxon in taxonomy.drop(1)) {
-        tree += "\n$indent $taxon"
-        indent = "  $indent"
-    }
+    val taxonBuilder = TaxonTreeBuilder(taxonomy)
+    val taxonTree = taxonBuilder.getPrintableTree(genus = genus.name)
+    val taxonTreeUptoLast = taxonTree.dropLast(1)
+    val finalChild = taxonTree.last()
 
     Card (
         modifier = modifier,
@@ -397,9 +409,12 @@ fun ShowTaxonomicTree(
         ) {
             item {
                 Column {
-                    Text(tree)
                     Text(
-                        "$indent ${genus.name}",
+                        taxonTreeUptoLast.joinToString("\n"),
+                        lineHeight = 18.sp
+                    )
+                    Text(
+                        finalChild,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

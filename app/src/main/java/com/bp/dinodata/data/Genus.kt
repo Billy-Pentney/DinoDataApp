@@ -1,5 +1,6 @@
 package com.bp.dinodata.data
 
+import androidx.compose.ui.res.stringResource
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
