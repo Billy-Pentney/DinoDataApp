@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.use_cases.GenusUseCases
-import com.bp.dinodata.use_cases.TextToSpeechUseCases
+import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +20,7 @@ import javax.inject.Inject
 class DetailGenusViewModel @Inject constructor(
     handle: SavedStateHandle,
     @set:Inject var genusUseCases: GenusUseCases,
-    @set:Inject var textToSpeechUseCases: TextToSpeechUseCases
+    @set:Inject var audioPronunciationUseCases: AudioPronunciationUseCases
 ): ViewModel() {
 
     companion object {
@@ -29,8 +29,6 @@ class DetailGenusViewModel @Inject constructor(
     }
 
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
-
-    private var ttsId: Int = 0
 
     // Stores the details for the Genus being shown
     private var _visibleGenus: MutableStateFlow<Genus?> = MutableStateFlow(null)
@@ -70,7 +68,7 @@ class DetailGenusViewModel @Inject constructor(
         val name = _visibleGenus.value?.name
         Log.i(LOG_TAG, "Play pronunciation for $currentGenusName")
         if (name != null) {
-            textToSpeechUseCases.fetchTTSandPlayGenus(name, callback = { success ->
+            audioPronunciationUseCases.playPrerecordedAudio(name, callback = { success ->
                 if (success) {
                     Log.d(LOG_TAG, "Successfully played audio")
                 }

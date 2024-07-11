@@ -4,9 +4,10 @@ import android.content.Context
 import com.bp.dinodata.repo.AudioRepository
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.use_cases.GenusUseCases
-import com.bp.dinodata.use_cases.TextToSpeechUseCases
+import com.bp.dinodata.use_cases.AudioPronunciationUseCases
+import com.bp.dinodata.use_cases.PlayPrerecordedAudioUseCase
+import com.bp.dinodata.use_cases.ReadTextToSpeechUseCase
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import dagger.Module
@@ -38,13 +39,15 @@ object AppModule {
         return GenusUseCases(genusRepo)
     }
 
-
     @Provides
-    fun providesTextUseCases(
+    fun providesAudioPronunciationUseCases(
         @ApplicationContext context: Context,
         audioRepository: AudioRepository
-    ): TextToSpeechUseCases {
-        return TextToSpeechUseCases(context, audioRepository)
+    ): AudioPronunciationUseCases {
+        return AudioPronunciationUseCases(
+            PlayPrerecordedAudioUseCase(context, audioRepository),
+            ReadTextToSpeechUseCase(context)
+        )
     }
 
 }

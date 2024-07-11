@@ -5,25 +5,33 @@ import android.media.MediaPlayer
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.net.toUri
-import com.bp.dinodata.R
 import com.bp.dinodata.repo.AudioRepository
 import java.io.File
-import java.util.Locale
 
 
-/**
- * A collection of UseCases for managing and interfacing with a Text-To-Speech (TTS) engine.
- * This can be used to pronounce names or read text aloud.
- *
- * @see TextToSpeechUseCases.playText
- */
-class TextToSpeechUseCases(
-    private val context: Context,
-    private val audioRepository: AudioRepository
-) {
+interface IHasAudioResources {
+    // Release all resources held by this object
+    fun close()
+}
+
+
+
+class AudioPronunciationUseCases(
+    val playPrerecordedAudio: PlayPrerecordedAudioUseCase,
+    val readTextToSpeech: ReadTextToSpeechUseCase
+): IHasAudioResources {
+
+    override fun close() {
+        readTextToSpeech.close()
+        playPrerecordedAudio.close()
+    }
+}
+
+
+
+class ReadTextToSpeechUseCase(context: Context): IHasAudioResources {
     private var isInitSuccessful = false
-
-    private var mediaPlayer: MediaPlayer = MediaPlayer()
+    private var ttsId: Int = 0
 
     private var ttsEngine: TextToSpeech = TextToSpeech(context) { status ->
         isInitSuccessful = (status == TextToSpeech.SUCCESS)
@@ -37,13 +45,14 @@ class TextToSpeechUseCases(
      * @return True if the given text has been passed to the TTS engine;
      * false if the TTS engine is inactive.
      */
-    fun playText(text: String, id: String): Boolean {
+    operator fun invoke(text: String): Boolean {
         if (isInitSuccessful) {
             if (ttsEngine.isSpeaking) {
                 ttsEngine.stop()
             }
             Log.d("TTS", "Play $text")
-            ttsEngine.speak(text, TextToSpeech.QUEUE_FLUSH, null, id)
+            ttsEngine.speak(text, TextToSpeech.QUEUE_FLUSH, null, ttsId.toString())
+            ttsId++
             return true
         }
         else {
@@ -52,51 +61,62 @@ class TextToSpeechUseCases(
         }
     }
 
+    /** Shut-down the TTS-engine, clearing its resources. */
+    override fun close() {
+        if (isInitSuccessful) {
+            ttsEngine.shutdown()
+            isInitSuccessful = false
+        }
+    }
+}
 
-    fun fetchTTSandPlayGenus(
+
+class PlayPrerecordedAudioUseCase(
+    private val context: Context,
+    private val audioRepository: AudioRepository
+): IHasAudioResources {
+    private var mediaPlayer: MediaPlayer = MediaPlayer()
+
+    operator fun invoke(
         genusName: String,
         callback: (Boolean) -> Unit
     ) {
         audioRepository.getAudioForGenus(genusName,
             callback = { ttsFile ->
-                val success = playAudioFromFile(
+                playAudioFromFileAsync(
                     ttsFile,
                     onPlay = { callback(true) },
                     onFail = { callback(false) }
                 )
-                callback(success)
-            }, onError = {
-                callback(false)
-            }
+            },
+            onError = { callback(false) }
         )
     }
 
-
-    private fun playAudioFromFile(
+    private fun playAudioFromFileAsync(
         file: File,
         onPlay: () -> Unit,
         onFail: () -> Unit
-    ): Boolean {
+    ) {
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
         }
         mediaPlayer.setDataSource(context, file.toUri())
-        mediaPlayer.prepare()
-        mediaPlayer.start()
+        mediaPlayer.prepareAsync()
+        mediaPlayer.setOnPreparedListener { mp ->
+            // When the player is prepared, start it immediately
+            mp.start()
+        }
         mediaPlayer.setOnCompletionListener { onPlay() }
         mediaPlayer.setOnErrorListener { _, type, extra ->
             Log.d("TTSUseCases", "AudioError (type=$type, extra=$extra)")
             onFail()
+            // Indicate that this error was handled, to avoid further exceptions
             true
         }
-        return true
     }
 
-    /** Shut-down the TTS-engine, clearing its resources. */
-    fun close() {
-        if (isInitSuccessful) {
-            ttsEngine.shutdown()
-            isInitSuccessful = false
-        }
+    override fun close() {
+        mediaPlayer.release()
     }
 }
