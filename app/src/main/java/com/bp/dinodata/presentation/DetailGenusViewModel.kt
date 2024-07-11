@@ -25,6 +25,7 @@ class DetailGenusViewModel @Inject constructor(
 
     companion object {
         const val GENUS_KEY = "genusName"
+        const val LOG_TAG = "DetailGenusViewModel"
     }
 
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
@@ -61,17 +62,25 @@ class DetailGenusViewModel @Inject constructor(
             is DetailGenusUiEvent.ChangeTitleCardExpansion -> {
                 _titleCardExpanded.value = event.expanded
             }
-            DetailGenusUiEvent.PlayNamePronunciation -> {
-                val pronunciation = _visibleGenus.value?.getNamePronunciation() ?: "al ee oh ray muss"
-                if (pronunciation != null) {
-                    textToSpeechUseCases.playText(pronunciation, ttsId.toString())
-                    ttsId++
-                    Log.i("DetailGenusViewModel", "Play pronunciation for $currentGenusName")
+            DetailGenusUiEvent.PlayNamePronunciation -> playPronunciationFile()
+        }
+    }
+
+    private fun playPronunciationFile() {
+        val name = _visibleGenus.value?.name
+        Log.i(LOG_TAG, "Play pronunciation for $currentGenusName")
+        if (name != null) {
+            textToSpeechUseCases.fetchTTSandPlayGenus(name, callback = { success ->
+                if (success) {
+                    Log.d(LOG_TAG, "Successfully played audio")
                 }
                 else {
-                    Log.d("DetailGenusViewModel", "Could not retrieve genus name for TTS")
+                    Log.d(LOG_TAG, "Error when playing audio")
                 }
-            }
+            })
+        }
+        else {
+            Log.d(LOG_TAG, "Could not retrieve genus name for TTS")
         }
     }
 }

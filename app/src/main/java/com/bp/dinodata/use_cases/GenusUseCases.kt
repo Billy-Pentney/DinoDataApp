@@ -15,13 +15,6 @@ class GenusUseCases(
         genusRepository.getGenus(genusName, callback, onFailure)
     }
 
-//    fun getAllGenera(
-//        callback: (List<Genus>?) -> Unit,
-//        onError: (Exception) -> Unit
-//    ) {
-//        genusRepository.getAllGenera(callback, onError)
-//    }
-
     fun getNextPageOfGenera(
         startAfter: String? = null,
         callback: (PageResult<Genus>) -> Unit,
