@@ -5,14 +5,17 @@ import android.view.WindowInsets.Side
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -148,9 +151,11 @@ fun LoadAsyncImageOrReserveDrawable(
 @Composable
 fun GenusTitleCard(
     genus: Genus,
-    padding: Dp,
     scrollState: LazyListState,
-    onPlayNamePronunciation: () -> Unit
+    onPlayNamePronunciation: () -> Unit,
+    modifier: Modifier = Modifier,
+    innerPadding: Dp = 8.dp,
+    paddingValues: PaddingValues = PaddingValues()
 ) {
     val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
     val genusImageUrl = genus.getImageUrl()
@@ -166,76 +171,86 @@ fun GenusTitleCard(
 
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.elevatedCardElevation(16.dp),
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp,
         shape = RoundedCornerShape(
             topStart = 0f,
             topEnd = 0f,
             bottomEnd = 50f,
             bottomStart = 50f
         ),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .animateContentSize()
-            .fillMaxHeight()
+            .padding(paddingValues)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(top = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp, alignment = Alignment.Bottom),
+                .padding(top = 10.dp),
+            verticalArrangement = Arrangement.Bottom,
         ) {
-            AnimatedVisibility(visible = expanded) {
+            AnimatedVisibility(
+                visible = expanded,
+                modifier = Modifier.weight(0.6f)
+                    .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
+//                    .offset(x = 20.dp, y = 0.dp)
+                    .fillMaxWidth(),
+            ) {
                 LoadAsyncImageOrReserveDrawable(
                     imageUrl = genusImageUrl,
-                    alignment = Alignment.CenterStart,
+                    alignment = Alignment.CenterEnd,
                     contentScale = ContentScale.Fit,
-                    drawableIfImageFailed = R.drawable.unkn,
+                    drawableIfImageFailed = R.drawable.ornith,
                     modifier = Modifier
                         .alpha(0.4f)
-                        .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
-//                    .offset(x = 20.dp, y = 0.dp)
-                        .fillMaxWidth()
-                        .weight(1f),
                 )
             }
-//            Spacer(Modifier.height(4.dp))
-            Column (
-                modifier = Modifier
-                    .fillMaxHeight(1f)
-                    .padding(bottom = 20.dp),
-                verticalArrangement = Arrangement.Top
+
+            Spacer(Modifier.height(8.dp))
+
+            Row (
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = innerPadding),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                Text(
-                    genus.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier
-                        .padding(start = padding, end = padding)
-                        .offset(y = 8.dp)
-                )
-                genus.getNamePronunciation()?.let { pronunciation ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                Column (
+                    modifier = Modifier,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val pronunciation = genus.getNamePronunciation()
+
+                    val titleOffset = if (pronunciation != null) 10.dp else 0.dp
+                    val titleBottomPadding = innerPadding - titleOffset
+
+                    Text(
+                        genus.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 26.sp,
+                        fontStyle = FontStyle.Italic,
                         modifier = Modifier
-                            .padding(start = padding)
-                            .alpha(0.6f)
-                    ) {
+                            .padding(bottom = titleBottomPadding)
+                            .offset(y = titleOffset)
+                    )
+
+                    pronunciation?.let {
                         Text(
                             pronunciation,
                             fontStyle = FontStyle.Italic,
-                            modifier = Modifier.padding(vertical=12.dp)
+                            modifier = Modifier.alpha(0.6f).padding(bottom=innerPadding)
                         )
-                        IconButton(onClick = onPlayNamePronunciation) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = "play name pronunciation"
-                            )
-                        }
                     }
+                }
+                IconButton(
+                    onClick = onPlayNamePronunciation,
+                    modifier = Modifier.padding(bottom=1.dp)
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.VolumeUp,
+                        contentDescription = "play name pronunciation"
+                    )
                 }
             }
         }
@@ -249,7 +264,8 @@ fun GenusDetail(
     modifier: Modifier = Modifier,
     onPlayNamePronunciation: () -> Unit
 ) {
-    val horizontalPadding = 12.dp
+    val outerPadding = 8.dp
+    val innerPadding = 12.dp
 
     val scrollState = rememberLazyListState()
 
@@ -258,80 +274,94 @@ fun GenusDetail(
         contentColor = MaterialTheme.colorScheme.onBackground,
         modifier = modifier
     ) {
-        LazyColumn (
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(horizontal = horizontalPadding),
-            state = scrollState
-        ) {
-            item {
-                GenusTitleCard(
-                    genus,
-                    padding = horizontalPadding,
-                    scrollState = scrollState,
-                    onPlayNamePronunciation = onPlayNamePronunciation
+        Column {
+            GenusTitleCard(
+                genus,
+                innerPadding = innerPadding,
+                scrollState = scrollState,
+                onPlayNamePronunciation = onPlayNamePronunciation,
+                modifier = Modifier
+                    .height(230.dp),
+                paddingValues = PaddingValues(
+                    start = outerPadding,
+                    end = outerPadding,
+                    bottom = 20.dp
                 )
-            }
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = horizontalPadding)
-                ) {
-                    LabelAttributeRow(
-                        label = "Meaning",
-                        value = genus.getNameMeaning(),
-                        valueStyle = FontStyle.Italic
+            )
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                state = scrollState,
+                contentPadding = PaddingValues(horizontal=outerPadding)
+            ) {
+                item {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = innerPadding)
+                    ) {
+                        LabelAttributeRow(
+                            label = "Meaning",
+                            value = genus.getNameMeaning(),
+                            valueStyle = FontStyle.Italic
+                        )
+                        LabelAttributeRow(label = "Creature Type", value = genus.type.toString())
+                    }
+                }
+                item {
+                    HorizontalDivider(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .alpha(0.5f)
                     )
-                    LabelAttributeRow(label = "Creature Type", value = genus.type.toString())
                 }
-            }
-            item {
-                HorizontalDivider(
-                    Modifier
-                        .padding(horizontal = 16.dp)
-                        .alpha(0.4f))
-            }
-            item{
-                Column (
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier=Modifier.padding(horizontal=horizontalPadding)
-                ) {
-                    LabelContentRow(label = "Diet", valueContent = { DietIconThin(genus.diet) })
-                    LabelAttributeRow(label = "Length", value = genus.getLength())
-                    LabelAttributeRow(label = "Weight", value = genus.getWeight())
+                item {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = innerPadding)
+                    ) {
+                        LabelContentRow(label = "Diet", valueContent = { DietIconThin(genus.diet) })
+                        LabelAttributeRow(label = "Length", value = genus.getLength())
+                        LabelAttributeRow(label = "Weight", value = genus.getWeight())
+                    }
                 }
-            }
-            item { HorizontalDivider(
-                Modifier
-                    .padding(horizontal = 16.dp)
-                    .alpha(0.4f)) }
-            item {
-                Column (
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal=horizontalPadding)
-                ) {
-                    LabelContentRow(
-                        label = "Time Period",
-                        valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
-                        horizontalArrangement = Arrangement.SpaceBetween
+                item {
+                    HorizontalDivider(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .alpha(0.4f)
                     )
-                    LabelAttributeRow(label = "Years Lived", value = genus.yearsLived)
                 }
-            }
-            item { HorizontalDivider(
-                Modifier
-                    .padding(horizontal = 16.dp)
-                    .alpha(0.4f)) }
-            item {
-                Column (
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal=horizontalPadding)
-                ) {
-                    Text("Taxonomy:", modifier = Modifier.alpha(0.6f))
-                    ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
+                item {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = innerPadding)
+                    ) {
+                        LabelContentRow(
+                            label = "Time Period",
+                            valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        )
+                        LabelAttributeRow(label = "Years Lived", value = genus.yearsLived)
+                    }
                 }
-            }
+                item {
+                    HorizontalDivider(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .alpha(0.4f)
+                    )
+                }
+                item {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = innerPadding)
+                    ) {
+                        Text("Taxonomy:", modifier = Modifier.alpha(0.6f))
+                        ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
+                    }
+                }
 
-            item { Spacer(Modifier.height(40.dp)) }
+                item { Spacer(Modifier.height(40.dp)) }
+            }
         }
     }
 }
@@ -381,7 +411,7 @@ fun ShowTaxonomicTree(
 
 @Preview(
     widthDp = 300,
-    heightDp = 800,
+    heightDp = 500,
     name = "Light"
 )
 @Composable
@@ -389,7 +419,7 @@ fun PreviewGenusDetail() {
     val acro = GenusBuilderImpl("Acrocanthosaurus")
         .setDiet("Carnivorous")
         .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")
-        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
+//        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
         .setNameMeaning("high-spined lizard")
         .setLength("11-11.5 metres")
         .setWeight("4.4 tonnes")
