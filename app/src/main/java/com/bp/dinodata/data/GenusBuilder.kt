@@ -67,7 +67,7 @@ class GenusBuilderImpl(
                 dict["length"]?.let { builder.setLength(it.toString()) }
                 dict["type"]?.let { builder.setCreatureType(it.toString()) }
                 dict["pronunciation"]?.let { builder.setNamePronunciation(it.toString()) }
-                dict["namePronunciation"]?.let { builder.setNamePronunciation(it.toString()) }
+//                dict["namePronunciation"]?.let { builder.setNamePronunciation(it.toString()) }
                 dict["name_meaning"]?.let { builder.setNameMeaning(it.toString()) }
                 dict["taxonomy"]?.let { builder.setTaxonomy(it.toString()) }
                 builder

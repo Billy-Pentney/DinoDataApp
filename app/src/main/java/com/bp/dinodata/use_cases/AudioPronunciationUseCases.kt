@@ -2,6 +2,7 @@ package com.bp.dinodata.use_cases
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.net.Uri
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.net.toUri
@@ -77,6 +78,8 @@ class PlayPrerecordedAudioUseCase(
 ): IHasAudioResources {
     private var mediaPlayer: MediaPlayer = MediaPlayer()
 
+    private var lastUri: Uri? = null
+
     operator fun invoke(
         genusName: String,
         callback: (Boolean) -> Unit
@@ -98,22 +101,37 @@ class PlayPrerecordedAudioUseCase(
         onPlay: () -> Unit,
         onFail: () -> Unit
     ) {
+        val uri = file.toUri()
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
         }
-        mediaPlayer.setDataSource(context, file.toUri())
-        mediaPlayer.prepareAsync()
+
+        if (uri != lastUri) {
+            // If we've switched to a new request, we must reset
+            mediaPlayer.reset()
+            // Then add the new datasource
+            mediaPlayer.setDataSource(context, uri)
+        }
+
         mediaPlayer.setOnPreparedListener { mp ->
             // When the player is prepared, start it immediately
             mp.start()
         }
-        mediaPlayer.setOnCompletionListener { onPlay() }
+        mediaPlayer.setOnCompletionListener {
+            // Copy the last successfully played URI
+            lastUri = uri
+            onPlay()
+        }
         mediaPlayer.setOnErrorListener { _, type, extra ->
             Log.d("TTSUseCases", "AudioError (type=$type, extra=$extra)")
             onFail()
             // Indicate that this error was handled, to avoid further exceptions
             true
         }
+
+        // Whether we re-use the player or reset it, we must prepare it
+        // before playback
+        mediaPlayer.prepareAsync()
     }
 
     override fun close() {

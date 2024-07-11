@@ -216,7 +216,7 @@ fun GenusTitleCard(
                         .padding(start = padding, end = padding)
                         .offset(y = 8.dp)
                 )
-//                genus.getNamePronunciation()?.let { pronunciation ->
+                genus.getNamePronunciation()?.let { pronunciation ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -225,7 +225,7 @@ fun GenusTitleCard(
                             .alpha(0.6f)
                     ) {
                         Text(
-                            genus.getNamePronunciation() ?: "al-ee-oh-ray-mus",
+                            pronunciation,
                             fontStyle = FontStyle.Italic,
                             modifier = Modifier.padding(vertical=12.dp)
                         )
@@ -236,7 +236,7 @@ fun GenusTitleCard(
                             )
                         }
                     }
-//                }
+                }
             }
         }
     }
