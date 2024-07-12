@@ -32,6 +32,7 @@ class ListGenusViewModel @Inject constructor(
     private var _visibleGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
 
     private var searchQuery: MutableState<String> = mutableStateOf("")
+    private var searchBarVisibility: MutableState<Boolean> = mutableStateOf(false)
 
     private val nextPageNum: MutableState<Int> = mutableIntStateOf(0)
     private val _allPagesLoaded: MutableState<Boolean> = mutableStateOf(false)
@@ -127,6 +128,9 @@ class ListGenusViewModel @Inject constructor(
                 applySearchQuery(event.query, event.capSensitive)
             }
             ListGenusPageUiEvent.ClearSearchQuery -> clearSearchQuery()
+            is ListGenusPageUiEvent.ToggleSearchBar -> {
+                searchBarVisibility.value = event.visible
+            }
         }
     }
 
@@ -159,6 +163,7 @@ class ListGenusViewModel @Inject constructor(
     }
 
     fun getSearchQueryState(): State<String> = searchQuery
+    fun getSearchBarVisibility(): State<Boolean> = searchBarVisibility
 }
 
 sealed class ListGenusPageUiEvent {
@@ -170,6 +175,7 @@ sealed class ListGenusPageUiEvent {
         val capSensitive: Boolean = false
     ) : ListGenusPageUiEvent()
 
+    data class ToggleSearchBar(val visible: Boolean) : ListGenusPageUiEvent()
     data object ClearSearchQuery : ListGenusPageUiEvent()
 
 }
