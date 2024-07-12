@@ -16,7 +16,7 @@ fun DetailGenusScreen(
     genusState?.let {
         GenusDetail(
             genus = it,
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(horizontal=8.dp),
             onPlayNamePronunciation = {
                 detailGenusViewModel.onEvent(DetailGenusUiEvent.PlayNamePronunciation)
             }

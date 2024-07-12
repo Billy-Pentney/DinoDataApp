@@ -30,8 +30,10 @@ data class Genus(
     private val taxonomy: List<String>,
     private val imageUrlDataMap: Map<String, MultiImageUrlData>? = null
 ): IGenus {
-    override fun getTaxonomy(): String = taxonomy.joinToString("\n")
+    val mainThumbnailUrl = getThumbnailUrl()
+    val mainImageUrl = getImageUrl()
 
+    override fun getTaxonomy(): String = taxonomy.joinToString("\n")
     override fun getListOfTaxonomy(): List<String> = taxonomy
 
     override fun getTaxonomyAsPrintableTree(): String {
@@ -50,18 +52,15 @@ data class Genus(
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 
-    fun getImageUrl(): String? {
+    private fun getImageUrl(): String? {
         val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()
-        val firstImageData = firstSpeciesData?.getFirstUrlData()
-        val firstImageUrl = firstImageData?.getImageUrl(0)
-        return firstImageUrl
+        return firstSpeciesData?.getFirstUrlData()?.getImageUrl(0)
     }
 
-    fun getThumbnailUrl(): String? {
+    private fun getThumbnailUrl(): String? {
         val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()
-        val firstImageData = firstSpeciesData?.getFirstUrlData()
-        val firstImageUrl = firstImageData?.getThumbnailUrl(0)
-        return firstImageUrl
+        return firstSpeciesData?.getFirstUrlData()
+                            ?.getThumbnailUrl(0)
     }
 }
 

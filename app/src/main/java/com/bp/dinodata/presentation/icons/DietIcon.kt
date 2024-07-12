@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
@@ -54,14 +55,18 @@ fun convertDietToImageResId(diet: Diet?): Int {
 @Composable
 fun DietIconThin(
     diet: Diet?,
-    showText: Boolean = true
+    showText: Boolean = true,
+    borderThickness: Dp = 1.dp,
+    imagePadding: Dp = 3.dp,
+    cornerRadius: Dp = 8.dp
 ) {
-    val img = convertDietToImageResId(diet)
+    val img = remember { convertDietToImageResId(diet) }
 
-    val text = diet.toString()
+    val text = diet?.toString() ?: Diet.Unknown.toString()
 
-    val iconBrush = convertDietToLinearBrush(diet)
-    val iconShape = remember { RoundedCornerShape(10.dp) }
+    val iconBrush = remember { convertDietToLinearBrush(diet) }
+    val iconShape = remember { RoundedCornerShape(cornerRadius) }
+    val innerShape = remember { RoundedCornerShape(cornerRadius-1.dp) }
 
     Surface(
         color = MaterialTheme.colorScheme.onSurface,
@@ -73,15 +78,15 @@ fun DietIconThin(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.padding(1.dp).background(
-                brush = iconBrush,
-                shape = RoundedCornerShape(9.dp)
-            ).fillMaxSize()
+            modifier = Modifier
+                .padding(borderThickness)
+                .background(brush = iconBrush, shape = innerShape)
+                .fillMaxSize()
         ) {
             Image(
                 painter = painterResource(id = img),
                 contentDescription = "diet_icon",
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(imagePadding)
                     .height(IntrinsicSize.Min)
             )
             if (showText) {
@@ -90,7 +95,9 @@ fun DietIconThin(
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     fontSize = 16.sp,
-                    modifier = Modifier.padding(end=8.dp),
+                    modifier = Modifier
+                        .padding(vertical = borderThickness)
+                        .padding(end=6.dp),
                     style = TextStyle(
                         shadow = Shadow(
                             color = MyGrey800,
@@ -117,21 +124,32 @@ private fun convertDietToLinearBrush(diet: Diet?): Brush {
 }
 
 @Composable
-fun DietIconSquare(diet: Diet?) {
+fun DietIconSquare(
+    diet: Diet?
+) {
     DietIconThin(
         diet = diet,
-        showText = false
+        showText = false,
+        borderThickness = 1.dp,
+        imagePadding = 2.dp
     )
 }
 
 @Composable
 @Preview
 fun PreviewDietIcon() {
-    LazyColumn (verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        items(listOf(Diet.Carnivore, Diet.Piscivore, Diet.Herbivore, Diet.Unknown)) {
-            Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DietIconThin(diet = it)
-                DietIconThin(diet = it, showText = false)
+    val diets = listOf(
+        Diet.Carnivore, Diet.Piscivore, Diet.Herbivore, Diet.Unknown, null
+    )
+    Surface (
+        color = Color.White
+    ) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            items(diets) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DietIconThin(diet = it)
+                    DietIconSquare(diet = it)
+                }
             }
         }
     }

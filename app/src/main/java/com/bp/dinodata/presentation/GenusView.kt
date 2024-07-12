@@ -1,9 +1,9 @@
 package com.bp.dinodata.presentation
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -29,8 +29,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
@@ -59,6 +62,7 @@ import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
+import kotlin.math.min
 
 
 @Composable
@@ -158,19 +162,17 @@ fun GenusTitleCard(
     onPlayNamePronunciation: () -> Unit,
     modifier: Modifier = Modifier,
     innerPadding: Dp = 8.dp,
-    paddingValues: PaddingValues = PaddingValues()
+    paddingValues: PaddingValues = PaddingValues(),
+    collapseSpeed: Float = 20f
 ) {
     val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
-    val genusImageUrl = genus.getImageUrl()
+    val genusImageUrl = genus.mainImageUrl
 
-    var expanded by remember { mutableStateOf(true) }
-    val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemScrollOffset } }
-
-//    Side(key1 = scrollPosition) {
-//        if (scrollPosition > 1) {
-//            expanded = true
-//        }
-//    }
+    val scaleDueToScroll = remember {
+        mutableFloatStateOf(
+            1f - min(1f,scrollState.firstVisibleItemScrollOffset / collapseSpeed)
+        )
+    }
 
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
@@ -188,29 +190,30 @@ fun GenusTitleCard(
             .animateContentSize()
             .padding(paddingValues)
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(top = 10.dp),
-            verticalArrangement = Arrangement.Bottom,
+                .padding(top = 30.dp),
+            contentAlignment = Alignment.BottomStart
         ) {
-            AnimatedVisibility(
-                visible = expanded,
+            LoadAsyncImageOrReserveDrawable(
+                imageUrl = genusImageUrl,
+                alignment = Alignment.CenterEnd,
+                contentScale = ContentScale.Fit,
+                drawableIfImageFailed = R.drawable.ornith,
                 modifier = Modifier
-                    .weight(0.6f)
-                    .padding(top = 10.dp, bottom = 0.dp, start = 40.dp)
-//                    .offset(x = 20.dp, y = 0.dp)
-                    .fillMaxWidth(),
-            ) {
-                LoadAsyncImageOrReserveDrawable(
-                    imageUrl = genusImageUrl,
-                    alignment = Alignment.CenterEnd,
-                    contentScale = ContentScale.Fit,
-                    drawableIfImageFailed = R.drawable.ornith,
-                    modifier = Modifier
-                        .alpha(0.4f)
-                )
-            }
+                    .fillMaxHeight(
+                        0.2f + scaleDueToScroll.floatValue
+                    )
+                    .padding(bottom = 70.dp,
+                        start = 40.dp, end = 20.dp)
+                    .offset(x = 10.dp, y = 0.dp)
+                    .fillMaxWidth()
+                    .alpha(
+                        0.1f * scaleDueToScroll.floatValue
+                    )
+                    .animateContentSize()
+            )
 
             Spacer(Modifier.height(8.dp))
 
@@ -275,106 +278,87 @@ fun GenusDetail(
     val innerPadding = 12.dp
 
     val scrollState = rememberLazyListState()
+    val cardExpansion = remember {
+        derivedStateOf { 0f }
+            //scrollState.firstVisibleItemScrollOffset }
+    }
+
+    val cardHeight = max(150.dp, 220.dp - (cardExpansion.value/2).dp)
 
     Surface(
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
-        modifier = modifier
     ) {
-        Column {
-            GenusTitleCard(
-                genus,
-                innerPadding = innerPadding,
-                scrollState = scrollState,
-                onPlayNamePronunciation = onPlayNamePronunciation,
-                modifier = Modifier
-                    .height(230.dp),
-                paddingValues = PaddingValues(
-                    start = outerPadding,
-                    end = outerPadding,
-                    bottom = 20.dp
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            state = scrollState,
+            contentPadding = PaddingValues(horizontal=outerPadding/2),
+            modifier = modifier
+        ) {
+            item {
+                GenusTitleCard(
+                    genus,
+                    innerPadding = innerPadding,
+                    scrollState = scrollState,
+                    onPlayNamePronunciation = onPlayNamePronunciation,
+                    modifier = Modifier.height(cardHeight),
+                    paddingValues = PaddingValues(
+                        start = outerPadding,
+                        end = outerPadding,
+                        bottom = 10.dp
+                    )
                 )
-            )
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                state = scrollState,
-                contentPadding = PaddingValues(horizontal=outerPadding)
-            ) {
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(horizontal = innerPadding)
-                    ) {
-                        val type =
-                        LabelAttributeRow(
-                            label = stringResource(R.string.label_meaning),
-                            value = genus.getNameMeaning(),
-                            valueStyle = FontStyle.Italic
-                        )
-                        LabelAttributeRow(
-                            label = stringResource(R.string.label_creature_type),
-                            value = convertCreatureTypeToString(genus.type)
-                        )
-                    }
-                }
-                item {
+            }
+            item {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(
+                        horizontal = innerPadding + outerPadding/2
+                    )
+                ) {
+                    LabelAttributeRow(
+                        label = stringResource(R.string.label_meaning),
+                        value = genus.getNameMeaning(),
+                        valueStyle = FontStyle.Italic
+                    )
+                    LabelAttributeRow(
+                        label = stringResource(R.string.label_creature_type),
+                        value = convertCreatureTypeToString(genus.type)
+                    )
                     HorizontalDivider(
                         Modifier
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                             .alpha(0.5f)
                     )
-                }
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(horizontal = innerPadding)
-                    ) {
-                        LabelContentRow(label = stringResource(R.string.label_diet), valueContent = { DietIconThin(genus.diet) })
-                        LabelAttributeRow(label = stringResource(R.string.label_length), value = genus.getLength())
-                        LabelAttributeRow(label = stringResource(R.string.label_weight), value = genus.getWeight())
-                    }
-                }
-                item {
-                    HorizontalDivider(
-                        Modifier
-                            .padding(horizontal = 16.dp)
-                            .alpha(0.4f)
-                    )
-                }
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(horizontal = innerPadding)
-                    ) {
-                        LabelContentRow(
-                            label = stringResource(R.string.label_time_period),
-                            valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        )
-                        LabelAttributeRow(label = stringResource(R.string.label_years_lived), value = genus.yearsLived)
-                    }
-                }
-                item {
-                    HorizontalDivider(
-                        Modifier
-                            .padding(horizontal = 16.dp)
-                            .alpha(0.4f)
-                    )
-                }
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(horizontal = innerPadding)
-                    ) {
-                        LabelContentRow(
-                            label = stringResource(R.string.label_taxonomy),
-                            valueContent = {}
-                        )
-                        ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
-                    }
-                }
+                    LabelContentRow(label = stringResource(R.string.label_diet), valueContent = { DietIconThin(genus.diet) })
+                    LabelAttributeRow(label = stringResource(R.string.label_length), value = genus.getLength())
+                    LabelAttributeRow(label = stringResource(R.string.label_weight), value = genus.getWeight())
 
-                item { Spacer(Modifier.height(40.dp)) }
+                    HorizontalDivider(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .alpha(0.4f)
+                    )
+
+                    LabelContentRow(
+                        label = stringResource(R.string.label_time_period),
+                        valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    )
+                    LabelAttributeRow(label = stringResource(R.string.label_years_lived), value = genus.yearsLived)
+                    HorizontalDivider(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .alpha(0.4f)
+                    )
+
+                    LabelContentRow(
+                        label = stringResource(R.string.label_taxonomy),
+                        valueContent = {}
+                    )
+                    ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
+                }
+                Spacer(Modifier.height(100.dp))
             }
         }
     }
@@ -386,12 +370,16 @@ fun ShowTaxonomicTree(
     modifier: Modifier,
     internalCardPadding: PaddingValues = PaddingValues(16.dp)
 ) {
+    var taxonTreeUptoLast: List<String> by remember { mutableStateOf(emptyList()) }
+    var finalChild: String by remember { mutableStateOf("") }
 
-    val taxonomy = genus.getListOfTaxonomy()
-    val taxonBuilder = TaxonTreeBuilder(taxonomy)
-    val taxonTree = taxonBuilder.getPrintableTree(genus = genus.name)
-    val taxonTreeUptoLast = taxonTree.dropLast(1)
-    val finalChild = taxonTree.last()
+    LaunchedEffect(genus) {
+        val taxonomy = genus.getListOfTaxonomy()
+        val taxonBuilder = TaxonTreeBuilder(taxonomy)
+        val taxonTree = taxonBuilder.getPrintableTree(genus = genus.name)
+        taxonTreeUptoLast = taxonTree.dropLast(1)
+        finalChild = taxonTree.last()
+    }
 
     Card (
         modifier = modifier,
@@ -411,7 +399,7 @@ fun ShowTaxonomicTree(
                 Column {
                     Text(
                         taxonTreeUptoLast.joinToString("\n"),
-                        lineHeight = 18.sp
+//                        lineHeight = 18.sp
                     )
                     Text(
                         finalChild,

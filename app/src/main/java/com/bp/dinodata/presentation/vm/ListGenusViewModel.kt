@@ -14,7 +14,10 @@ import com.bp.dinodata.repo.PageResult
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,26 +28,36 @@ class ListGenusViewModel @Inject constructor(
 
     private var _isLoaded: MutableState<LoadState> = mutableStateOf(LoadState.NotLoading)
     private var _listOfGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
+
+    private var _visibleGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
+
+    private var searchQuery: MutableState<String> = mutableStateOf("")
+
     private val nextPageNum: MutableState<Int> = mutableIntStateOf(0)
     private val _allPagesLoaded: MutableState<Boolean> = mutableStateOf(false)
 
     init {
-//        viewModelScope.launch {
-//            _isLoaded.value = LoadState.LoadingPage(1)
-//            genusUseCases.getAllGenera(
-//                callback = ::updateListOfGenera,
-//                onError = {
-//                    Log.d("ListGenusViewModel", "Error when fetching genera", it)
-//                }
-//            )
-//        }
-        initiateNextPageLoad()
+        loadAllGenera()
+//        initiateNextPageLoad()
+    }
+
+    private fun loadAllGenera() {
+        viewModelScope.launch {
+            _isLoaded.value = LoadState.LoadingPage(1)
+            genusUseCases.getAllGenera(
+                callback = ::updateListOfGenera,
+                onError = {
+                    Log.d("ListGenusViewModel", "Error when fetching genera", it)
+                }
+            )
+        }
     }
 
     private fun updateListOfGenera(genera: List<Genus>) {
         viewModelScope.launch {
             _listOfGenera.value = genera
             _isLoaded.value = LoadState.IsLoaded(1)
+            applySearchQuery(searchQuery.value)
         }
     }
 
@@ -66,13 +79,17 @@ class ListGenusViewModel @Inject constructor(
             nextPageNum.value++
 
             _allPagesLoaded.value = fetchResult.isAllDataRetrieved
+
+            applySearchQuery(searchQuery.value)
         }
     }
 
-    fun getListOfGenera(): StateFlow<List<Genus>> = _listOfGenera
+    fun getListOfGenera(): StateFlow<List<Genus>>
+        = _visibleGenera.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     fun getIsLoadedState(): State<LoadState> = _isLoaded
 
-    fun initiateNextPageLoad() {
+    private fun initiateNextPageLoad() {
         if (_isLoaded.value is LoadState.LoadingPage) {
             Log.d("ListGenusViewModel", "Load already in progress; ignoring duplicate")
             return
@@ -100,4 +117,59 @@ class ListGenusViewModel @Inject constructor(
             )
         }
     }
+
+    fun onEvent(event: ListGenusPageUiEvent) {
+        when(event) {
+            ListGenusPageUiEvent.InitiateNextPageLoad -> {
+                initiateNextPageLoad()
+            }
+            is ListGenusPageUiEvent.UpdateSearchQuery -> {
+                applySearchQuery(event.query, event.capSensitive)
+            }
+            ListGenusPageUiEvent.ClearSearchQuery -> clearSearchQuery()
+        }
+    }
+
+    private fun applySearchQuery(query: String, capitalSensitive: Boolean = false) {
+        searchQuery.value =
+            (when {
+                capitalSensitive -> query
+                else -> query.lowercase()
+            })
+
+        viewModelScope.launch {
+            _visibleGenera.emit(
+                _listOfGenera.value.filter {
+                    if (capitalSensitive) {
+                        query.trim() in it.name
+                    }
+                    else {
+                        query.trim().lowercase() in it.name.lowercase()
+                    }
+                }
+            )
+        }
+    }
+
+    private fun clearSearchQuery() {
+        searchQuery.value = ""
+        viewModelScope.launch {
+            _visibleGenera.emit(_listOfGenera.value)
+        }
+    }
+
+    fun getSearchQueryState(): State<String> = searchQuery
+}
+
+sealed class ListGenusPageUiEvent {
+
+    data object InitiateNextPageLoad : ListGenusPageUiEvent()
+
+    data class UpdateSearchQuery(
+        val query: String,
+        val capSensitive: Boolean = false
+    ) : ListGenusPageUiEvent()
+
+    data object ClearSearchQuery : ListGenusPageUiEvent()
+
 }

@@ -7,6 +7,16 @@ import com.bp.dinodata.repo.GenusRepository
 class GenusUseCases(
     private val genusRepository: GenusRepository
 ) {
+    fun getAllGenera(
+        callback: (List<Genus>) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        genusRepository.getAllGenera(
+            callback,
+            onError
+        )
+    }
+
     fun getGenusByName(
         genusName: String,
         callback: (Genus?) -> Unit,

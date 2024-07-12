@@ -1,7 +1,9 @@
 package com.bp.dinodata.presentation
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,16 +22,24 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -56,10 +66,15 @@ import androidx.compose.ui.zIndex
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
+import com.bp.dinodata.presentation.icons.DietIconSquare
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
+import com.bp.dinodata.presentation.vm.ListGenusPageUiEvent
 import com.bp.dinodata.presentation.vm.ListGenusViewModel
 import com.bp.dinodata.theme.DinoDataTheme
+import com.bp.dinodata.theme.MyGrey600
+import com.bp.dinodata.theme.MyGrey700
+import com.bp.dinodata.theme.MyGrey800
 
 
 @Composable
@@ -68,7 +83,9 @@ fun GenusListItem(
     onClick: () -> Unit = {},
     showDietText: Boolean = true
 ) {
-    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
+    val silhouetteId = remember {
+        convertCreatureTypeToSilhouette(genus.type)
+    }
 
     Card(
         colors = CardDefaults.cardColors(
@@ -83,56 +100,42 @@ fun GenusListItem(
         onClick = onClick
     ) {
         Box (
-            contentAlignment = Alignment.CenterStart,
-            modifier=Modifier.fillMaxHeight()
+            contentAlignment = Alignment.BottomEnd,
+            modifier = Modifier.fillMaxHeight()
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .zIndex(1.0f),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row (
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    genus.diet?.let { DietIconThin(diet = it, showText = showDietText) }
-                    Text(
-                        genus.name,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        fontStyle = FontStyle.Italic
-                    )
-                }
-
-//                genus.timePeriod?.let { TimePeriodIcon(timePeriod = it) }
-            }
-            Box(
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .absoluteOffset(y = 5.dp),
-                contentAlignment = Alignment.BottomEnd
+                    .padding(8.dp)
+                    .zIndex(1.0f)
             ) {
-                LoadAsyncImageOrReserveDrawable(
-                    imageUrl = genus.getThumbnailUrl(),
-                    drawableIfImageFailed = silhouetteId,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .alpha(0.5f)
-                        .zIndex(0f)
-//                        .padding(top = 5.dp)
-                        .fillMaxWidth(0.33f)
-                        .absoluteOffset(x = 25.dp, y = 0.dp)
-                        .fillMaxHeight(),
-                    alignment = Alignment.BottomStart,
-                    contentScale = ContentScale.Crop,
-//                    colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
+                DietIconSquare(diet = genus.diet)
+                Text(
+                    genus.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(vertical=2.dp)
                 )
             }
+            LoadAsyncImageOrReserveDrawable(
+                imageUrl = genus.mainThumbnailUrl,
+                drawableIfImageFailed = silhouetteId,
+                contentDescription = null,
+                modifier = Modifier
+                    .alpha(0.5f)
+                    .zIndex(0f)
+//                        .padding(top = 5.dp)
+                    .fillMaxWidth(0.33f)
+                    .absoluteOffset(x = 25.dp, y = 5.dp)
+                    .fillMaxHeight(),
+                alignment = Alignment.BottomStart,
+                contentScale = ContentScale.Crop,
+//              colorFilter = ColorFilter.tint(Color.Green, BlendMode.Overlay)
+            )
         }
     }
 }
@@ -142,13 +145,16 @@ fun GenusListItem(
 @Composable
 fun ListGenusScreenContent(
     loadState: LoadState,
+    searchQuery: State<String>,
     listGenus: List<Genus>,
     navigateToGenus: (String) -> Unit = {},
     columns: Int = 1,
     spacing: Dp = 8.dp,
     outerPadding: Dp = 12.dp,
     showDietText: Boolean = true,
-    requestNextPage: () -> Unit = {}
+    requestNextPage: () -> Unit = {},
+    updateSearchQuery: (String) -> Unit,
+    clearSearchQuery: () -> Unit
 ) {
     val scrollState = rememberLazyGridState()
     val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
@@ -171,12 +177,24 @@ fun ListGenusScreenContent(
         }
     }
 
+    var searchBarActive by remember { mutableStateOf(false) }
+    val searchBarQuery = remember { searchQuery }
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.title_creature_list)) }) }
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        stringResource(R.string.title_creature_list)
+                    )
+                }
+            )
+        }
     ) { pad ->
         when (loadState) {
             is LoadState.IsLoaded,
             is LoadState.LoadingPage -> {
+
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(columns),
                     verticalArrangement = Arrangement.spacedBy(spacing),
@@ -187,7 +205,43 @@ fun ListGenusScreenContent(
                         .fillMaxWidth()
                         .padding(pad)
                 ) {
-                    items(listGenus) { genus ->
+                    item {
+                        SearchBar(
+                            query = searchBarQuery.value,
+                            onQueryChange = updateSearchQuery,
+                            onSearch = {
+                                updateSearchQuery(it)
+                                // TODO - Close keyboard
+                            },
+                            active = false,
+                            onActiveChange = {
+                                searchBarActive = it
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Search, "search")
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = clearSearchQuery) {
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        "clear search",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
+                            colors = SearchBarDefaults.colors(
+                                containerColor = MyGrey600
+                            ),
+                            modifier = Modifier.padding(bottom=8.dp)
+                        ) {
+
+                        }
+                    }
+
+                    items(
+                        listGenus,
+                        key = { it.name }
+                    ) { genus ->
                         GenusListItem(
                             genus = genus,
                             onClick = { navigateToGenus(genus.name) },
@@ -224,21 +278,29 @@ fun ListGenusScreen(
 ) {
     val genera by listGenusViewModel.getListOfGenera().collectAsState()
     val hasLoaded by remember { listGenusViewModel.getIsLoadedState() }
-
+    val searchQuery = remember { listGenusViewModel.getSearchQueryState() }
     val context = LocalContext.current
 
     ListGenusScreenContent(
         loadState = hasLoaded,
+        searchQuery = searchQuery,
         listGenus = genera,
         navigateToGenus = navigateToGenus,
         showDietText = false,
         requestNextPage = {
             Toast.makeText(context, "Loading new page...", Toast.LENGTH_SHORT).show()
-            listGenusViewModel.initiateNextPageLoad()
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.InitiateNextPageLoad)
+        },
+        updateSearchQuery = {
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.UpdateSearchQuery(it))
+        },
+        clearSearchQuery = {
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.ClearSearchQuery)
         }
     )
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Preview(widthDp=400)
 @Composable
 fun PreviewListGenus() {
@@ -291,13 +353,16 @@ fun PreviewListGenus() {
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
             loadState = LoadState.IsLoaded(0),
+            searchQuery = mutableStateOf("Test string"),
             listOf(
                 acro, trike, dipl, raptor, ptero, edmon,
                 ankylo, stego, spino, unkn
             ),
             columns = 1,
             showDietText = false,
-//            triggerNextPageLoad = {  }
+//            triggerNextPageLoad = {  },
+            updateSearchQuery = {},
+            clearSearchQuery = {}
         )
     }
 }
