@@ -1,6 +1,5 @@
 package com.bp.dinodata.data
 
-import androidx.compose.ui.res.stringResource
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
@@ -65,17 +64,3 @@ data class Genus(
 }
 
 
-enum class CreatureType {
-    LargeTheropod,
-    SmallTheropod,
-    Ceratopsian,
-    Armoured,
-    Stegosaur,
-    Sauropod,
-    Hadrosaur,
-    Avian,
-    Aquatic,
-    Cenezoic,
-    Other,
-    Spinosaur
-}

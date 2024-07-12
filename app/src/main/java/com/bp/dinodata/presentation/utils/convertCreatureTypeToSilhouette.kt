@@ -9,8 +9,11 @@ fun convertCreatureTypeToSilhouette(type: CreatureType): Int {
         CreatureType.LargeTheropod      -> R.drawable.acrocanth
         CreatureType.Sauropod           -> R.drawable.cetio
         CreatureType.Hadrosaur          -> R.drawable.edmonto
-        CreatureType.Avian              -> R.drawable.ptero
-        CreatureType.Armoured           -> R.drawable.ankylo
+        CreatureType.Pterosaur          -> R.drawable.ptero
+        CreatureType.Ankylosaur         -> R.drawable.ankylo
+        CreatureType.Synapsid           -> R.drawable.synapsid
+        CreatureType.Pachycephalosaur   -> R.drawable.pachycephalo
+        CreatureType.Ornithomimid       -> R.drawable.ornith
         CreatureType.SmallTheropod      -> R.drawable.raptor
         CreatureType.Stegosaur          -> R.drawable.stego
         CreatureType.Spinosaur          -> R.drawable.spino

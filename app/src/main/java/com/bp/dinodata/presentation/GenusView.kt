@@ -200,7 +200,7 @@ fun GenusTitleCard(
                 imageUrl = genusImageUrl,
                 alignment = Alignment.CenterEnd,
                 contentScale = ContentScale.Fit,
-                drawableIfImageFailed = R.drawable.ornith,
+                drawableIfImageFailed = R.drawable.unkn,
                 modifier = Modifier
                     .fillMaxHeight(
                         0.2f + scaleDueToScroll.floatValue

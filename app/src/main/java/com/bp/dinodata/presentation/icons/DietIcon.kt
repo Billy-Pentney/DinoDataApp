@@ -35,9 +35,12 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.theme.Carnivore400
 import com.bp.dinodata.theme.Carnivore700
+import com.bp.dinodata.theme.Cretaceous300
+import com.bp.dinodata.theme.Cretaceous700
 import com.bp.dinodata.theme.Herbivore400
 import com.bp.dinodata.theme.Herbivore700
 import com.bp.dinodata.theme.MyGrey300
+import com.bp.dinodata.theme.MyGrey400
 import com.bp.dinodata.theme.MyGrey600
 import com.bp.dinodata.theme.MyGrey800
 import com.bp.dinodata.theme.Piscivore400
@@ -48,6 +51,7 @@ fun convertDietToImageResId(diet: Diet?): Int {
         Diet.Carnivore -> R.drawable.diet_carn
         Diet.Herbivore -> R.drawable.diet_herb
         Diet.Piscivore -> R.drawable.diet_pisc
+        Diet.Omnivore -> R.drawable.diet_all
         else -> R.drawable.unkn
     }
 }
@@ -117,6 +121,7 @@ private fun convertDietToLinearBrush(diet: Diet?): Brush {
             Diet.Carnivore -> listOf(Carnivore400, Carnivore700)
             Diet.Herbivore -> listOf(Herbivore400, Herbivore700)
             Diet.Piscivore -> listOf(Piscivore400, Piscivore700)
+            Diet.Omnivore -> listOf(Cretaceous300, Cretaceous700)
             else -> listOf(MyGrey300, MyGrey600)
         }
     )
@@ -139,7 +144,8 @@ fun DietIconSquare(
 @Preview
 fun PreviewDietIcon() {
     val diets = listOf(
-        Diet.Carnivore, Diet.Piscivore, Diet.Herbivore, Diet.Unknown, null
+        Diet.Carnivore, Diet.Piscivore, Diet.Herbivore,
+        Diet.Omnivore, Diet.Unknown, null
     )
     Surface (
         color = Color.White

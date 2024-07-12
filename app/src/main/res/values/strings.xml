@@ -65,4 +65,9 @@
     <string name="label_time_period">Time Period</string>
     <string name="label_years_lived">Years Lived</string>
     <string name="label_taxonomy">Taxonomy</string>
+    <string name="type_ankylosaur">Ankylosaur</string>
+    <string name="type_pterosaur">Pterosaur</string>
+    <string name="type_synapsid">Synapsid</string>
+    <string name="type_ornithomimid">Ornithomimid</string>
+    <string name="type_pachycephalosaur">Pachycephalosaur</string>
 </resources>

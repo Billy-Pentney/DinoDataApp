@@ -126,16 +126,19 @@ class GenusBuilderImpl(
         this.type = when (type.lowercase()) {
             "large theropod"    -> CreatureType.LargeTheropod
             "small theropod"    -> CreatureType.SmallTheropod
-            "ceratopsian" -> CreatureType.Ceratopsian
-            "armoured"    -> CreatureType.Armoured
-            "stegosaur"   -> CreatureType.Stegosaur
-            "sauropod"    -> CreatureType.Sauropod
-            "spinosaur"   -> CreatureType.Spinosaur
-            "hadrosaur"   -> CreatureType.Hadrosaur
-            "aquatic"     -> CreatureType.Aquatic
-            "avian"       -> CreatureType.Avian
-            "cenezoic"    -> CreatureType.Cenezoic
-            else          -> CreatureType.Other
+            "ceratopsian"       -> CreatureType.Ceratopsian
+            "ankylosaurid"        -> CreatureType.Ankylosaur
+            "stegosaur"         -> CreatureType.Stegosaur
+            "pachycephalosaur"  -> CreatureType.Pachycephalosaur
+            "sauropod"          -> CreatureType.Sauropod
+            "spinosaur"         -> CreatureType.Spinosaur
+            "hadrosaur"         -> CreatureType.Hadrosaur
+            "ornithomimid"      -> CreatureType.Ornithomimid
+            "aquatic"           -> CreatureType.Aquatic
+            "pterosaur"         -> CreatureType.Pterosaur
+            "cenezoic"          -> CreatureType.Cenezoic
+            "synapsid"          -> CreatureType.Synapsid
+            else                -> CreatureType.Other
         }
         return this
     }
