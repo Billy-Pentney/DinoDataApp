@@ -1,4 +1,4 @@
-package com.bp.dinodata.presentation
+package com.bp.dinodata.presentation.detail_genus
 
 import android.util.Log
 import androidx.compose.runtime.MutableState

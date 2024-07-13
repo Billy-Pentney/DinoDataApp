@@ -13,6 +13,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bp.dinodata.presentation.detail_genus.DetailGenusScreen
+import com.bp.dinodata.presentation.detail_genus.DetailGenusViewModel
+import com.bp.dinodata.presentation.list_genus.ListGenusScreen
 
 @Composable
 fun MyNavigation(

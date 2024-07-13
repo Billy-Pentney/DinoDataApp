@@ -1,4 +1,4 @@
-package com.bp.dinodata.presentation
+package com.bp.dinodata.presentation.detail_genus
 
 import android.util.Log
 import androidx.compose.animation.animateContentSize
@@ -55,6 +55,7 @@ import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TaxonTreeBuilder
+import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
@@ -404,7 +405,7 @@ fun ShowTaxonomicTree(
                     Text(
                         finalChild,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.scrim,
                     )
                 }
             }

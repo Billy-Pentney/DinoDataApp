@@ -1,4 +1,4 @@
-package com.bp.dinodata.presentation
+package com.bp.dinodata.presentation.detail_genus
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable

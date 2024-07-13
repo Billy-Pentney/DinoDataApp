@@ -70,4 +70,8 @@
     <string name="type_synapsid">Synapsid</string>
     <string name="type_ornithomimid">Ornithomimid</string>
     <string name="type_pachycephalosaur">Pachycephalosaur</string>
+    <string name="desc_close_search">Close Search Bar</string>
+    <string name="desc_show_search">show search bar</string>
+    <string name="search_box_hint">e.g. \"Triceratops\"</string>
+    <string name="text_showing_X_creatures">Showing %1$s creatures</string>
 </resources>

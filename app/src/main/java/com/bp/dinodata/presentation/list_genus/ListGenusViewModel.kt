@@ -1,4 +1,4 @@
-package com.bp.dinodata.presentation.vm
+package com.bp.dinodata.presentation.list_genus
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
@@ -9,14 +9,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.presentation.LoadState
-import com.bp.dinodata.repo.GeneraPageResult
 import com.bp.dinodata.repo.PageResult
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -127,7 +125,7 @@ class ListGenusViewModel @Inject constructor(
             is ListGenusPageUiEvent.UpdateSearchQuery -> {
                 applySearchQuery(event.query, event.capSensitive)
             }
-            ListGenusPageUiEvent.ClearSearchQuery -> clearSearchQuery()
+            ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearSearchQueryOrHideSearchBar()
             is ListGenusPageUiEvent.ToggleSearchBar -> {
                 searchBarVisibility.value = event.visible
             }
@@ -155,10 +153,17 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    private fun clearSearchQuery() {
-        searchQuery.value = ""
-        viewModelScope.launch {
-            _visibleGenera.emit(_listOfGenera.value)
+    private fun clearSearchQueryOrHideSearchBar() {
+        if (searchQuery.value.isNotEmpty()) {
+            // If any text is present, clear it, but leave the bar open
+            searchQuery.value = ""
+            viewModelScope.launch {
+                _visibleGenera.emit(_listOfGenera.value)
+            }
+        }
+        else {
+            // Otherwise, hide the search bar
+            searchBarVisibility.value = false
         }
     }
 
@@ -166,16 +171,3 @@ class ListGenusViewModel @Inject constructor(
     fun getSearchBarVisibility(): State<Boolean> = searchBarVisibility
 }
 
-sealed class ListGenusPageUiEvent {
-
-    data object InitiateNextPageLoad : ListGenusPageUiEvent()
-
-    data class UpdateSearchQuery(
-        val query: String,
-        val capSensitive: Boolean = false
-    ) : ListGenusPageUiEvent()
-
-    data class ToggleSearchBar(val visible: Boolean) : ListGenusPageUiEvent()
-    data object ClearSearchQuery : ListGenusPageUiEvent()
-
-}
