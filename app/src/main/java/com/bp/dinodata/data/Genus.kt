@@ -29,6 +29,10 @@ data class Genus(
     private val taxonomy: List<String>,
     private val imageUrlDataMap: Map<String, MultiImageUrlData>? = null
 ): IGenus {
+
+    private val allImagesUrlData: List<SingleImageUrlData>?
+        = imageUrlDataMap?.flatMap { it.value.getAllImageData() }
+
     val mainThumbnailUrl = getThumbnailUrl()
     val mainImageUrl = getImageUrl()
 
@@ -51,15 +55,18 @@ data class Genus(
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 
-    private fun getImageUrl(): String? {
-        val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()
-        return firstSpeciesData?.getFirstUrlData()?.getImageUrl(0)
+    fun getImageUrl(index: Int = 0): String? {
+        val imageGroup = allImagesUrlData?.elementAtOrNull(index)
+        return imageGroup?.getImageUrl(0)
     }
 
-    private fun getThumbnailUrl(): String? {
-        val firstSpeciesData = this.imageUrlDataMap?.values?.firstOrNull()
-        return firstSpeciesData?.getFirstUrlData()
-                            ?.getThumbnailUrl(0)
+    fun getThumbnailUrl(index: Int = 0): String? {
+        val imageGroup = allImagesUrlData?.elementAtOrNull(index)
+        return imageGroup?.getThumbnailUrl(0)
+    }
+
+    fun getNumDistinctImages(): Int {
+        return allImagesUrlData?.size ?: 0
     }
 }
 

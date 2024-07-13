@@ -1,6 +1,7 @@
 package com.bp.dinodata.presentation.list_genus
 
 import android.util.Log
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
@@ -41,8 +42,8 @@ class ListGenusViewModel @Inject constructor(
     }
 
     private fun loadAllGenera() {
+        _isLoaded.value = LoadState.LoadingPage(nextPageNum.value)
         viewModelScope.launch {
-            _isLoaded.value = LoadState.LoadingPage(1)
             genusUseCases.getAllGenera(
                 callback = ::updateListOfGenera,
                 onError = {
@@ -55,7 +56,8 @@ class ListGenusViewModel @Inject constructor(
     private fun updateListOfGenera(genera: List<Genus>) {
         viewModelScope.launch {
             _listOfGenera.value = genera
-            _isLoaded.value = LoadState.IsLoaded(1)
+            _isLoaded.value = LoadState.IsLoaded(nextPageNum.value)
+            nextPageNum.value++
             applySearchQuery(searchQuery.value)
         }
     }
@@ -84,7 +86,7 @@ class ListGenusViewModel @Inject constructor(
     }
 
     fun getListOfGenera(): StateFlow<List<Genus>>
-        = _visibleGenera.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        = _visibleGenera
 
     fun getIsLoadedState(): State<LoadState> = _isLoaded
 

@@ -1,6 +1,7 @@
 package com.bp.dinodata.presentation.list_genus
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -65,12 +67,14 @@ fun ListGenusScreenContent(
     requestNextPage: () -> Unit = {},
     updateSearchQuery: (String) -> Unit,
     clearSearchQuery: () -> Unit,
-    toggleSearchBarVisibility: (Boolean) -> Unit
+    toggleSearchBarVisibility: (Boolean) -> Unit,
 ) {
+    Log.d("LGSC", "Recomposed")
+
     val scrollState = rememberLazyListState()
 //    val scrollState = rememberLazyGridState()
-    val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
-    var loadTriggered by remember { mutableStateOf(false) }
+//    val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
+//    var loadTriggered by remember { mutableStateOf(false) }
 
 //    LaunchedEffect(scrollPosition) {
 //        if (genusList.isNotEmpty()
@@ -284,16 +288,17 @@ fun PreviewListGenus() {
 
     val searchQuery = remember { mutableStateOf("") }
     val searchBarVisibility = remember { mutableStateOf(true) }
+    val genera = listOf(
+                acro, trike, dipl, raptor, ptero, edmon,
+                ankylo, stego, spino, unkn
+            )
 
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
             loadState = LoadState.IsLoaded(0),
             searchQueryState = searchQuery,
             searchBarVisibility = searchBarVisibility,
-            genusList = listOf(
-                acro, trike, dipl, raptor, ptero, edmon,
-                ankylo, stego, spino, unkn
-            ),
+            genusList = genera,
             columns = 1,
             //            triggerNextPageLoad = {  },
             updateSearchQuery = {},

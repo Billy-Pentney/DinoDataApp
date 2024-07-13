@@ -73,8 +73,11 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation("androidx.compose.animation:animation:1.0.0")
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.animation)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.material3)
+    implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
 
     implementation(libs.glide)
     implementation(libs.glideCompose)

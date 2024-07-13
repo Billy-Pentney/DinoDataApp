@@ -10,19 +10,20 @@ class SingleImageUrlData(
     private val imageSizesAsc = imageSizes.sortedBy { extractFirstDimension(it) }
     private val thumbSizesAsc = thumbSizes.sortedBy { extractFirstDimension(it) }
 
-    fun numImages(): Int = imageSizesAsc.size
-    fun numThumbnails(): Int = thumbSizesAsc.size
+    val numImages: Int
+        get() = imageSizesAsc.size
+    val numThumbnails: Int
+        get() = thumbSizesAsc.size
 
     fun getImageUrl(index: Int): String? {
-        if (index >= numImages()) {
+        if (index >= numImages) {
             return null
         }
-
         return ImageUrlBuilder.buildUrl(id, imageSizesAsc[index], type=PhylopicImageType.Raster)
     }
 
     fun getThumbnailUrl(index: Int): String? {
-        if (index >= numThumbnails()) {
+        if (index >= numThumbnails) {
             return null
         }
         return ImageUrlBuilder.buildUrl(id, thumbSizesAsc[index], type=PhylopicImageType.Thumbnail)
@@ -51,6 +52,16 @@ class MultiImageUrlData(
     fun getFirstUrlData(): SingleImageUrlData? {
         return urlData.getOrNull(0)
     }
+
+    fun getAllImageData(): List<SingleImageUrlData> = urlData
+
+    val totalImages: Int
+        get() = urlData.sumOf { it.numImages }
+
+    val totalThumbnails: Int
+        get() = urlData.sumOf { it.numThumbnails }
+
+    val distinctImages: Int = urlData.size
 }
 
 object ImageUrlData {

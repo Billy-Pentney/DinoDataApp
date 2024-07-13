@@ -74,15 +74,15 @@ fun GenusListItem(
                 )
             }
             LoadAsyncImageOrReserveDrawable(
-                imageUrl = genus.mainThumbnailUrl,
+                imageUrl = null,
                 drawableIfImageFailed = silhouetteId,
                 contentDescription = null,
                 modifier = Modifier
                     .alpha(0.5f)
                     .zIndex(0f)
-//                        .padding(top = 5.dp)
+                    .padding(top = 5.dp)
                     .fillMaxWidth(0.33f)
-                    .absoluteOffset(x = 25.dp, y = 5.dp)
+                    .absoluteOffset(x = 25.dp, y = 0.dp)
                     .fillMaxHeight(),
                 alignment = Alignment.BottomStart,
                 contentScale = ContentScale.Crop,

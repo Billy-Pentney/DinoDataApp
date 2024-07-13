@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -33,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,11 +61,7 @@ import com.bp.dinodata.data.TaxonTreeBuilder
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
-import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.theme.DinoDataTheme
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
 import kotlin.math.min
 
 
@@ -119,44 +118,6 @@ fun LabelContentRow(
 
 
 @Composable
-@OptIn(ExperimentalGlideComposeApi::class)
-fun LoadAsyncImageOrReserveDrawable(
-    imageUrl: String?,
-    modifier: Modifier = Modifier,
-    contentDescription: String? = null,
-    alignment: Alignment,
-    contentScale: ContentScale,
-    drawableIfImageFailed: Int,
-    visible: Boolean = true
-) {
-    if (visible) {
-        GlideImage(
-            model = imageUrl,
-            loading = placeholder(drawableIfImageFailed),
-            failure = placeholder(drawableIfImageFailed),
-            contentDescription = contentDescription,
-            modifier = modifier,
-            alignment = alignment,
-            contentScale = contentScale,
-        )
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@Composable
 fun GenusTitleCard(
     genus: Genus,
     scrollState: LazyListState,
@@ -166,8 +127,13 @@ fun GenusTitleCard(
     paddingValues: PaddingValues = PaddingValues(),
     collapseSpeed: Float = 20f
 ) {
-    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
-    val genusImageUrl = genus.mainImageUrl
+//    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
+
+    var imageIndex by remember { mutableIntStateOf(0) }
+    val genusImageUrl by remember {
+        derivedStateOf { genus.getImageUrl(imageIndex) }
+    }
+    val totalImages = genus.getNumDistinctImages()
 
     val scaleDueToScroll = remember {
         mutableFloatStateOf(
@@ -191,32 +157,53 @@ fun GenusTitleCard(
             .animateContentSize()
             .padding(paddingValues)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = 30.dp),
-            contentAlignment = Alignment.BottomStart
+        Column (
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Bottom,
+            modifier = Modifier.fillMaxHeight()
         ) {
-            LoadAsyncImageOrReserveDrawable(
-                imageUrl = genusImageUrl,
-                alignment = Alignment.CenterEnd,
-                contentScale = ContentScale.Fit,
-                drawableIfImageFailed = R.drawable.unkn,
-                modifier = Modifier
-                    .fillMaxHeight(
-                        0.2f + scaleDueToScroll.floatValue
-                    )
-                    .padding(bottom = 70.dp,
-                        start = 40.dp, end = 20.dp)
-                    .offset(x = 10.dp, y = 0.dp)
-                    .fillMaxWidth()
-                    .alpha(
-                        0.1f * scaleDueToScroll.floatValue
-                    )
-                    .animateContentSize()
-            )
-
-            Spacer(Modifier.height(8.dp))
+            Box (
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                LoadAsyncImageOrReserveDrawable(
+                    imageUrl = genusImageUrl,
+                    alignment = Alignment.CenterEnd,
+                    contentScale = ContentScale.Fit,
+                    drawableIfImageFailed = R.drawable.unkn,
+                    modifier = Modifier
+                        .fillMaxHeight(0.2f + 0.4f * scaleDueToScroll.floatValue)
+                        .padding(start = 40.dp, end = 20.dp, bottom=30.dp)
+                        .offset(x = 10.dp, y = 0.dp)
+                        .fillMaxWidth()
+                        .alpha(
+                            0.1f * scaleDueToScroll.floatValue
+                        )
+                        .animateContentSize()
+                )
+                if (totalImages > 1) {
+//                    Text("Showing $genusImageUrl")
+                    Row {
+                        IconButton(
+                            onClick = { imageIndex-- },
+                            enabled = imageIndex > 0
+                        ) {
+                            Icon(
+                                Icons.Filled.ChevronLeft,
+                                contentDescription = "switch to previous image"
+                            )
+                        }
+                        IconButton(
+                            onClick = { imageIndex++ },
+                            enabled = imageIndex < totalImages-1
+                        ) {
+                            Icon(
+                                Icons.Filled.ChevronRight,
+                                contentDescription = "switch to next image"
+                            )
+                        }
+                    }
+                }
+            }
 
             Row (
                 modifier = Modifier
@@ -284,7 +271,7 @@ fun GenusDetail(
             //scrollState.firstVisibleItemScrollOffset }
     }
 
-    val cardHeight = max(150.dp, 220.dp - (cardExpansion.value/2).dp)
+    val cardHeight = max(150.dp, 250.dp - (cardExpansion.value/2).dp)
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -450,6 +437,15 @@ fun PreviewGenusDetailDark() {
         .setTaxonomy("Dinosauria Saurischia Ceratopsidae Centrosaurinae")
         .addImageUrlMap(imageData = mapOf(
             "sty" to MultiImageUrlData(
+                "styracosaurus",
+                listOf(
+                    SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
+                        imageSizes = listOf("4895x1877", "512x196"),
+                        thumbSizes = listOf("192x192", "64x64")
+                    )
+                )
+            ),
+            "sty2" to MultiImageUrlData(
                 "styracosaurus",
                 listOf(
                     SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
