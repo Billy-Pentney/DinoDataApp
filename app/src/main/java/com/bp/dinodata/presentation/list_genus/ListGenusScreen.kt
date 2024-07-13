@@ -36,6 +36,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,7 @@ import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.theme.DinoDataTheme
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,6 +99,8 @@ fun ListGenusScreenContent(
 
     val searchBarVisible by remember { searchBarVisibility }
 
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -108,7 +112,15 @@ fun ListGenusScreenContent(
                 },
                 actions = {
                     IconButton(
-                        onClick = { toggleSearchBarVisibility(!searchBarVisible) },
+                        onClick = {
+                            if (!searchBarVisible) {
+                                // If expanding the search, then scroll to the top
+                                coroutineScope.launch {
+                                    scrollState.animateScrollToItem(0, 0)
+                                }
+                            }
+                            toggleSearchBarVisibility(!searchBarVisible)
+                        },
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onSurface
                         )

@@ -1,10 +1,12 @@
 package com.bp.dinodata.presentation
 
 import android.util.Log
+import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -27,9 +29,10 @@ fun MyNavigation(
     ) {
         composable(
             Screens.ListGenus.route,
-            enterTransition = { fadeIn() + scaleIn() },
-            exitTransition = { fadeOut() },
-            popEnterTransition = { scaleIn() }
+            enterTransition = { fadeIn() + scaleIn(initialScale = 0.5f) + expandIn() },
+            exitTransition = { fadeOut() + shrinkOut() },
+            popEnterTransition = { scaleIn(initialScale = 0.75f) + expandIn() },
+            popExitTransition = { fadeOut() }
         ) {
             ListGenusScreen(
                 listGenusViewModel = hiltViewModel(),
@@ -46,9 +49,10 @@ fun MyNavigation(
         composable(
             Screens.DetailGenus.route + "/{$genusKey}",
             arguments = listOf(navArgument(genusKey){ type = NavType.StringType }),
-            enterTransition = { fadeIn() + scaleIn() },
-            exitTransition = { fadeOut() + scaleOut() },
-            popExitTransition = { fadeOut() + scaleOut() }
+            enterTransition = { fadeIn() + scaleIn(initialScale = 0.5f) + expandIn() },
+            exitTransition = { fadeOut() + scaleOut() + shrinkOut() },
+            popExitTransition = { fadeOut() },
+            popEnterTransition = { fadeIn() }
         ) {
             DetailGenusScreen(
                 detailGenusViewModel = hiltViewModel(),
