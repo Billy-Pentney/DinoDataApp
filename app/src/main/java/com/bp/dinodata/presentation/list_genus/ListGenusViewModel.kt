@@ -1,22 +1,18 @@
 package com.bp.dinodata.presentation.list_genus
 
 import android.util.Log
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bp.dinodata.data.Genus
+import com.bp.dinodata.data.IGenus
+import com.bp.dinodata.data.IResultsByLetter
+import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.presentation.LoadState
-import com.bp.dinodata.repo.PageResult
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,27 +21,27 @@ class ListGenusViewModel @Inject constructor(
     @set:Inject var genusUseCases: GenusUseCases
 ): ViewModel() {
 
-    private var _isLoaded: MutableState<LoadState> = mutableStateOf(LoadState.NotLoading)
-    private var _listOfGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
+//    private var _listOfGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
+    private var _listOfGeneraByLetter: MutableStateFlow<IResultsByLetter<IGenus>> = MutableStateFlow(ResultsByLetter())
 
-    private var _visibleGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
+    private var _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState(emptyList()))
 
     private var searchQuery: MutableState<String> = mutableStateOf("")
     private var searchBarVisibility: MutableState<Boolean> = mutableStateOf(false)
 
-    private val nextPageNum: MutableState<Int> = mutableIntStateOf(0)
-    private val _allPagesLoaded: MutableState<Boolean> = mutableStateOf(false)
 
     init {
-        loadAllGenera()
-//        initiateNextPageLoad()
-    }
+        _uiState.value = _uiState.value.copy(loadState = LoadState.InProgress)
 
-    private fun loadAllGenera() {
-        _isLoaded.value = LoadState.LoadingPage(nextPageNum.value)
         viewModelScope.launch {
-            genusUseCases.getAllGenera(
-                callback = ::updateListOfGenera,
+            genusUseCases.getGeneraGroupedByLetter(
+                callback = {
+                    updateGroupedListOfGenera(it)
+                    _uiState.value = _uiState.value.copy(
+                        visiblePage = _listOfGeneraByLetter.value.getGroupByIndex(0),
+                        selectedPageIndex = 0
+                    )
+                },
                 onError = {
                     Log.d("ListGenusViewModel", "Error when fetching genera", it)
                 }
@@ -53,83 +49,46 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    private fun updateListOfGenera(genera: List<Genus>) {
+    private fun updateGroupedListOfGenera(genera: IResultsByLetter<IGenus>) {
         viewModelScope.launch {
-            _listOfGenera.value = genera
-            _isLoaded.value = LoadState.IsLoaded(nextPageNum.value)
-            nextPageNum.value++
-            applySearchQuery(searchQuery.value)
-        }
-    }
+            _listOfGeneraByLetter.value = genera
 
-    private fun appendToListOfGenera(fetchResult: PageResult<Genus>) {
-        viewModelScope.launch {
-            val newGenera = fetchResult.data
+            val pageIndex = _uiState.value.selectedPageIndex
 
-            // Append the new data to the end of the old list
-            val existingGenera = _listOfGenera.value.toMutableList()
-            existingGenera.addAll(newGenera)
-            _listOfGenera.value = existingGenera
-
-            Log.d("ListGenusViewModel",
-                "Appended ${newGenera.size} genera via callback. " +
-                        "Total size: ${existingGenera.size}")
-
-            // Indicate that this page has been loaded
-            _isLoaded.value = LoadState.IsLoaded(nextPageNum.value)
-            nextPageNum.value++
-
-            _allPagesLoaded.value = fetchResult.isAllDataRetrieved
-
-            applySearchQuery(searchQuery.value)
-        }
-    }
-
-    fun getListOfGenera(): StateFlow<List<Genus>>
-        = _visibleGenera
-
-    fun getIsLoadedState(): State<LoadState> = _isLoaded
-
-    private fun initiateNextPageLoad() {
-        if (_isLoaded.value is LoadState.LoadingPage) {
-            Log.d("ListGenusViewModel", "Load already in progress; ignoring duplicate")
-            return
-        }
-        else {
-            Log.d("ListGenusViewModel", "Triggering page-load")
-        }
-
-        viewModelScope.launch {
-            // Note that a load-operation is in-progress
-            if (nextPageNum.value == 0) {
-                _isLoaded.value = LoadState.LoadingFirstPage
+            if (_uiState.value.searchBarVisible) {
+                applySearchQuery(searchQuery.value)
             }
             else {
-                _isLoaded.value = LoadState.LoadingPage(nextPageNum.value)
+                _uiState.value = _uiState.value.copy(
+                    loadState = LoadState.Loaded,
+                    visiblePage =_listOfGeneraByLetter.value.getGroupByIndex(pageIndex),
+                    pageKeys = _listOfGeneraByLetter.value.getKeys().map { it.toString() }
+                )
             }
-
-            genusUseCases.getNextPageOfGenera(
-                startAfter = _listOfGenera.value.lastOrNull()?.getName(),
-                callback = ::appendToListOfGenera,
-                onException = { exc ->
-                    _isLoaded.value = LoadState.Error(exc.message)
-                    Log.d("ListGenusViewModel", "Failed to load next page due to Firebase exception", exc)
-                }
-            )
         }
     }
+
+    fun getUiState(): State<ListGenusUiState> = _uiState
 
     fun onEvent(event: ListGenusPageUiEvent) {
         when(event) {
-            ListGenusPageUiEvent.InitiateNextPageLoad -> {
-                initiateNextPageLoad()
-            }
             is ListGenusPageUiEvent.UpdateSearchQuery -> {
                 applySearchQuery(event.query, event.capSensitive)
             }
             ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearSearchQueryOrHideSearchBar()
             is ListGenusPageUiEvent.ToggleSearchBar -> {
-                searchBarVisibility.value = event.visible
+                _uiState.value = _uiState.value.copy(
+                    searchBarVisible = event.visible
+                )
+            }
+            is ListGenusPageUiEvent.SwitchToPage -> {
+                val key = _listOfGeneraByLetter.value.getKey(event.pageIndex)
+                // TODO - check if index is invalid
+                val visibleGenera = _listOfGeneraByLetter.value.getGroupByLetter(key)
+                _uiState.value = _uiState.value.copy(
+                    visiblePage = visibleGenera,
+                    selectedPageIndex = event.pageIndex
+                )
             }
         }
     }
@@ -144,29 +103,30 @@ class ListGenusViewModel @Inject constructor(
         val queryTrimmed = query.trim()
 
         viewModelScope.launch {
-            _visibleGenera.emit(
-                _listOfGenera.value.filter {
-                    it.getName().startsWith(queryTrimmed, ignoreCase = !capitalSensitive)
-                }
+            val filteredGenera = _listOfGeneraByLetter.value.toList().filter {
+                it.getName().startsWith(queryTrimmed, ignoreCase = !capitalSensitive)
+            }
+            _uiState.value = _uiState.value.applySearch(
+                searchQuery = searchQuery.value,
+                searchResults = filteredGenera
             )
         }
     }
 
     private fun clearSearchQueryOrHideSearchBar() {
-        if (searchQuery.value.isNotEmpty()) {
+        if (_uiState.value.searchBarQuery.isNotEmpty()) {
             // If any text is present, clear it, but leave the bar open
-            searchQuery.value = ""
-            viewModelScope.launch {
-                _visibleGenera.emit(_listOfGenera.value)
-            }
+            _uiState.value = _uiState.value.applySearch(
+                searchQuery = "",
+                _listOfGeneraByLetter.value.toList()
+            )
         }
         else {
             // Otherwise, hide the search bar
-            searchBarVisibility.value = false
+            _uiState.value = _uiState.value.copy(searchBarVisible = false)
         }
     }
 
     fun getSearchQueryState(): State<String> = searchQuery
     fun getSearchBarVisibility(): State<Boolean> = searchBarVisibility
 }
-

@@ -1,6 +1,8 @@
 package com.bp.dinodata.use_cases
 
 import com.bp.dinodata.data.Genus
+import com.bp.dinodata.data.IGenus
+import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.repo.PageResult
 import com.bp.dinodata.repo.GenusRepository
 
@@ -13,6 +15,16 @@ class GenusUseCases(
     ) {
         genusRepository.getAllGenera(
             callback,
+            onError
+        )
+    }
+
+    fun getGeneraGroupedByLetter(
+        callback: (ResultsByLetter<IGenus>) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        genusRepository.getAllGenera(
+            { callback(ResultsByLetter(it)) },
             onError
         )
     }

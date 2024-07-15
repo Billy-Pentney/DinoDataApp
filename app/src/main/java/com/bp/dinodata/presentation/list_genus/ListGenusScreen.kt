@@ -7,16 +7,19 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
@@ -27,29 +30,30 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
-import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
+import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.theme.DinoDataTheme
@@ -59,49 +63,17 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListGenusScreenContent(
-    loadState: LoadState,
-    searchQueryState: State<String>,
-    searchBarVisibility: State<Boolean>,
-    genusList: List<Genus>,
+    uiState: ListGenusUiState,
     navigateToGenus: (String) -> Unit = {},
-    columns: Int = 1,
     spacing: Dp = 8.dp,
     outerPadding: Dp = 12.dp,
-    requestNextPage: () -> Unit = {},
+    switchToPageByIndex: (Int) -> Unit = {},
     updateSearchQuery: (String) -> Unit,
     clearSearchQuery: () -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
 ) {
-    Log.d("LGSC", "Recomposed")
-
-    val scrollState = rememberLazyListState()
-//    val scrollState = rememberLazyGridState()
-//    val scrollPosition by remember { derivedStateOf { scrollState.firstVisibleItemIndex } }
-//    var loadTriggered by remember { mutableStateOf(false) }
-
-//    LaunchedEffect(scrollPosition) {
-//        if (genusList.isNotEmpty()
-//            && genusList.size-15 <= scrollPosition
-//            && !loadTriggered)
-//        {
-//            Log.d("ListGenusScreen","Trigger load")
-//            requestNextPage()
-//            loadTriggered = true
-//        }
-//    }
-//
-//    SideEffect {
-//        if (loadState is LoadState.IsLoaded) {
-//            loadTriggered = false
-//        }
-//    }
-
-    val searchQuery = remember { searchQueryState }
-    val searchBarVisible by remember { searchBarVisibility }
-    val coroutineScope = rememberCoroutineScope()
-
-    // Store the first letter of the last displayed item, in order to delimit the section
-    var letter by remember { mutableStateOf('-') }
+    val loadState = uiState.loadState
+    val searchBarVisible = uiState.searchBarVisible
 
     Scaffold(
         topBar = {
@@ -115,12 +87,6 @@ fun ListGenusScreenContent(
                 actions = {
                     IconButton(
                         onClick = {
-                            if (!searchBarVisible) {
-                                // If expanding the search, then scroll to the top
-                                coroutineScope.launch {
-                                    scrollState.animateScrollToItem(0, 0)
-                                }
-                            }
                             toggleSearchBarVisibility(!searchBarVisible)
                         },
                         colors = IconButtonDefaults.iconButtonColors(
@@ -150,42 +116,21 @@ fun ListGenusScreenContent(
         Column (
             modifier = Modifier.padding(pad)
         ) {
-            ListGenusSearchBar(
-                searchBarQuery = searchQuery,
-                searchBarVisibility = searchBarVisibility,
-                toggleVisibility = toggleSearchBarVisibility,
-                updateSearchQuery = updateSearchQuery,
-                clearSearchQuery = clearSearchQuery,
-                numCreaturesVisible = genusList.size,
-                modifier = Modifier.padding(horizontal = outerPadding)
-            )
-
             when (loadState) {
-                is LoadState.IsLoaded,
-                is LoadState.LoadingPage -> {
-
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(spacing),
-                        state = scrollState,
-                        contentPadding = PaddingValues(outerPadding),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(genusList, key = { it.getName() }) { genus ->
-                            val firstLetter = genus.getName()[0]
-                            if (firstLetter != letter) {
-                                Text(firstLetter.toString(), modifier=Modifier.padding(4.dp))
-                                letter = firstLetter
-                            }
-                            GenusListItem(
-                                genus = genus,
-                                onClick = { navigateToGenus(genus.getName()) },
-                                showDietText = false
-                            )
-                        }
-                    }
+                LoadState.Loaded -> {
+                    ShowHorizontalPagerOfGeneraByLetter(
+                        uiState = uiState,
+                        spacing = spacing,
+                        outerPadding = outerPadding,
+                        navigateToGenus = navigateToGenus,
+                        switchToPageByIndex = switchToPageByIndex,
+                        toggleSearchBarVisibility = toggleSearchBarVisibility,
+                        clearSearchQuery = clearSearchQuery,
+                        updateSearchQuery = updateSearchQuery
+                    )
                 }
 
-                is LoadState.LoadingFirstPage -> {
+                LoadState.InProgress -> {
                     // Loading items Placeholder
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -199,10 +144,123 @@ fun ListGenusScreenContent(
                 }
 
                 is LoadState.Error -> {
-                    Text("Sorry! An error occurred. Reason: ${loadState.reason}")
+                    Text("Sorry! An error occurred. Reason: ${loadState?.reason}")
                 }
 
                 else -> {}
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowHorizontalPagerOfGeneraByLetter(
+    uiState: ListGenusUiState,
+    spacing: Dp,
+    outerPadding: Dp,
+    navigateToGenus: (String) -> Unit,
+    switchToPageByIndex: (Int) -> Unit,
+    toggleSearchBarVisibility: (Boolean) -> Unit,
+    clearSearchQuery: () -> Unit,
+    updateSearchQuery: (String) -> Unit
+) {
+
+    val visibleLetters = uiState.pageSelectionVisible
+    val keys = uiState.pageKeys
+    val selectedKeyIndex = uiState.selectedPageIndex
+//    val numGroups = keys.size
+
+    if (keys.isEmpty()) {
+        Text("No data to display!")
+        return
+    }
+
+    val keyIndices = remember { keys.indices.toList() }
+
+    val generaList = uiState.getVisibleGenera() ?: emptyList()
+    val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(outerPadding),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Crossfade(targetState = uiState.searchBarVisible, label="search_or_page_select") {
+            if (it) {
+                ListGenusSearchBar(
+                    searchBarQuery = uiState.searchBarQuery,
+                    toggleVisibility = toggleSearchBarVisibility,
+                    updateSearchQuery = updateSearchQuery,
+                    clearSearchQuery = clearSearchQuery
+                )
+            }
+            else {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        4.dp,
+                        Alignment.CenterHorizontally
+                    ),
+                ) {
+                    items(keyIndices) { index ->
+                        val key = keys[index]
+                        val isSelected = (selectedKeyIndex == index)
+                        val color =
+                            if (isSelected) MaterialTheme.colorScheme.surface
+                            else Color.Transparent
+
+                        Surface(
+                            color = color,
+                            shape = CircleShape,
+                            onClick = {
+                                switchToPageByIndex(index)
+                                coroutineScope.launch {
+                                    scrollState.animateScrollToItem(0, 0)
+                                }
+                            },
+                            modifier = Modifier
+                                .height(IntrinsicSize.Min)
+                                .aspectRatio(1f)
+                        ) {
+                            Text(
+                                key,
+                                fontSize = 20.sp,
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .alpha(
+                                        if (isSelected) 1f else 0.75f
+                                    ),
+                                textAlign = TextAlign.Center,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+
+        DividerTextRow(
+            text = stringResource(R.string.text_showing_X_creatures, generaList.size),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            dividerPadding = PaddingValues(horizontal = 8.dp)
+        )
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(spacing),
+            state = scrollState,
+            contentPadding = PaddingValues(bottom=40.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(generaList, key = { it.getName() }) { genus ->
+                GenusListItem(
+                    genus = genus,
+                    onClick = { navigateToGenus(genus.getName()) },
+                    showDietText = false
+                )
             }
         }
     }
@@ -214,10 +272,9 @@ fun ListGenusScreen(
     listGenusViewModel: ListGenusViewModel,
     navigateToGenus: (String) -> Unit,
 ) {
-    val genera by listGenusViewModel.getListOfGenera().collectAsState()
-    val hasLoaded by remember { listGenusViewModel.getIsLoadedState() }
-    val searchQuery = remember { listGenusViewModel.getSearchQueryState() }
-    val searchBarVisibility = remember { listGenusViewModel.getSearchBarVisibility() }
+    val uiState by remember { listGenusViewModel.getUiState() }
+    val searchQuery = remember { derivedStateOf { uiState.searchBarQuery } }
+    val searchBarVisibility = remember { derivedStateOf { uiState.searchBarVisible } }
 
     val context = LocalContext.current
 
@@ -236,14 +293,11 @@ fun ListGenusScreen(
     }
 
     ListGenusScreenContent(
-        loadState = hasLoaded,
-        searchQueryState = searchQuery,
-        genusList = genera,
+        uiState = uiState,
         navigateToGenus = navigateToGenus,
-        searchBarVisibility = searchBarVisibility,
-        requestNextPage = {
-            Toast.makeText(context, "Loading new page...", Toast.LENGTH_SHORT).show()
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.InitiateNextPageLoad)
+        switchToPageByIndex = { index ->
+            Toast.makeText(context, "Loading new page $index", Toast.LENGTH_SHORT).show()
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.SwitchToPage(index))
         },
         updateSearchQuery = {
             listGenusViewModel.onEvent(ListGenusPageUiEvent.UpdateSearchQuery(it))
@@ -307,21 +361,22 @@ fun PreviewListGenus() {
         .setTimePeriod("Other")
         .setCreatureType("other").build()
 
-    val searchQuery = remember { mutableStateOf("") }
-    val searchBarVisibility = remember { mutableStateOf(true) }
     val genera = listOf(
-                acro, trike, dipl, raptor, ptero, edmon,
-                ankylo, stego, spino, unkn
-            ).sortedBy { it.getName() }
+        acro, trike, dipl, raptor, ptero, edmon,
+        ankylo, stego, spino, unkn
+    )
+    val generaGrouped = ResultsByLetter(genera)
+    val keys = generaGrouped.getKeys()
 
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
-            loadState = LoadState.IsLoaded(0),
-            searchQueryState = searchQuery,
-            searchBarVisibility = searchBarVisibility,
-            genusList = genera,
-            columns = 1,
-            //            triggerNextPageLoad = {  },
+            uiState = ListGenusUiState(
+                visiblePage = generaGrouped.getGroupByIndex(0),
+                searchBarQuery = "",
+                searchBarVisible = true,
+                loadState = LoadState.Loaded,
+                pageKeys = keys.map { it.toString() }
+            ),
             updateSearchQuery = {},
             clearSearchQuery = {},
             toggleSearchBarVisibility = {}

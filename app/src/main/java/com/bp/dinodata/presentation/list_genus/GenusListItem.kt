@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -39,7 +40,8 @@ import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 fun GenusListItem(
     genus: IDisplayInList,
     onClick: () -> Unit = {},
-    showDietText: Boolean = true
+    showDietText: Boolean = true,
+    height: Dp = 50.dp
 ) {
     val silhouetteId = remember {
         convertCreatureTypeToSilhouette(genus.getCreatureType())
@@ -50,7 +52,7 @@ fun GenusListItem(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(height),
         onClick = onClick
     ) {
         Box(
