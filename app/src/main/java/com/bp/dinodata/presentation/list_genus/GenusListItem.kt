@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,9 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.IDisplayInList
-import com.bp.dinodata.presentation.detail_genus.LoadAsyncImageOrReserveDrawable
 import com.bp.dinodata.presentation.icons.DietIconSquare
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 
@@ -40,12 +36,9 @@ import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 fun GenusListItem(
     genus: IDisplayInList,
     onClick: () -> Unit = {},
-    showDietText: Boolean = true,
     height: Dp = 50.dp
 ) {
-    val silhouetteId = remember {
-        convertCreatureTypeToSilhouette(genus.getCreatureType())
-    }
+    val silhouetteId = remember { convertCreatureTypeToSilhouette(genus.getCreatureType()) }
 
     Surface(
         color = Color.DarkGray,
@@ -76,20 +69,22 @@ fun GenusListItem(
                     modifier = Modifier.padding(vertical = 2.dp)
                 )
             }
-            Image(
-                painter = painterResource(id = silhouetteId),
-                contentDescription = "creature type",
-                modifier = Modifier
-                    .alpha(0.5f)
-                    .zIndex(0f)
-                    .padding(top = 5.dp)
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.33f)
-                    .absoluteOffset(x = 25.dp, y = 0.dp)
-                    .clipToBounds(),
-                alignment = Alignment.BottomStart,
-                contentScale = ContentScale.FillHeight,
-            )
+            silhouetteId?.let {
+                Image(
+                    painter = painterResource(id = silhouetteId),
+                    contentDescription = "creature type",
+                    modifier = Modifier
+                        .alpha(0.4f)
+                        .zIndex(0f)
+                        .padding(top = 5.dp)
+                        .fillMaxHeight()
+//                        .fillMaxWidth(0.33f)
+                        .absoluteOffset(x = 25.dp, y = 0.dp)
+                        .clipToBounds(),
+                    alignment = Alignment.BottomEnd,
+                    contentScale = ContentScale.FillHeight,
+                )
+            }
         }
     }
 }

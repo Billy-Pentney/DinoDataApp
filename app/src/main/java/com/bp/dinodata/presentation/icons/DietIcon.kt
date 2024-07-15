@@ -106,24 +106,24 @@ fun DietIconThin(
                         .padding(imagePadding)
                         .height(IntrinsicSize.Min)
                 )
-//                if (showName) {
-//                    Text(
-//                        dietName,
-//                        fontWeight = FontWeight.Bold,
-//                        color = Color.White,
-//                        fontSize = 16.sp,
-//                        modifier = Modifier
-//                            .padding(vertical = borderThickness)
-//                            .padding(end = 6.dp),
-//                        style = TextStyle(
-//                            shadow = Shadow(
-//                                color = MyGrey800,
-//                                offset = Offset(1f, 1f),
-//                                blurRadius = 2f
-//                            )
-//                        )
-//                    )
-//                }
+                if (showName) {
+                    Text(
+                        dietName,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .padding(vertical = borderThickness)
+                            .padding(end = 6.dp),
+                        style = TextStyle(
+                            shadow = Shadow(
+                                color = MyGrey800,
+                                offset = Offset(1f, 1f),
+                                blurRadius = 2f
+                            )
+                        )
+                    )
+                }
             }
         }
     }

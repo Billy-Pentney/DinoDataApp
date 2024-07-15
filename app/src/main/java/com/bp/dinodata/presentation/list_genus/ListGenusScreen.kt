@@ -1,8 +1,6 @@
 package com.bp.dinodata.presentation.list_genus
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
@@ -41,9 +39,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Cyan
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -165,7 +161,6 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     updateSearchQuery: (String) -> Unit
 ) {
 
-    val visibleLetters = uiState.pageSelectionVisible
     val keys = uiState.pageKeys
     val selectedKeyIndex = uiState.selectedPageIndex
 //    val numGroups = keys.size
@@ -182,39 +177,38 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     val coroutineScope = rememberCoroutineScope()
 
     Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(outerPadding),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Crossfade(targetState = uiState.searchBarVisible, label="search_or_page_select") {
+        Crossfade(
+            targetState = uiState.searchBarVisible,
+            label="search_or_page_select"
+        ) {
             if (it) {
                 ListGenusSearchBar(
                     searchBarQuery = uiState.searchBarQuery,
                     toggleVisibility = toggleSearchBarVisibility,
                     updateSearchQuery = updateSearchQuery,
-                    clearSearchQuery = clearSearchQuery
+                    clearSearchQuery = clearSearchQuery,
+                    modifier = Modifier.padding(outerPadding)
                 )
             }
             else {
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        4.dp,
-                        Alignment.CenterHorizontally
-                    ),
+                    modifier = Modifier.fillMaxWidth().padding(top=outerPadding),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
                 ) {
                     items(keyIndices) { index ->
                         val key = keys[index]
                         val isSelected = (selectedKeyIndex == index)
                         val color =
                             if (isSelected) MaterialTheme.colorScheme.surface
-                            else Color.Transparent
+                            else MaterialTheme.colorScheme.background
 
                         Surface(
                             color = color,
-                            shape = CircleShape,
+                            shape = RoundedCornerShape(8.dp),
                             onClick = {
                                 switchToPageByIndex(index)
                                 coroutineScope.launch {
@@ -223,16 +217,15 @@ fun ShowHorizontalPagerOfGeneraByLetter(
                             },
                             modifier = Modifier
                                 .height(IntrinsicSize.Min)
-                                .aspectRatio(1f)
+                                .aspectRatio(if (isSelected) 1f else 0.6f)
                         ) {
                             Text(
                                 key,
-                                fontSize = 20.sp,
+                                fontSize = if (isSelected) 20.sp else 18.sp,
                                 modifier = Modifier
-                                    .padding(12.dp)
-                                    .alpha(
-                                        if (isSelected) 1f else 0.75f
-                                    ),
+                                    .fillMaxSize()
+                                    .padding(vertical = 12.dp)
+                                    .alpha(if (isSelected) 1f else 0.75f),
                                 textAlign = TextAlign.Center,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             )
@@ -240,26 +233,29 @@ fun ShowHorizontalPagerOfGeneraByLetter(
                     }
                 }
             }
-
         }
 
         DividerTextRow(
             text = stringResource(R.string.text_showing_X_creatures, generaList.size),
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 4.dp + outerPadding, vertical = 4.dp),
             dividerPadding = PaddingValues(horizontal = 8.dp)
         )
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(spacing),
             state = scrollState,
-            contentPadding = PaddingValues(bottom=40.dp),
+            contentPadding = PaddingValues(
+                bottom = 60.dp,
+                top = outerPadding,
+                start = outerPadding,
+                end = outerPadding
+            ),
             modifier = Modifier.fillMaxWidth()
         ) {
             items(generaList, key = { it.getName() }) { genus ->
                 GenusListItem(
                     genus = genus,
-                    onClick = { navigateToGenus(genus.getName()) },
-                    showDietText = false
+                    onClick = { navigateToGenus(genus.getName()) }
                 )
             }
         }
@@ -276,12 +272,6 @@ fun ListGenusScreen(
     val searchQuery = remember { derivedStateOf { uiState.searchBarQuery } }
     val searchBarVisibility = remember { derivedStateOf { uiState.searchBarVisible } }
 
-    val context = LocalContext.current
-
-//    BackHandler (searchQuery.value.isNotBlank()) {
-//        // Clear the Search bar when navigating up
-//        listGenusViewModel.onEvent(ListGenusPageUiEvent.ClearSearchQuery)
-//    }
     BackHandler (searchBarVisibility.value) {
         if (searchQuery.value.isNotEmpty()) {
             listGenusViewModel.onEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
@@ -296,7 +286,7 @@ fun ListGenusScreen(
         uiState = uiState,
         navigateToGenus = navigateToGenus,
         switchToPageByIndex = { index ->
-            Toast.makeText(context, "Loading new page $index", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(context, "Loading new page $index", Toast.LENGTH_SHORT).show()
             listGenusViewModel.onEvent(ListGenusPageUiEvent.SwitchToPage(index))
         },
         updateSearchQuery = {
@@ -371,9 +361,9 @@ fun PreviewListGenus() {
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
             uiState = ListGenusUiState(
-                visiblePage = generaGrouped.getGroupByIndex(0),
+                visiblePage = genera,//generaGrouped.getGroupByIndex(0),
                 searchBarQuery = "",
-                searchBarVisible = true,
+                searchBarVisible = false,
                 loadState = LoadState.Loaded,
                 pageKeys = keys.map { it.toString() }
             ),
