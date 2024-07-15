@@ -1,21 +1,20 @@
 package com.bp.dinodata.presentation.list_genus
 
 import com.bp.dinodata.data.IGenus
+import com.bp.dinodata.data.IResultsByLetter
+import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.presentation.LoadState
 
 data class ListGenusUiState(
-    private val visiblePage: List<IGenus>? = null,
+    private val allPageData: IResultsByLetter<IGenus>? = null,
     val loadState: LoadState = LoadState.NotLoading,
-    private val searchResults: List<IGenus>? = null,
+    val searchResults: List<IGenus>? = null,
     val searchBarVisible: Boolean = false,
     val searchBarQuery: String = "",
     val pageSelectionVisible: Boolean = true,
-    val pageKeys: List<String> = emptyList(),
     val selectedPageIndex: Int = 0
 ) {
-    fun showSearchBar(visible: Boolean): ListGenusUiState {
-        return this.copy(searchBarVisible = visible)
-    }
+    val keys: List<Char> = allPageData?.getKeys() ?: emptyList()
 
     fun applySearch(searchQuery: String, searchResults: List<IGenus>?): ListGenusUiState {
         return this.copy(
@@ -24,18 +23,7 @@ data class ListGenusUiState(
         )
     }
 
-    fun switchPage(index: Int, newResults: List<IGenus>): ListGenusUiState {
-        return this.copy(
-            selectedPageIndex = index,
-            visiblePage = newResults
-        )
-    }
-
-    fun getVisibleGenera(): List<IGenus>? {
-        return if (searchBarVisible) {
-            searchResults
-        } else {
-            visiblePage
-        }
+    fun getPageByIndex(index: Int): List<IGenus>? {
+        return allPageData?.getGroupByIndex(index)
     }
 }

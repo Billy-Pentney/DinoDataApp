@@ -24,7 +24,7 @@ class ListGenusViewModel @Inject constructor(
 //    private var _listOfGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
     private var _listOfGeneraByLetter: MutableStateFlow<IResultsByLetter<IGenus>> = MutableStateFlow(ResultsByLetter())
 
-    private var _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState(emptyList()))
+    private var _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
 
     private var searchQuery: MutableState<String> = mutableStateOf("")
     private var searchBarVisibility: MutableState<Boolean> = mutableStateOf(false)
@@ -35,13 +35,7 @@ class ListGenusViewModel @Inject constructor(
 
         viewModelScope.launch {
             genusUseCases.getGeneraGroupedByLetter(
-                callback = {
-                    updateGroupedListOfGenera(it)
-                    _uiState.value = _uiState.value.copy(
-                        visiblePage = _listOfGeneraByLetter.value.getGroupByIndex(0),
-                        selectedPageIndex = 0
-                    )
-                },
+                callback = ::updateGroupedListOfGenera,
                 onError = {
                     Log.d("ListGenusViewModel", "Error when fetching genera", it)
                 }
@@ -53,17 +47,14 @@ class ListGenusViewModel @Inject constructor(
         viewModelScope.launch {
             _listOfGeneraByLetter.value = genera
 
-            val pageIndex = _uiState.value.selectedPageIndex
+            _uiState.value = _uiState.value.copy(
+                loadState = LoadState.Loaded,
+                allPageData = genera,
+                searchResults = genera.toList()
+            )
 
             if (_uiState.value.searchBarVisible) {
                 applySearchQuery(searchQuery.value)
-            }
-            else {
-                _uiState.value = _uiState.value.copy(
-                    loadState = LoadState.Loaded,
-                    visiblePage =_listOfGeneraByLetter.value.getGroupByIndex(pageIndex),
-                    pageKeys = _listOfGeneraByLetter.value.getKeys().map { it.toString() }
-                )
             }
         }
     }
@@ -82,11 +73,7 @@ class ListGenusViewModel @Inject constructor(
                 )
             }
             is ListGenusPageUiEvent.SwitchToPage -> {
-                val key = _listOfGeneraByLetter.value.getKey(event.pageIndex)
-                // TODO - check if index is invalid
-                val visibleGenera = _listOfGeneraByLetter.value.getGroupByLetter(key)
                 _uiState.value = _uiState.value.copy(
-                    visiblePage = visibleGenera,
                     selectedPageIndex = event.pageIndex
                 )
             }
@@ -127,6 +114,4 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    fun getSearchQueryState(): State<String> = searchQuery
-    fun getSearchBarVisibility(): State<Boolean> = searchBarVisibility
 }

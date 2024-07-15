@@ -51,17 +51,10 @@ fun ListGenusSearchBar(
                 placeholder = {
                     Text(stringResource(R.string.search_box_hint), fontStyle = FontStyle.Italic)
                 },
-                leadingIcon = {
-                    Icon(Icons.Outlined.Search, "search")
-                },
+                leadingIcon = { Icon(Icons.Outlined.Search, "search") },
                 trailingIcon = {
                     if (searchBarQuery.isNotEmpty()) {
-                        IconButton(
-                            onClick = {
-                                clearSearchQuery()
-                                toggleVisibility(false)
-                            }
-                        ) {
+                        IconButton(onClick = { clearSearchQuery() }) {
                             Icon(
                                 Icons.Filled.Close,
                                 "clear search",

@@ -69,7 +69,7 @@ class GenusBuilderImpl(
             }
 
             dict["diet"]?.let { builder.setDiet(it.toString()) }
-            dict["years_lived"]?.let { builder.setYearsLived(it.toString()) }
+            dict["years_lived_raw"]?.let { builder.setYearsLived(it.toString()) }
             dict["weight"]?.let { builder.setWeight(it.toString()) }
             dict["length"]?.let { builder.setLength(it.toString()) }
             dict["type"]?.let { builder.setCreatureType(it.toString()) }
