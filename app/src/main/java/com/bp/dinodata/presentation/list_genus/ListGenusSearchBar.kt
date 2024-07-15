@@ -37,14 +37,14 @@ fun ListGenusSearchBar(
     toggleVisibility: (Boolean) -> Unit,
     updateSearchQuery: (String) -> Unit,
     clearSearchQuery: () -> Unit,
-    numCreaturesVisible: Int
+    numCreaturesVisible: Int,
+    modifier: Modifier = Modifier
 ) {
     val visibleSearchBar by remember { searchBarVisibility }
     val focusManager = LocalFocusManager.current
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AnimatedVisibility(visibleSearchBar) {

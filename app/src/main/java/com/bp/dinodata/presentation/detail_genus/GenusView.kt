@@ -222,7 +222,7 @@ fun GenusTitleCard(
                     val titleBottomPadding = innerPadding - titleOffset
 
                     Text(
-                        genus.name,
+                        genus.getName(),
                         fontWeight = FontWeight.Bold,
                         fontSize = 26.sp,
                         fontStyle = FontStyle.Italic,
@@ -311,14 +311,14 @@ fun GenusDetail(
                     )
                     LabelAttributeRow(
                         label = stringResource(R.string.label_creature_type),
-                        value = convertCreatureTypeToString(genus.type)
+                        value = convertCreatureTypeToString(genus.getCreatureType())
                     )
                     HorizontalDivider(
                         Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .alpha(0.5f)
                     )
-                    LabelContentRow(label = stringResource(R.string.label_diet), valueContent = { DietIconThin(genus.diet) })
+                    LabelContentRow(label = stringResource(R.string.label_diet), valueContent = { DietIconThin(genus.getDiet()) })
                     LabelAttributeRow(label = stringResource(R.string.label_length), value = genus.getLength())
                     LabelAttributeRow(label = stringResource(R.string.label_weight), value = genus.getWeight())
 
@@ -364,7 +364,7 @@ fun ShowTaxonomicTree(
     LaunchedEffect(genus) {
         val taxonomy = genus.getListOfTaxonomy()
         val taxonBuilder = TaxonTreeBuilder(taxonomy)
-        val taxonTree = taxonBuilder.getPrintableTree(genus = genus.name)
+        val taxonTree = taxonBuilder.getPrintableTree(genus = genus.getName())
         taxonTreeUptoLast = taxonTree.dropLast(1)
         finalChild = taxonTree.last()
     }

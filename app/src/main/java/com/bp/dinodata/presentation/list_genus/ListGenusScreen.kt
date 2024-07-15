@@ -51,6 +51,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.Genus
 import com.bp.dinodata.data.GenusBuilderImpl
 import com.bp.dinodata.presentation.LoadState
+import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.theme.DinoDataTheme
 import kotlinx.coroutines.launch
 
@@ -96,10 +97,11 @@ fun ListGenusScreenContent(
 //    }
 
     val searchQuery = remember { searchQueryState }
-
     val searchBarVisible by remember { searchBarVisibility }
-
     val coroutineScope = rememberCoroutineScope()
+
+    // Store the first letter of the last displayed item, in order to delimit the section
+    var letter by remember { mutableStateOf('-') }
 
     Scaffold(
         topBar = {
@@ -144,57 +146,64 @@ fun ListGenusScreenContent(
             )
         }
     ) { pad ->
-        when (loadState) {
-            is LoadState.IsLoaded,
-            is LoadState.LoadingPage -> {
 
-                LazyColumn(
-//                    columns = GridCells.Fixed(columns),
-                    verticalArrangement = Arrangement.spacedBy(spacing),
-//                    horizontalArrangement = Arrangement.spacedBy(spacing),
-                    state = scrollState,
-                    contentPadding = PaddingValues(outerPadding),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(pad)
-                ) {
-                    item {
-                        ListGenusSearchBar(
-                            searchBarQuery = searchQuery,
-                            searchBarVisibility = searchBarVisibility,
-                            toggleVisibility = toggleSearchBarVisibility,
-                            updateSearchQuery = updateSearchQuery,
-                            clearSearchQuery = clearSearchQuery,
-                            numCreaturesVisible = genusList.size
-                        )
-                    }
+        Column (
+            modifier = Modifier.padding(pad)
+        ) {
+            ListGenusSearchBar(
+                searchBarQuery = searchQuery,
+                searchBarVisibility = searchBarVisibility,
+                toggleVisibility = toggleSearchBarVisibility,
+                updateSearchQuery = updateSearchQuery,
+                clearSearchQuery = clearSearchQuery,
+                numCreaturesVisible = genusList.size,
+                modifier = Modifier.padding(horizontal = outerPadding)
+            )
 
-                    items(genusList, key = { it.name }) {
-                        genus ->
-                        GenusListItem(
-                            genus = genus,
-                            onClick = { navigateToGenus(genus.name) },
-                            showDietText = false
-                        )
+            when (loadState) {
+                is LoadState.IsLoaded,
+                is LoadState.LoadingPage -> {
+
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(spacing),
+                        state = scrollState,
+                        contentPadding = PaddingValues(outerPadding),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(genusList, key = { it.getName() }) { genus ->
+                            val firstLetter = genus.getName()[0]
+                            if (firstLetter != letter) {
+                                Text(firstLetter.toString(), modifier=Modifier.padding(4.dp))
+                                letter = firstLetter
+                            }
+                            GenusListItem(
+                                genus = genus,
+                                onClick = { navigateToGenus(genus.getName()) },
+                                showDietText = false
+                            )
+                        }
                     }
                 }
-            }
-            is LoadState.LoadingFirstPage -> {
-                // Loading items Placeholder
-                Column (
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(color=Cyan)
-                    Spacer(modifier=Modifier.height(8.dp))
-                    Text("loading...")
+
+                is LoadState.LoadingFirstPage -> {
+                    // Loading items Placeholder
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(color = Cyan)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("loading...")
+                    }
                 }
+
+                is LoadState.Error -> {
+                    Text("Sorry! An error occurred. Reason: ${loadState.reason}")
+                }
+
+                else -> {}
             }
-            is LoadState.Error -> {
-                Text("Sorry! An error occurred. Reason: ${loadState.reason}")
-            }
-            else -> { }
         }
     }
 }
@@ -303,7 +312,7 @@ fun PreviewListGenus() {
     val genera = listOf(
                 acro, trike, dipl, raptor, ptero, edmon,
                 ankylo, stego, spino, unkn
-            )
+            ).sortedBy { it.getName() }
 
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(

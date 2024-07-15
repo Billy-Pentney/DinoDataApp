@@ -1,25 +1,42 @@
 package com.bp.dinodata.data
 
+import androidx.compose.runtime.Immutable
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
-interface IGenus {
+interface IHasTaxonomy {
     fun getTaxonomy(): String
     fun getListOfTaxonomy(): List<String>
     fun getTaxonomyAsPrintableTree(): String
+}
 
+interface IHasMeasurements {
     fun getLength(): String?
     fun getWeight(): String?
+}
 
+interface IHasName {
+    fun getName(): String
+}
+
+interface IHasNameInfo {
     fun getNameMeaning(): String?
     fun getNamePronunciation(): String?
 }
 
+interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList
 
+interface IDisplayInList: IHasName {
+    fun getDiet(): Diet?
+    fun getCreatureType(): CreatureType
+}
+
+
+@Immutable
 data class Genus(
-    val name: String,
-    val diet: Diet? = null,
-    val type: CreatureType = CreatureType.Other,
+    private val name: String,
+    private val diet: Diet? = null,
+    private val type: CreatureType = CreatureType.Other,
     val yearsLived: String? = null,
     val timePeriod: String? = null,
     private val nameMeaning: String? = null,
@@ -32,9 +49,6 @@ data class Genus(
 
     private val allImagesUrlData: List<SingleImageUrlData>?
         = imageUrlDataMap?.flatMap { it.value.getAllImageData() }
-
-    val mainThumbnailUrl = getThumbnailUrl()
-    val mainImageUrl = getImageUrl()
 
     override fun getTaxonomy(): String = taxonomy.joinToString("\n")
     override fun getListOfTaxonomy(): List<String> = taxonomy
@@ -50,6 +64,10 @@ data class Genus(
         return tree
     }
 
+
+    override fun getName(): String = name
+    override fun getCreatureType(): CreatureType = type
+    override fun getDiet(): Diet? = diet
     override fun getLength(): String? = length?.toString()
     override fun getWeight(): String? = weight?.toString()
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
@@ -65,9 +83,8 @@ data class Genus(
         return imageGroup?.getThumbnailUrl(0)
     }
 
-    fun getNumDistinctImages(): Int {
-        return allImagesUrlData?.size ?: 0
-    }
+    fun getNumDistinctImages(): Int = allImagesUrlData?.size ?: 0
+
 }
 
 

@@ -109,7 +109,7 @@ class ListGenusViewModel @Inject constructor(
             }
 
             genusUseCases.getNextPageOfGenera(
-                startAfter = _listOfGenera.value.lastOrNull()?.name,
+                startAfter = _listOfGenera.value.lastOrNull()?.getName(),
                 callback = ::appendToListOfGenera,
                 onException = { exc ->
                     _isLoaded.value = LoadState.Error(exc.message)
@@ -141,15 +141,12 @@ class ListGenusViewModel @Inject constructor(
                 else -> query.lowercase()
             })
 
+        val queryTrimmed = query.trim()
+
         viewModelScope.launch {
             _visibleGenera.emit(
                 _listOfGenera.value.filter {
-                    if (capitalSensitive) {
-                        query.trim() in it.name
-                    }
-                    else {
-                        query.trim().lowercase() in it.name.lowercase()
-                    }
+                    it.getName().startsWith(queryTrimmed, ignoreCase = !capitalSensitive)
                 }
             )
         }

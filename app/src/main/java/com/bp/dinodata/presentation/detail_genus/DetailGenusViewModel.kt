@@ -65,21 +65,25 @@ class DetailGenusViewModel @Inject constructor(
     }
 
     private fun playPronunciationFile() {
-        val name = _visibleGenus.value?.name
+        val name = _visibleGenus.value?.getName()
         Log.i(LOG_TAG, "Play pronunciation for $currentGenusName")
-        if (name != null) {
-            audioPronunciationUseCases.playPrerecordedAudio(name, callback = { success ->
+
+        if (name == null) {
+            Log.d(LOG_TAG, "Could not retrieve genus name for TTS")
+            return
+        }
+
+        audioPronunciationUseCases.playPrerecordedAudio(
+            name,
+            callback = { success ->
                 if (success) {
-                    Log.d(LOG_TAG, "Successfully played audio")
+                    Log.d(LOG_TAG, "Successfully played \'$name\' pronunciation")
                 }
                 else {
-                    Log.d(LOG_TAG, "Error when playing audio")
+                    Log.d(LOG_TAG, "An error occurred when playing audio for \'$name\'")
                 }
-            })
-        }
-        else {
-            Log.d(LOG_TAG, "Could not retrieve genus name for TTS")
-        }
+            }
+        )
     }
 }
 
