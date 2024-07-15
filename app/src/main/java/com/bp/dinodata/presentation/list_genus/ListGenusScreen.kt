@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.list_genus
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -40,6 +41,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color.Companion.Cyan
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -78,6 +82,13 @@ fun ListGenusScreenContent(
                     Text(
                         stringResource(R.string.title_creature_list),
                         fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    Icon(
+                        painterResource(id = R.mipmap.ic_launcher_v1_foreground),
+                        contentDescription = "app_logo",
+                        modifier = Modifier.padding(bottom=4.dp).alpha(0.6f)
                     )
                 },
                 actions = {
@@ -178,12 +189,12 @@ fun ShowHorizontalPagerOfGeneraByLetter(
 
     Column (
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Crossfade(
             targetState = uiState.searchBarVisible,
-            label="search_or_page_select"
+            label="search_or_page_select",
+            modifier = Modifier.padding(horizontal=outerPadding).padding(top=outerPadding)
         ) {
             if (it) {
                 ListGenusSearchBar(
@@ -191,12 +202,11 @@ fun ShowHorizontalPagerOfGeneraByLetter(
                     toggleVisibility = toggleSearchBarVisibility,
                     updateSearchQuery = updateSearchQuery,
                     clearSearchQuery = clearSearchQuery,
-                    modifier = Modifier.padding(outerPadding)
                 )
             }
             else {
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth().padding(top=outerPadding),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
                 ) {
                     items(keyIndices) { index ->
@@ -237,7 +247,7 @@ fun ShowHorizontalPagerOfGeneraByLetter(
 
         DividerTextRow(
             text = stringResource(R.string.text_showing_X_creatures, generaList.size),
-            modifier = Modifier.padding(horizontal = 4.dp + outerPadding, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 4.dp + outerPadding).padding(top=8.dp),
             dividerPadding = PaddingValues(horizontal = 8.dp)
         )
 
@@ -338,7 +348,7 @@ fun PreviewListGenus() {
     val ankylo = GenusBuilderImpl("Ankylosaurus")
         .setDiet("Herbivorous")
         .setTimePeriod("Cretaceous")
-        .setCreatureType("ankylosaur")
+        .setCreatureType("ankylosaurid")
         .build()
     val stego = GenusBuilderImpl("Stegosaurus")
         .setDiet("Herbivorous")

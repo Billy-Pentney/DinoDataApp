@@ -56,22 +56,28 @@ class GenusBuilderImpl(
         const val TAG = "GenusBuilder"
 
         fun fromDict(dict: MutableMap<String, Any>): GenusBuilder? {
-            val name = dict["name"]
+            val name = dict["name"] ?: return null
             // Only proceed if a name is given
-            return name?.let {
-                val builder = GenusBuilderImpl(name.toString())
-                dict["time_period"]?.let { builder.setTimePeriod(it.toString()) }
-                dict["diet"]?.let { builder.setDiet(it.toString()) }
-                dict["years_lived"]?.let { builder.setYearsLived(it.toString()) }
-                dict["weight"]?.let { builder.setWeight(it.toString()) }
-                dict["length"]?.let { builder.setLength(it.toString()) }
-                dict["type"]?.let { builder.setCreatureType(it.toString()) }
-                dict["pronunciation"]?.let { builder.setNamePronunciation(it.toString()) }
-//                dict["namePronunciation"]?.let { builder.setNamePronunciation(it.toString()) }
-                dict["name_meaning"]?.let { builder.setNameMeaning(it.toString()) }
-                dict["taxonomy"]?.let { builder.setTaxonomy(it.toString()) }
-                builder
+
+            val builder = GenusBuilderImpl(name.toString())
+
+            // TODO - fix parsing of time-period and ages
+            dict["time_period_epoch"]?.let {
+                if (it is ArrayList<*>) {
+                    builder.setTimePeriod(it[0].toString())
+                }
             }
+
+            dict["diet"]?.let { builder.setDiet(it.toString()) }
+            dict["years_lived"]?.let { builder.setYearsLived(it.toString()) }
+            dict["weight"]?.let { builder.setWeight(it.toString()) }
+            dict["length"]?.let { builder.setLength(it.toString()) }
+            dict["type"]?.let { builder.setCreatureType(it.toString()) }
+            dict["pronunciation"]?.let { builder.setNamePronunciation(it.toString()) }
+            dict["name_meaning"]?.let { builder.setNameMeaning(it.toString()) }
+            dict["meaning"]?.let { builder.setNameMeaning(it.toString()) }
+            dict["taxonomy"]?.let { builder.setTaxonomy(it.toString()) }
+            return builder
         }
     }
 
@@ -127,7 +133,8 @@ class GenusBuilderImpl(
             "large theropod"    -> CreatureType.LargeTheropod
             "small theropod"    -> CreatureType.SmallTheropod
             "ceratopsian"       -> CreatureType.Ceratopsian
-            "ankylosaurid", "armoured dinosaur"        -> CreatureType.Ankylosaur
+            "ankylosaurid",
+            "armoured dinosaur"        -> CreatureType.Ankylosaur
             "stegosaur"         -> CreatureType.Stegosaur
             "pachycephalosaur"  -> CreatureType.Pachycephalosaur
             "sauropod"          -> CreatureType.Sauropod

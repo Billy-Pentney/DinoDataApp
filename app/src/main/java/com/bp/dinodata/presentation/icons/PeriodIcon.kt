@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.icons
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -35,16 +36,19 @@ fun TimePeriodIcon(timePeriod: String?) {
     var text = stringResource(id = R.string.placeholder_unknown_period)
     var colors = listOf(Color.Gray, Color.DarkGray)
 
-    when(timePeriod?.lowercase()) {
-        "cretaceous" -> {
+    val timePeriodLower = timePeriod?.lowercase() ?: ""
+    Log.d("TimePeriodIcon", "Got time period $timePeriodLower")
+
+    when {
+        "cretaceous" in timePeriodLower -> {
             text = "Cretaceous"
             colors = listOf(Cretaceous400, Cretaceous700)
         }
-        "jurassic" ->  {
+        "jurassic" in timePeriodLower ->  {
             text = "Jurassic"
             colors = listOf(Jurassic400, Jurassic700)
         }
-        "triassic" -> {
+        "triassic" in timePeriodLower -> {
             text = "Triassic"
             colors = listOf(Triassic400, Triassic700)
         }
