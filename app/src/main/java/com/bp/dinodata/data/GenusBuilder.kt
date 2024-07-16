@@ -134,9 +134,9 @@ class GenusBuilderImpl(
             "small theropod"    -> CreatureType.SmallTheropod
             "ceratopsian"       -> CreatureType.Ceratopsian
             "ankylosaurid",
-            "armoured dinosaur"        -> CreatureType.Ankylosaur
+            "armoured dinosaur" -> CreatureType.Ankylosaur
             "stegosaur"         -> CreatureType.Stegosaur
-            "pachycephalosaur"  -> CreatureType.Pachycephalosaur
+            "pachycephalosaurid"  -> CreatureType.Pachycephalosaur
             "sauropod"          -> CreatureType.Sauropod
             "spinosaur"         -> CreatureType.Spinosaur
             "hadrosaur"         -> CreatureType.Hadrosaur

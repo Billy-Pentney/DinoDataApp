@@ -2,9 +2,11 @@ package com.bp.dinodata.presentation.detail_genus
 
 import android.util.Log
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,14 +21,23 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AccessTimeFilled
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.outlined.RecordVoiceOver
+import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,13 +53,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
@@ -62,6 +76,9 @@ import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.theme.DinoDataTheme
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.placeholder
 import kotlin.math.min
 
 
@@ -70,22 +87,27 @@ fun LabelAttributeRow(
     label: String,
     value: String?,
     units: String? = null,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(6.dp),
     valueStyle: FontStyle = FontStyle.Normal,
     valueTextAlign: TextAlign = TextAlign.End,
     labelAlpha: Float = 0.6f,
-    labelFontWeight: FontWeight = FontWeight.Bold
+    labelFontSize: TextUnit = 18.sp,
+    labelFontWeight: FontWeight = FontWeight.Bold,
+    leadingIcon: @Composable () -> Unit = {}
 ) {
     Row (
         horizontalArrangement = horizontalArrangement,
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        leadingIcon.invoke()
         Text(
             "$label: ",
             modifier = Modifier.alpha(labelAlpha),
-            fontWeight = labelFontWeight
+            fontWeight = labelFontWeight,
+            fontSize = labelFontSize
         )
+        Spacer(modifier = Modifier.weight(1f))
         Text(
             value ?: "Unknown",
             fontStyle = valueStyle,
@@ -99,24 +121,30 @@ fun LabelAttributeRow(
 fun LabelContentRow(
     label: String,
     valueContent: @Composable () -> Unit,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(6.dp),
     labelAlpha: Float = 0.6f,
-    labelFontWeight: FontWeight = FontWeight.Bold
+    labelFontWeight: FontWeight = FontWeight.Bold,
+    labelFontSize: TextUnit = 18.sp,
+    leadingIcon: @Composable () -> Unit = {}
 ) {
     Row (
         horizontalArrangement=horizontalArrangement,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
+        leadingIcon.invoke()
         Text(
             "$label: ", modifier=Modifier.alpha(labelAlpha),
-            fontWeight = labelFontWeight
+            fontWeight = labelFontWeight,
+            fontSize = labelFontSize
         )
+        Spacer(modifier = Modifier.weight(1f))
         valueContent.invoke()
     }
 }
 
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun GenusTitleCard(
     genus: Genus,
@@ -165,18 +193,19 @@ fun GenusTitleCard(
             Box (
                 contentAlignment = Alignment.BottomEnd
             ) {
-                LoadAsyncImageOrReserveDrawable(
-                    imageUrl = genusImageUrl,
+                GlideImage(
+                    model = genusImageUrl,
                     alignment = Alignment.CenterEnd,
                     contentScale = ContentScale.Fit,
-                    drawableIfImageFailed = R.drawable.unkn,
+                    failure = placeholder(R.drawable.unkn),
+                    contentDescription = null,
                     modifier = Modifier
                         .fillMaxHeight(0.2f + 0.4f * scaleDueToScroll.floatValue)
-                        .padding(start = 40.dp, end = 20.dp, bottom=30.dp)
+                        .padding(start = 40.dp, end = 20.dp, bottom = 30.dp)
                         .offset(x = 10.dp, y = 0.dp)
                         .fillMaxWidth()
                         .alpha(
-                            0.1f * scaleDueToScroll.floatValue
+                            0.3f * scaleDueToScroll.floatValue
                         )
                         .animateContentSize()
                 )
@@ -232,13 +261,23 @@ fun GenusTitleCard(
                     )
 
                     pronunciation?.let {
-                        Text(
-                            pronunciation,
-                            fontStyle = FontStyle.Italic,
+                        Row (
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .alpha(0.6f)
-                                .padding(bottom = innerPadding)
-                        )
+                                .padding(bottom = innerPadding, top=2.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.RecordVoiceOver,
+                                null,
+                                modifier=Modifier.height(20.dp),
+                            )
+                            Text(
+                                pronunciation,
+                                fontStyle = FontStyle.Italic
+                            )
+                        }
                     }
                 }
                 IconButton(
@@ -272,7 +311,17 @@ fun GenusDetail(
     }
 
     val cardHeight = max(150.dp, 250.dp - (cardExpansion.value/2).dp)
+    
+    val iconModifier = Modifier.height(20.dp).alpha(0.75f)
 
+    val sectionDivider: @Composable () -> Unit = {
+        HorizontalDivider(
+            Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .alpha(0.5f)
+        )
+    }
+    
     Surface(
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
@@ -307,42 +356,87 @@ fun GenusDetail(
                     LabelAttributeRow(
                         label = stringResource(R.string.label_meaning),
                         value = genus.getNameMeaning(),
-                        valueStyle = FontStyle.Italic
+                        valueStyle = FontStyle.Italic,
+                        leadingIcon = {
+                            Icon(Icons.Filled.Book, null, modifier = iconModifier)
+                        }
                     )
                     LabelAttributeRow(
                         label = stringResource(R.string.label_creature_type),
-                        value = convertCreatureTypeToString(genus.getCreatureType())
+                        value = convertCreatureTypeToString(genus.getCreatureType()),
+                        leadingIcon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Label,
+                                null,
+                                modifier = iconModifier
+                            )
+                        }
                     )
-                    HorizontalDivider(
-                        Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .alpha(0.5f)
-                    )
-                    LabelContentRow(label = stringResource(R.string.label_diet), valueContent = { DietIconThin(genus.getDiet()) })
-                    LabelAttributeRow(label = stringResource(R.string.label_length), value = genus.getLength())
-                    LabelAttributeRow(label = stringResource(R.string.label_weight), value = genus.getWeight())
 
-                    HorizontalDivider(
-                        Modifier
-                            .padding(horizontal = 16.dp)
-                            .alpha(0.4f)
+                    sectionDivider()
+                    LabelContentRow(
+                        label = stringResource(R.string.label_diet),
+                        valueContent = { DietIconThin(genus.getDiet()) },
+                        leadingIcon = {
+                            Icon(Icons.Sharp.Restaurant,
+                                contentDescription = null,
+                                modifier = iconModifier)
+                        }
                     )
+                    LabelAttributeRow(
+                        label = stringResource(R.string.label_length),
+                        value = genus.getLength(),
+                        leadingIcon = {
+                            Image(
+                                painterResource(R.drawable.icon_filled_ruler),
+                                null,
+                                modifier = iconModifier,
+                                colorFilter = ColorFilter.tint(LocalContentColor.current)
+                            )
+                        }
+                    )
+                    LabelAttributeRow(
+                        label = stringResource(R.string.label_weight),
+                        value = genus.getWeight(),
+                        leadingIcon = {
+                            Image(
+                                painterResource(R.drawable.icon_filled_weight),
+                                null,
+                                modifier = iconModifier,
+                                colorFilter = ColorFilter.tint(LocalContentColor.current)
+                            )
+                        }
+                    )
+
+                    sectionDivider()
 
                     LabelContentRow(
                         label = stringResource(R.string.label_time_period),
                         valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        leadingIcon = {
+                            Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
+                        }
                     )
-                    LabelAttributeRow(label = stringResource(R.string.label_years_lived), value = genus.yearsLived)
-                    HorizontalDivider(
-                        Modifier
-                            .padding(horizontal = 16.dp)
-                            .alpha(0.4f)
+                    LabelAttributeRow(
+                        label = stringResource(R.string.label_years_lived),
+                        value = genus.yearsLived,
+                        leadingIcon = {
+                            Icon(Icons.Filled.AccessTimeFilled, null, modifier = iconModifier)
+                        }
                     )
+
+                    sectionDivider()
 
                     LabelContentRow(
                         label = stringResource(R.string.label_taxonomy),
-                        valueContent = {}
+                        valueContent = {},
+                        leadingIcon = {
+                            Image (
+                                painterResource(id = R.drawable.icon_filled_taxon_tree),
+                                null,
+                                modifier = iconModifier
+                            )
+                        }
                     )
                     ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
                 }
