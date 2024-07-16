@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -320,13 +323,15 @@ fun HorizontalPagerOfGenera(
     Column {
         val rowScrollState = rememberLazyListState()
 
+        // Show the keys as a scrollable row.
+        // Each letter can be tapped to jump to that page specifically.
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = outerPadding),
             horizontalArrangement = Arrangement.spacedBy(
-                4.dp,
-                Alignment.CenterHorizontally
+                4.dp, Alignment.CenterHorizontally
             ),
+            verticalAlignment = Alignment.CenterVertically,
             state = rowScrollState
         ) {
             items(keyIndices) { index ->
@@ -336,22 +341,21 @@ fun HorizontalPagerOfGenera(
                     if (isSelected) MaterialTheme.colorScheme.surface
                     else MaterialTheme.colorScheme.background
 
-                Surface(
-                    color = color,
-                    shape = RoundedCornerShape(8.dp),
-                    onClick = {
-                        switchToPageByIndex(index)
-                    },
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .aspectRatio(if (isSelected) 1f else 0.6f)
+                        .aspectRatio(if (isSelected) 0.8f else 0.5f)
+                        .clickable(onClick = { switchToPageByIndex(index) })
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(color = color)
                 ) {
                     Text(
                         key,
-                        fontSize = if (isSelected) 20.sp else 18.sp,
+                        fontSize = if (isSelected) 24.sp else 16.sp,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = 10.dp)
                             .alpha(if (isSelected) 1f else 0.75f),
                         textAlign = TextAlign.Center,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
@@ -375,6 +379,7 @@ fun HorizontalPagerOfGenera(
                 Box(
                     modifier = Modifier
                         .padding(top = 8.dp)
+                        .animateContentSize()
                         .alpha(0.3f)
                         .padding(horizontal = outerPadding)
                         .background(Color.White)
@@ -397,7 +402,8 @@ fun HorizontalPagerOfGenera(
             ),
             pageSpacing = outerPadding,
             verticalAlignment = Alignment.Top,
-            pageNestedScrollConnection = nestedScrollConnection
+            pageNestedScrollConnection = nestedScrollConnection,
+            modifier = Modifier.fillMaxHeight()
         ) { pageNum ->
             val generaList = uiState.getPageByIndex(pageNum) ?: emptyList()
             ListOfGenera(
@@ -580,7 +586,7 @@ fun PreviewListGenus() {
                 searchResults = genera,
                 selectedPageIndex = 2,
                 searchBarQuery = "",
-                searchBarVisible = true,
+                searchBarVisible = false,
                 loadState = LoadState.Loaded,
             ),
             updateSearchQuery = {},
