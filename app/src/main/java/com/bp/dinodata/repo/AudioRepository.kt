@@ -8,7 +8,7 @@ import java.io.IOException
 
 class AudioRepository(
     private val storage: StorageReference
-) {
+) : IAudioRepository {
     private val genusToAudioFileMap: MutableMap<String, String> = mutableMapOf()
 
     companion object {
@@ -16,9 +16,9 @@ class AudioRepository(
         const val LOG_TAG = "AudioRepo"
     }
 
+    // TODO - store/retrieve the list of cached audio files so we can play offline
 
-
-    fun getAudioForGenus(
+    override fun getAudioForGenus(
         genusName: String,
         callback: (File) -> Unit,
         onError: () -> Unit
@@ -73,10 +73,6 @@ class AudioRepository(
                 onError()
                 return
             }
-
-
-
-
         }
     }
 }

@@ -11,8 +11,8 @@ interface IHasTaxonomy {
 }
 
 interface IHasMeasurements {
-    fun getLength(): String?
-    fun getWeight(): String?
+    fun getLength(): IDescribesLength?
+    fun getWeight(): IDescribesWeight?
 }
 
 interface IHasName {
@@ -24,7 +24,12 @@ interface IHasNameInfo {
     fun getNamePronunciation(): String?
 }
 
-interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList
+interface IHasTimePeriodInfo {
+    fun getTimePeriod(): String?
+    fun getYearsLived(): String?
+}
+
+interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList, IHasTimePeriodInfo
 
 interface IDisplayInList: IHasName {
     fun getDiet(): Diet?
@@ -37,8 +42,8 @@ data class Genus(
     private val name: String,
     private val diet: Diet? = null,
     private val type: CreatureType = CreatureType.Other,
-    val yearsLived: String? = null,
-    val timePeriod: String? = null,
+    private val yearsLived: String? = null,
+    private val timePeriod: String? = null,
     private val nameMeaning: String? = null,
     private val namePronunciation: String? = null,
     private val length: IDescribesLength?,
@@ -52,6 +57,9 @@ data class Genus(
 
     override fun getTaxonomy(): String = taxonomy.joinToString("\n")
     override fun getListOfTaxonomy(): List<String> = taxonomy
+
+    override fun getTimePeriod(): String? = timePeriod
+    override fun getYearsLived(): String? = yearsLived
 
     override fun getTaxonomyAsPrintableTree(): String {
         var tree = taxonomy[0]
@@ -68,8 +76,8 @@ data class Genus(
     override fun getName(): String = name
     override fun getCreatureType(): CreatureType = type
     override fun getDiet(): Diet? = diet
-    override fun getLength(): String? = length?.toString()
-    override fun getWeight(): String? = weight?.toString()
+    override fun getLength(): IDescribesLength? = length
+    override fun getWeight(): IDescribesWeight? = weight
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 

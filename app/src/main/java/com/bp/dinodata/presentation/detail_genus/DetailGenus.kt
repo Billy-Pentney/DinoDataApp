@@ -386,7 +386,7 @@ fun GenusDetail(
                     )
                     LabelAttributeRow(
                         label = stringResource(R.string.label_length),
-                        value = genus.getLength(),
+                        value = genus.getLength().toString(),
                         leadingIcon = {
                             Image(
                                 painterResource(R.drawable.icon_filled_ruler),
@@ -398,7 +398,7 @@ fun GenusDetail(
                     )
                     LabelAttributeRow(
                         label = stringResource(R.string.label_weight),
-                        value = genus.getWeight(),
+                        value = genus.getWeight().toString(),
                         leadingIcon = {
                             Image(
                                 painterResource(R.drawable.icon_filled_weight),
@@ -413,14 +413,14 @@ fun GenusDetail(
 
                     LabelContentRow(
                         label = stringResource(R.string.label_time_period),
-                        valueContent = { TimePeriodIcon(timePeriod = genus.timePeriod) },
+                        valueContent = { TimePeriodIcon(timePeriod = genus.getTimePeriod()) },
                         leadingIcon = {
                             Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
                         }
                     )
                     LabelAttributeRow(
                         label = stringResource(R.string.label_years_lived),
-                        value = genus.yearsLived,
+                        value = genus.getYearsLived(),
                         leadingIcon = {
                             Icon(Icons.Filled.AccessTimeFilled, null, modifier = iconModifier)
                         }

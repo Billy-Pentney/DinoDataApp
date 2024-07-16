@@ -14,8 +14,8 @@ interface GenusBuilder {
     fun build(): Genus
 
     fun setDiet(dietStr: String): GenusBuilder
-    fun setYearsLived(timeRange: String): GenusBuilder
-    fun setTimePeriod(period: String): GenusBuilder
+    fun setYearsLived(timeRange: String?): GenusBuilder
+    fun setTimePeriod(period: String?): GenusBuilder
     fun setNamePronunciation(pronunciation: String): GenusBuilder
     fun setNameMeaning(meaning: String): GenusBuilder
     fun setLength(length: String): GenusBuilder
@@ -35,22 +35,34 @@ interface GenusBuilder {
 
 
 class GenusBuilderImpl(
-    private val name: String
+    private val name: String,
+    private var nameMeaning: String? = null,
+    private var namePronunciation: String? = null,
+    private var diet: Diet? = null,
+    private var yearsLived: String? = null,
+    private var timePeriod: String? = null,
+    private var length: IDescribesLength? = null,
+    private var weight: IDescribesWeight? = null,
+    private var type: CreatureType = CreatureType.Other,
+    private var taxonomy: MutableList<String> = mutableListOf(),
+    private var startMya: Int? = null,
+    private var endMya: Int? = null,
 ): GenusBuilder {
-    private var nameMeaning: String? = null
-    private var namePronunciation: String? = null
-    private var diet: Diet? = null
-    private var yearsLived: String? = null
-    private var timePeriod: String? = null
-    private var length: IDescribesLength? = null
-    private var weight: IDescribesWeight? = null
-    private var type: CreatureType = CreatureType.Other
-    private var taxonomy: MutableList<String> = mutableListOf()
-    private var startMya: Int? = null
-    private var endMya: Int? = null
 
     private var multiImageUrlMap: Map<String, MultiImageUrlData> = emptyMap()
 
+    constructor(genus: IGenus): this(
+        name = genus.getName(),
+        nameMeaning = genus.getNameMeaning(),
+        namePronunciation = genus.getNamePronunciation(),
+        diet = genus.getDiet(),
+        yearsLived = genus.getYearsLived(),
+        timePeriod = genus.getTimePeriod(),
+        length = genus.getLength(),
+        weight = genus.getWeight(),
+        type = genus.getCreatureType(),
+        taxonomy = genus.getListOfTaxonomy().toMutableList()
+    )
 
     companion object {
         const val TAG = "GenusBuilder"
@@ -150,12 +162,12 @@ class GenusBuilderImpl(
         return this
     }
 
-    override fun setYearsLived(timeRange: String): GenusBuilder {
+    override fun setYearsLived(timeRange: String?): GenusBuilder {
         yearsLived = timeRange
         return this
     }
 
-    override fun setTimePeriod(period: String): GenusBuilder {
+    override fun setTimePeriod(period: String?): GenusBuilder {
         timePeriod = period
         return this
     }

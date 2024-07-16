@@ -5,19 +5,20 @@ import com.bp.dinodata.data.IGenus
 import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.repo.PageResult
 import com.bp.dinodata.repo.GenusRepository
+import com.bp.dinodata.repo.IGenusRepository
 
 class GenusUseCases(
-    private val genusRepository: GenusRepository
+    private val genusRepository: IGenusRepository
 ) {
-    fun getAllGenera(
-        callback: (List<Genus>) -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-        genusRepository.getAllGenera(
-            callback,
-            onError
-        )
-    }
+//    fun getAllGenera(
+//        callback: (List<Genus>) -> Unit,
+//        onError: (Exception) -> Unit
+//    ) {
+//        genusRepository.getAllGenera(
+//            callback,
+//            onError
+//        )
+//    }
 
     fun getGeneraGroupedByLetter(
         callback: (ResultsByLetter<IGenus>) -> Unit,
@@ -37,16 +38,16 @@ class GenusUseCases(
         genusRepository.getGenus(genusName, callback, onFailure)
     }
 
-    fun getNextPageOfGenera(
-        startAfter: String? = null,
-        callback: (PageResult<Genus>) -> Unit,
-        onException: (Exception) -> Unit
-    ) {
-        genusRepository.getNextPage(
-            startAfter = startAfter,
-            callback = callback,
-            onException = onException
-        )
-    }
+//    fun getNextPageOfGenera(
+//        startAfter: String? = null,
+//        callback: (PageResult<Genus>) -> Unit,
+//        onException: (Exception) -> Unit
+//    ) {
+//        genusRepository.getNextPage(
+//            startAfter = startAfter,
+//            callback = callback,
+//            onException = onException
+//        )
+//    }
 }
 

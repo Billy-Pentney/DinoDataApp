@@ -10,11 +10,11 @@ interface IHasAudioResources {
 
 class AudioPronunciationUseCases(
     val playPrerecordedAudio: PlayPrerecordedAudioUseCase,
-    val readTextToSpeech: ReadTextToSpeechUseCase
+//    val readTextToSpeech: ReadTextToSpeechUseCase
 ): IHasAudioResources {
 
     override fun close() {
-        readTextToSpeech.close()
+//        readTextToSpeech.close()
         playPrerecordedAudio.close()
     }
 }

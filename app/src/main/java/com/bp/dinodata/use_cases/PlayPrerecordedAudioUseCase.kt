@@ -6,11 +6,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import com.bp.dinodata.repo.AudioRepository
+import com.bp.dinodata.repo.IAudioRepository
 import java.io.File
 
 class PlayPrerecordedAudioUseCase(
     private val context: Context,
-    private val audioRepository: AudioRepository
+    private val audioRepository: IAudioRepository
 ): IHasAudioResources {
     private var mediaPlayer: MediaPlayer = MediaPlayer()
 
@@ -69,8 +70,6 @@ class PlayPrerecordedAudioUseCase(
             // Indicate that this error was handled, to avoid further exceptions
             true
         }
-
-
     }
 
     override fun close() {
