@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.Genus
+import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +29,7 @@ class DetailGenusViewModel @Inject constructor(
         const val LOG_TAG = "DetailGenusViewModel"
     }
 
+    private val _loadState: MutableState<LoadState> = mutableStateOf(LoadState.NotLoading)
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
 
     // Stores the details for the Genus being shown
@@ -37,6 +39,7 @@ class DetailGenusViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            _loadState.value = LoadState.InProgress
             genusUseCases.getGenusByName(
                 currentGenusName,
                 callback = { it?.let { updateGenus(it) } },
@@ -48,6 +51,7 @@ class DetailGenusViewModel @Inject constructor(
     private fun updateGenus(genus: Genus) {
         viewModelScope.launch {
             _visibleGenus.emit(genus)
+            _loadState.value = LoadState.Loaded
         }
     }
 
@@ -84,6 +88,10 @@ class DetailGenusViewModel @Inject constructor(
                 }
             }
         )
+    }
+
+    fun getLoadState(): State<LoadState> {
+        return _loadState
     }
 }
 
