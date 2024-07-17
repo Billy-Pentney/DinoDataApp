@@ -35,6 +35,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,6 +74,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
+import com.bp.dinodata.data.GenusSearch
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
@@ -94,6 +97,7 @@ fun ListGenusScreenContent(
     updateSearchQuery: (String) -> Unit,
     clearSearchQuery: () -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
+    prefillSearchSuggestion: () -> Unit
 ) {
     val loadState = uiState.loadState
     val searchBarVisible = uiState.searchBarVisible
@@ -158,7 +162,8 @@ fun ListGenusScreenContent(
                         switchToPageByIndex = switchToPageByIndex,
                         toggleSearchBarVisibility = toggleSearchBarVisibility,
                         clearSearchQuery = clearSearchQuery,
-                        updateSearchQuery = updateSearchQuery
+                        updateSearchQuery = updateSearchQuery,
+                        prefillSearchSuggestion = prefillSearchSuggestion
                     )
                 }
 
@@ -195,9 +200,9 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     switchToPageByIndex: (Int) -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
     clearSearchQuery: () -> Unit,
-    updateSearchQuery: (String) -> Unit
+    updateSearchQuery: (String) -> Unit,
+    prefillSearchSuggestion: () -> Unit
 ) {
-
     Column (
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -214,7 +219,8 @@ fun ShowHorizontalPagerOfGeneraByLetter(
                     updateSearchQuery,
                     clearSearchQuery,
                     navigateToGenus,
-                    outerPadding
+                    outerPadding,
+                    prefillSearchSuggestion
                 )
             }
             else {
@@ -237,15 +243,19 @@ fun SearchPage(
     updateSearchQuery: (String) -> Unit,
     clearSearchQuery: () -> Unit,
     navigateToGenus: (String) -> Unit,
-    outerPadding: Dp
+    outerPadding: Dp,
+    prefillSearchSuggestion: () -> Unit
 ) {
     Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ListGenusSearchBar(
-            searchBarQuery = uiState.searchBarQuery,
+            searchBarQuery = uiState.search.getQuery(),
             toggleVisibility = toggleSearchBarVisibility,
             updateSearchQuery = updateSearchQuery,
             clearSearchQuery = clearSearchQuery,
-            modifier = Modifier.padding(horizontal = outerPadding)
+            modifier = Modifier.padding(horizontal = outerPadding),
+            searchSuggestions = uiState.search.getSuggestedSuffixes(),
+            prefillSearchSuggestion = prefillSearchSuggestion,
+            searchBarCursorAtEnd = uiState.searchBarCursorAtEnd
         )
         LazyListOfGenera(
             uiState.searchResults,
@@ -486,7 +496,7 @@ fun ListGenusScreen(
     navigateToGenus: (String) -> Unit,
 ) {
     val uiState by remember { listGenusViewModel.getUiState() }
-    val searchQuery = remember { derivedStateOf { uiState.searchBarQuery } }
+    val searchQuery = remember { derivedStateOf { uiState.search.getQuery() } }
     val searchBarVisibility = remember { derivedStateOf { uiState.searchBarVisible } }
 
     BackHandler (searchBarVisibility.value) {
@@ -514,6 +524,9 @@ fun ListGenusScreen(
         },
         toggleSearchBarVisibility = {
             listGenusViewModel.onEvent(ListGenusPageUiEvent.ToggleSearchBar(visible=it))
+        },
+        prefillSearchSuggestion = {
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.AcceptSearchSuggestion)
         }
     )
 }
@@ -560,7 +573,7 @@ fun PreviewListGenus() {
     val stego = GenusBuilderImpl("Stegosaurus")
         .setDiet("Herbivorous")
         .setTimePeriod("Jurassic")
-        .setCreatureType("Stegosaur").build()
+        .setCreatureType("Stegosaurid").build()
     val spino = GenusBuilderImpl("Spinosaurus").setDiet("Piscivorous")
         .setTimePeriod("Cretaceous")
         .setCreatureType("spinosaur").build()
@@ -580,13 +593,18 @@ fun PreviewListGenus() {
                 allPageData = generaGrouped,
                 searchResults = genera,
                 selectedPageIndex = 2,
-                searchBarQuery = "taxon:chasmo",
                 searchBarVisible = true,
+                search = GenusSearch(
+                    query = "taxon:ab",
+                    terms = listOf(),
+                    suggestedSuffixes = listOf("taxon:abelisaurinae", "diet:herbivore", "period:cretaceous")
+                ),
                 loadState = LoadState.Loaded,
             ),
             updateSearchQuery = {},
             clearSearchQuery = {},
-            toggleSearchBarVisibility = {}
+            toggleSearchBarVisibility = {},
+            prefillSearchSuggestion = {}
         )
     }
 }

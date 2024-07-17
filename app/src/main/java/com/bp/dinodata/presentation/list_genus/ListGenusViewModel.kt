@@ -6,14 +6,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bp.dinodata.data.DataParsing
+import com.bp.dinodata.data.GenusSearch
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
-import com.bp.dinodata.data.filters.CreatureTypeFilter
-import com.bp.dinodata.data.filters.DietFilter
-import com.bp.dinodata.data.filters.FilterBuilderImpl
-import com.bp.dinodata.data.filters.NameFilter
-import com.bp.dinodata.data.filters.TaxonFilter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
@@ -31,10 +26,6 @@ class ListGenusViewModel @Inject constructor(
     private var _listOfGeneraByLetter: MutableStateFlow<IResultsByLetter<IGenus>> = MutableStateFlow(ResultsByLetter())
 
     private var _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
-
-    private var searchQuery: MutableState<String> = mutableStateOf("")
-    private var searchBarVisibility: MutableState<Boolean> = mutableStateOf(false)
-
 
     init {
         _uiState.value = _uiState.value.copy(loadState = LoadState.InProgress)
@@ -60,7 +51,7 @@ class ListGenusViewModel @Inject constructor(
             )
 
             if (_uiState.value.searchBarVisible) {
-                applySearchQuery(searchQuery.value)
+                applySearchQuery(_uiState.value.search.getQuery())
             }
         }
     }
@@ -74,37 +65,36 @@ class ListGenusViewModel @Inject constructor(
             }
             ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearSearchQueryOrHideSearchBar()
             is ListGenusPageUiEvent.ToggleSearchBar -> {
-                _uiState.value = _uiState.value.copy(
-                    searchBarVisible = event.visible
-                )
+                _uiState.value = _uiState.value.copy(searchBarVisible = event.visible)
             }
             is ListGenusPageUiEvent.SwitchToPage -> {
-                _uiState.value = _uiState.value.copy(
-                    selectedPageIndex = event.pageIndex
-                )
+                _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
+            }
+            is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
+                val suggestions = _uiState.value.search.getSuggestedSuffixes()
+                val existingQuery = _uiState.value.search.getQuery()
+                if (suggestions.isNotEmpty()) {
+                    val newQuery = existingQuery + suggestions[0]
+                    _uiState.value = _uiState.value.applySearch(
+                        GenusSearch.constructFromQuery(newQuery),
+                        jumpCursorToEnd = true
+                    )
+                }
             }
         }
     }
 
     private fun applySearchQuery(query: String, capitalSensitive: Boolean = false) {
-        val filter = genusUseCases.makeFilterFromQuery(query, capitalSensitive)
+        val search = genusUseCases.generateSearchFromQuery(query, capitalSensitive)
         viewModelScope.launch {
-            val allGenera = _listOfGeneraByLetter.value.toList()
-            val filteredGenera = filter.applyTo(allGenera)
-            _uiState.value = _uiState.value.applySearch(
-                searchQuery = query,
-                searchResults = filteredGenera
-            )
+            _uiState.value = _uiState.value.applySearch(search)
         }
     }
 
     private fun clearSearchQueryOrHideSearchBar() {
-        if (_uiState.value.searchBarQuery.isNotEmpty()) {
+        if (!_uiState.value.search.isQueryEmpty()) {
             // If any text is present, clear it, but leave the bar open
-            _uiState.value = _uiState.value.applySearch(
-                searchQuery = "",
-                _listOfGeneraByLetter.value.toList()
-            )
+            _uiState.value = _uiState.value.applySearch(GenusSearch())
         }
         else {
             // Otherwise, hide the search bar
