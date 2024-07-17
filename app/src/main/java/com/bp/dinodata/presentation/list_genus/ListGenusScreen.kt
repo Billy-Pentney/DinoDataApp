@@ -39,6 +39,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -330,6 +331,10 @@ fun HorizontalPagerOfGenera(
                     if (isSelected) MaterialTheme.colorScheme.surface
                     else MaterialTheme.colorScheme.background
 
+                val textColor = 
+                    if (isSelected) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onBackground
+
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -342,6 +347,7 @@ fun HorizontalPagerOfGenera(
                     Text(
                         key,
                         fontSize = if (isSelected) 24.sp else 16.sp,
+                        color = textColor,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(vertical = 10.dp)
@@ -371,7 +377,7 @@ fun HorizontalPagerOfGenera(
                         .animateContentSize()
                         .alpha(0.3f)
                         .padding(horizontal = outerPadding)
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.onBackground)
                         .clip(RoundedCornerShape(4.dp))
                         .weight(0.2f)
                         .height(2.dp)
@@ -568,7 +574,7 @@ fun PreviewListGenus() {
     )
     val generaGrouped: IResultsByLetter<IGenus> = ResultsByLetter(genera)
 
-    DinoDataTheme (darkTheme = true) {
+    DinoDataTheme (darkTheme = false) {
         ListGenusScreenContent(
             uiState = ListGenusUiState(
                 allPageData = generaGrouped,
