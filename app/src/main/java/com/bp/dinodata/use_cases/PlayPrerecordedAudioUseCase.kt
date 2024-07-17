@@ -40,10 +40,11 @@ class PlayPrerecordedAudioUseCase(
     ) {
         val uri = file.toUri()
 
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.stop()
+        }
+
         if (uri != lastUri) {
-            if (mediaPlayer.isPlaying) {
-                mediaPlayer.stop()
-            }
             mediaPlayer.reset()
             // If we've switched to a new request, we must reset, then add the new datasource
             mediaPlayer.setDataSource(context, uri)

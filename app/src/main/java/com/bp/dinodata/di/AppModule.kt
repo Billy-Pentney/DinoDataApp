@@ -46,9 +46,12 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesAudioRepository(): AudioRepository {
+    fun providesAudioRepository(
+        @ApplicationContext context: Context
+    ): AudioRepository {
         val storageRef = Firebase.storage.reference
-        return AudioRepository(storageRef)
+        val cacheDir = context.cacheDir
+        return AudioRepository(storageRef, cacheDir)
     }
 
     @Singleton
