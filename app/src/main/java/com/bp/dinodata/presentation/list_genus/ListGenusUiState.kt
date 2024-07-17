@@ -1,8 +1,7 @@
 package com.bp.dinodata.presentation.list_genus
 
-import com.bp.dinodata.data.IGenus
+import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
-import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.presentation.LoadState
 
 data class ListGenusUiState(

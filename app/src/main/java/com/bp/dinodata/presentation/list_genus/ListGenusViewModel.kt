@@ -6,9 +6,15 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bp.dinodata.data.IGenus
+import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
+import com.bp.dinodata.data.filters.CreatureTypeFilter
+import com.bp.dinodata.data.filters.DietFilter
+import com.bp.dinodata.data.filters.FilterBuilderImpl
+import com.bp.dinodata.data.filters.NameFilter
+import com.bp.dinodata.data.filters.TaxonFilter
+import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -81,20 +87,12 @@ class ListGenusViewModel @Inject constructor(
     }
 
     private fun applySearchQuery(query: String, capitalSensitive: Boolean = false) {
-        searchQuery.value =
-            (when {
-                capitalSensitive -> query
-                else -> query.lowercase()
-            })
-
-        val queryTrimmed = query.trim()
-
+        val filter = genusUseCases.makeFilterFromQuery(query, capitalSensitive)
         viewModelScope.launch {
-            val filteredGenera = _listOfGeneraByLetter.value.toList().filter {
-                it.getName().startsWith(queryTrimmed, ignoreCase = !capitalSensitive)
-            }
+            val allGenera = _listOfGeneraByLetter.value.toList()
+            val filteredGenera = filter.applyTo(allGenera)
             _uiState.value = _uiState.value.applySearch(
-                searchQuery = searchQuery.value,
+                searchQuery = query,
                 searchResults = filteredGenera
             )
         }

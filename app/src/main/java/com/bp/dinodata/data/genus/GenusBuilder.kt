@@ -1,6 +1,10 @@
-package com.bp.dinodata.data
+package com.bp.dinodata.data.genus
 
 import android.util.Log
+import com.bp.dinodata.data.CreatureType
+import com.bp.dinodata.data.DataParsing
+import com.bp.dinodata.data.Diet
+import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
@@ -119,46 +123,12 @@ class GenusBuilderImpl(
     }
 
     override fun setDiet(dietStr: String): GenusBuilder {
-        this.diet = when(dietStr.trim().lowercase()) {
-            "herbivorous",
-            "herbivore"
-                -> Diet.Herbivore
-            "carnivorous",
-            "carnivore"
-                -> Diet.Carnivore
-            "piscivorous",
-            "piscivore"
-                -> Diet.Piscivore
-            "omnivorous",
-            "omnivore"
-                -> Diet.Omnivore
-            else -> {
-                Log.d("GenusBuilder", "Saw unknown diet value \'${dietStr}\'")
-                Diet.Unknown
-            }
-        }
+        this.diet = DataParsing.matchDiet(dietStr)
         return this
     }
 
     override fun setCreatureType(type: String): GenusBuilder {
-        this.type = when (type.lowercase()) {
-            "large theropod"    -> CreatureType.LargeTheropod
-            "small theropod"    -> CreatureType.SmallTheropod
-            "ceratopsian"       -> CreatureType.Ceratopsian
-            "ankylosaurid",
-            "armoured dinosaur" -> CreatureType.Ankylosaur
-            "stegosaur"         -> CreatureType.Stegosaur
-            "pachycephalosaurid"  -> CreatureType.Pachycephalosaur
-            "sauropod"          -> CreatureType.Sauropod
-            "spinosaur"         -> CreatureType.Spinosaur
-            "hadrosaur"         -> CreatureType.Hadrosaur
-            "ornithomimid"      -> CreatureType.Ornithomimid
-            "aquatic"           -> CreatureType.Aquatic
-            "pterosaur"         -> CreatureType.Pterosaur
-            "cenezoic"          -> CreatureType.Cenezoic
-            "synapsid"          -> CreatureType.Synapsid
-            else                -> CreatureType.Other
-        }
+        this.type = DataParsing.matchCreatureType(type)
         return this
     }
 
@@ -191,7 +161,7 @@ class GenusBuilderImpl(
     }
 
     override fun setNameMeaning(meaning: String): GenusBuilder {
-        nameMeaning = meaning
+        nameMeaning = meaning.trim('\'')
         return this
     }
 

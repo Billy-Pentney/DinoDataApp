@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.bp.dinodata.data.IDisplayInList
+import com.bp.dinodata.data.genus.IDisplayInList
 import com.bp.dinodata.presentation.icons.DietIconSquare
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 

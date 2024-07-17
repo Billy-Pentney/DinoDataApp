@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bp.dinodata.data.Genus
+import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases

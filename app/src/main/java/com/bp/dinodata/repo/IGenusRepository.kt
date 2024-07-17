@@ -1,6 +1,6 @@
 package com.bp.dinodata.repo
 
-import com.bp.dinodata.data.Genus
+import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.MultiImageUrlData
 
 interface IGenusRepository {

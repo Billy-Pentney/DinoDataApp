@@ -3,8 +3,8 @@ package com.bp.dinodata.repo
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
-import com.bp.dinodata.data.Genus
-import com.bp.dinodata.data.GenusBuilderImpl
+import com.bp.dinodata.data.genus.Genus
+import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.ImageUrlData.mapToImageUrlDTOs
 import com.bp.dinodata.data.MultiImageUrlData
 import com.google.firebase.firestore.CollectionReference

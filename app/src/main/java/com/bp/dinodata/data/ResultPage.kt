@@ -1,6 +1,6 @@
 package com.bp.dinodata.data
 
-import androidx.compose.runtime.Immutable
+import com.bp.dinodata.data.genus.IHasName
 import kotlin.jvm.Throws
 
 interface IResultsByLetter<T: IHasName>: Iterable<T> {

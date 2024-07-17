@@ -1,6 +1,6 @@
 package com.bp.dinodata
 
-import com.bp.dinodata.data.GenusBuilderImpl
+import com.bp.dinodata.data.genus.GenusBuilderImpl
 import org.junit.Test
 
 import org.junit.Assert.*

@@ -1,6 +1,10 @@
-package com.bp.dinodata.data
+package com.bp.dinodata.data.genus
 
 import androidx.compose.runtime.Immutable
+import com.bp.dinodata.data.CreatureType
+import com.bp.dinodata.data.Diet
+import com.bp.dinodata.data.MultiImageUrlData
+import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
@@ -19,6 +23,14 @@ interface IHasName {
     fun getName(): String
 }
 
+interface IHasDiet {
+    fun getDiet(): Diet?
+}
+
+interface IHasCreatureType {
+    fun getCreatureType(): CreatureType
+}
+
 interface IHasNameInfo {
     fun getNameMeaning(): String?
     fun getNamePronunciation(): String?
@@ -29,12 +41,10 @@ interface IHasTimePeriodInfo {
     fun getYearsLived(): String?
 }
 
+interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
+
 interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList, IHasTimePeriodInfo
 
-interface IDisplayInList: IHasName {
-    fun getDiet(): Diet?
-    fun getCreatureType(): CreatureType
-}
 
 
 @Immutable

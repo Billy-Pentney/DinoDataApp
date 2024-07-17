@@ -1,6 +1,6 @@
 package com.bp.dinodata.repo
 
-import com.bp.dinodata.data.Genus
+import com.bp.dinodata.data.genus.Genus
 
 /**
  * Data-transfer object used to return the (successful) result of loading the next page of data.
