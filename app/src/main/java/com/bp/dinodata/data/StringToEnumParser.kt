@@ -5,21 +5,25 @@ import android.util.Log
 object DataParsing {
 
     private val CreatureTypesMap = mapOf(
-        "large_theropod" to CreatureType.LargeTheropod,
-        "ceratopsian" to CreatureType.Ceratopsian,
+        "abelisaurid" to CreatureType.Abelisaurid,
         "ankylosaur" to CreatureType.Ankylosaur,
-        "stegosaurid" to CreatureType.Stegosaur,
-        "sauropod" to CreatureType.Sauropod,
         "ankylosaurid" to CreatureType.Ankylosaur,
-        "spinosaurid" to CreatureType.Spinosaur,
-        "small_theropod" to CreatureType.SmallTheropod,
-        "ornithomimid" to CreatureType.Ornithomimid,
         "aquatic" to CreatureType.Aquatic,
-        "pterosaur" to CreatureType.Pterosaur,
-        "pachycephalosaur" to CreatureType.Pachycephalosaur,
+        "ceratopsian" to CreatureType.Ceratopsian,
         "cenezoic" to CreatureType.Cenezoic,
+        "carcharodontosaurid" to CreatureType.Carcharodontosaurid,
+        "dromaeosaurid" to CreatureType.Dromaeosaurid,
+        "euornithopod" to CreatureType.Euornithopod,
         "hadrosaur" to CreatureType.Hadrosaur,
-        "synapsid" to CreatureType.Synapsid,
+        "pachycephalosaur" to CreatureType.Pachycephalosaur,
+        "pterosaur" to CreatureType.Pterosaur,
+        "sauropod" to CreatureType.Sauropod,
+        "spinosaurid" to CreatureType.Spinosaur,
+        "stegosaurid" to CreatureType.Stegosaur,
+        "tyrannosaurid" to CreatureType.Tyrannosaurid,
+        "small_theropod" to CreatureType.SmallTheropod,
+        "large_theropod" to CreatureType.LargeTheropod,
+        "ornithomimid" to CreatureType.Ornithomimid,
         "other" to CreatureType.Other
     )
 
@@ -31,27 +35,13 @@ object DataParsing {
     )
 
     fun matchCreatureType(text: String): CreatureType? {
-        return when (text.lowercase().replace(" ","_")) {
-            "large_theropod"        -> CreatureType.LargeTheropod
-            "small_theropod"        -> CreatureType.SmallTheropod
-            "ceratopsian"           -> CreatureType.Ceratopsian
-            "ankylosaurid",
-            "armoured dinosaur"     -> CreatureType.Ankylosaur
-            "stegosaurid"           -> CreatureType.Stegosaur
-            "pachycephalosaurid"    -> CreatureType.Pachycephalosaur
-            "sauropod"              -> CreatureType.Sauropod
-            "spinosaur"             -> CreatureType.Spinosaur
-            "hadrosaur"             -> CreatureType.Hadrosaur
-            "ornithomimid"          -> CreatureType.Ornithomimid
-            "aquatic"               -> CreatureType.Aquatic
-            "pterosaur"             -> CreatureType.Pterosaur
-            "cenezoic"              -> CreatureType.Cenezoic
-            "synapsid"              -> CreatureType.Synapsid
-            "other"                 -> CreatureType.Other
-            else                    -> {
-                Log.d("CreatureTypeParser", "Saw unfamiliar creature type $text")
-                null
-            }
+        val cleanText = text.lowercase().replace(" ","_")
+        return if (cleanText in CreatureTypesMap.keys) {
+            CreatureTypesMap[cleanText]
+        }
+        else {
+            Log.d("CreatureTypeParser", "Saw unfamiliar creature type $text")
+            null
         }
     }
 

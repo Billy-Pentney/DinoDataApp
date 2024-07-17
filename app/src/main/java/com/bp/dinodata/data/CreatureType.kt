@@ -15,6 +15,11 @@ enum class CreatureType {
     Aquatic,
     Cenezoic,
     Synapsid,
-    Other
+    Other,
+    Dromaeosaurid,
+    Carcharodontosaurid,
+    Abelisaurid,
+    Euornithopod,
+    Tyrannosaurid
 }
 

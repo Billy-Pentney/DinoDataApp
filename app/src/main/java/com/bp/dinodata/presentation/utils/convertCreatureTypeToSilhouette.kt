@@ -17,6 +17,14 @@ fun convertCreatureTypeToSilhouette(type: CreatureType): Int? {
         CreatureType.SmallTheropod      -> R.drawable.type_raptor
         CreatureType.Stegosaur          -> R.drawable.type_stegosaur
         CreatureType.Spinosaur          -> R.drawable.type_spinosaur
+//        CreatureType.Aquatic -> TODO()
+//        CreatureType.Cenezoic -> TODO()
+//        CreatureType.Other -> TODO()
+        CreatureType.Dromaeosaurid      -> R.drawable.type_raptor
+        CreatureType.Carcharodontosaurid -> R.drawable.type_carcharo
+        CreatureType.Abelisaurid        -> R.drawable.type_abeli
+//        CreatureType.Euornithopod       -> TODO()
+        CreatureType.Tyrannosaurid      -> R.drawable.type_tyranno
         else                            -> null
     }
 }

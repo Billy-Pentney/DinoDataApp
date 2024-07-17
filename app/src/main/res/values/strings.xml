@@ -74,5 +74,10 @@
     <string name="desc_show_search">show search bar</string>
     <string name="search_box_hint">e.g. \"Triceratops\"</string>
     <string name="text_showing_X_creatures">Showing %1$s creature(s)</string>
-    <string name="info_loading_placeholder">loading...</string>
+    <string name="info_loading_placeholder">loading…</string>
+    <string name="type_dromaeosaurid">Dromaeosaurid</string>
+    <string name="type_carcharodontosaurid">Carcharodontosaurid</string>
+    <string name="type_abelisaurid">Abelisaurid</string>
+    <string name="type_euornithopod">Euornithopod</string>
+    <string name="type_tyrannosaurid">Tyrannosaurid</string>
 </resources>
