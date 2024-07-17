@@ -431,7 +431,8 @@ fun GenusDetail(
                             Image (
                                 painterResource(id = R.drawable.icon_filled_taxon_tree),
                                 null,
-                                modifier = iconModifier
+                                modifier = iconModifier,
+                                colorFilter = ColorFilter.tint(LocalContentColor.current)
                             )
                         }
                     )

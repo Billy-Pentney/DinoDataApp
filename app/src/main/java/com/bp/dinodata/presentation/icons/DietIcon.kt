@@ -69,13 +69,12 @@ fun DietIconThin(
     imagePadding: Dp = 3.dp,
     cornerRadius: Dp = 8.dp
 ) {
-    val img = remember { convertDietToImageResId(diet) }
-
+    val img = convertDietToImageResId(diet)
     val dietName = diet?.toString() ?: Diet.Unknown.toString()
 
-    val iconBrush = remember { convertDietToLinearBrush(diet) }
-    val iconShape = remember { RoundedCornerShape(cornerRadius) }
-    val innerShape = remember { RoundedCornerShape(cornerRadius - 1.dp) }
+    val iconBrush = convertDietToLinearBrush(diet)
+    val iconShape = RoundedCornerShape(cornerRadius)
+    val innerShape = RoundedCornerShape(cornerRadius - 1.dp)
 
     TooltipBox(
         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),

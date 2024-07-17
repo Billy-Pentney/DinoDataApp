@@ -2,11 +2,15 @@ package com.bp.dinodata.data.filters
 
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
+import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IHasCreatureType
 import com.bp.dinodata.data.genus.IHasDiet
+import com.bp.dinodata.data.genus.IHasMeasurements
 import com.bp.dinodata.data.genus.IHasName
 import com.bp.dinodata.data.genus.IHasTaxonomy
+import com.bp.dinodata.data.genus.IHasTimePeriodInfo
+import com.bp.dinodata.data.quantities.IDescribesLength
 
 /**
  * A filter defines one or more restrictions on items of type T.
@@ -49,13 +53,22 @@ class CreatureTypeFilter(
     }
 }
 
+//class MeasurementFilter(
+//    private val length: IDescribesLength
+//): IFilter<IHasMeasurements> {
+//    override fun acceptsItem(item: IHasMeasurements): Boolean {
+//        val length = item.getLength()
+//        length?.
+//    }
+//}
+
 class TaxonFilter(
     private val taxonSearch: String
 ): IFilter<IHasTaxonomy> {
     override fun acceptsItem(item: IHasTaxonomy): Boolean {
         val taxonList = item.getListOfTaxonomy()
         for (taxon in taxonList) {
-            if (taxonSearch in taxon) {
+            if (taxonSearch.lowercase() in taxon.lowercase()) {
                 return true
             }
         }
@@ -75,6 +88,19 @@ class DietFilter(
     }
     override fun toString(): String {
         return "DIET in [${acceptedDiets.joinToString(",")}]"
+    }
+}
+
+class TimePeriodFilter(
+    private val acceptedTimePeriods: List<TimePeriod>
+): IFilter<IHasTimePeriodInfo> {
+    override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
+        val itemTimePeriod = item.getTimePeriod()
+        if (itemTimePeriod != null) {
+            val baseTimePeriod = TimePeriod(itemTimePeriod.epoch)
+            return itemTimePeriod in acceptedTimePeriods || baseTimePeriod in acceptedTimePeriods
+        }
+        return false
     }
 }
 

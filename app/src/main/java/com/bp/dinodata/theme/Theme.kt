@@ -23,7 +23,7 @@ private val LightColorScheme = lightColorScheme(
     onBackground = MyGrey900,
     surface = MyGrey400,
     onSurface = Color.White,
-    primary = MyGrey400,
+    primary = MyGrey500,
     scrim = HighlightYellowLight,
     onSurfaceVariant = MyGrey100
 )

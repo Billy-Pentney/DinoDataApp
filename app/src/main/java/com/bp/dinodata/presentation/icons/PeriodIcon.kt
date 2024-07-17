@@ -21,6 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bp.dinodata.R
+import com.bp.dinodata.data.Epoch
+import com.bp.dinodata.data.Subepoch
+import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.theme.Cretaceous400
 import com.bp.dinodata.theme.Cretaceous700
 import com.bp.dinodata.theme.Cretaceous800
@@ -32,25 +35,18 @@ import com.bp.dinodata.theme.Triassic700
 import com.bp.dinodata.theme.Triassic800
 
 @Composable
-fun TimePeriodIcon(timePeriod: String?) {
-    var text = stringResource(id = R.string.placeholder_unknown_period)
-    var colors = listOf(Color.Gray, Color.DarkGray)
+fun TimePeriodIcon(timePeriod: TimePeriod?) {
+    val epoch = timePeriod?.epoch
+    val placeholderText = stringResource(id = R.string.placeholder_unknown_period)
+    val text = epoch?.toString() ?: placeholderText
 
-    val timePeriodLower = timePeriod?.lowercase() ?: ""
-    Log.d("TimePeriodIcon", "Got time period $timePeriodLower")
-
-    when {
-        "cretaceous" in timePeriodLower -> {
-            text = "Cretaceous"
-            colors = listOf(Cretaceous400, Cretaceous700)
-        }
-        "jurassic" in timePeriodLower ->  {
-            text = "Jurassic"
-            colors = listOf(Jurassic400, Jurassic700)
-        }
-        "triassic" in timePeriodLower -> {
-            text = "Triassic"
-            colors = listOf(Triassic400, Triassic700)
+    val colors = when (epoch) {
+        Epoch.Cretaceous -> listOf(Cretaceous400, Cretaceous700)
+        Epoch.Jurassic -> listOf(Jurassic400, Jurassic700)
+        Epoch.Triassic -> listOf(Triassic400, Triassic700)
+        else -> {
+            Log.i("TimePeriodIcon", "Unrecognised time-period: $timePeriod")
+            listOf(Color.Gray, Color.DarkGray)
         }
     }
 
@@ -78,7 +74,12 @@ fun TimePeriodIcon(timePeriod: String?) {
 @Preview
 @Composable
 fun PreviewTimePeriodIcon() {
-    val periods  = listOf("Cretaceous", "Jurassic", "Triassic", "Campanian")
+    val periods  = listOf(
+        TimePeriod(Epoch.Cretaceous),
+        TimePeriod(Epoch.Jurassic, Subepoch.Late),
+        TimePeriod(Epoch.Triassic, Subepoch.Middle),
+        null
+    )
 
     Column {
         periods.forEach { TimePeriodIcon(timePeriod = it) }

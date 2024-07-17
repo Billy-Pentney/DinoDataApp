@@ -5,6 +5,7 @@ import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.MultiImageUrlData
+import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
@@ -42,9 +43,9 @@ class GenusBuilderImpl(
     private val name: String,
     private var nameMeaning: String? = null,
     private var namePronunciation: String? = null,
-    private var diet: Diet? = null,
+    private var diet: Diet = Diet.Unknown,
     private var yearsLived: String? = null,
-    private var timePeriod: String? = null,
+    private var timePeriod: TimePeriod? = null,
     private var length: IDescribesLength? = null,
     private var weight: IDescribesWeight? = null,
     private var type: CreatureType = CreatureType.Other,
@@ -123,12 +124,12 @@ class GenusBuilderImpl(
     }
 
     override fun setDiet(dietStr: String): GenusBuilder {
-        this.diet = DataParsing.matchDiet(dietStr)
+        this.diet = DataParsing.matchDiet(dietStr) ?: Diet.Unknown
         return this
     }
 
     override fun setCreatureType(type: String): GenusBuilder {
-        this.type = DataParsing.matchCreatureType(type)
+        this.type = DataParsing.matchCreatureType(type) ?: CreatureType.Other
         return this
     }
 
@@ -138,7 +139,7 @@ class GenusBuilderImpl(
     }
 
     override fun setTimePeriod(period: String?): GenusBuilder {
-        timePeriod = period
+        timePeriod = period?.let { DataParsing.matchTimePeriod(it) }
         return this
     }
 
@@ -148,8 +149,7 @@ class GenusBuilderImpl(
             Log.e("GenusBuilder", "Cannot split periodAndYears at ','")
             return this
         }
-        return setTimePeriod(splits[0])
-              .setYearsLived(splits[1])
+        return setTimePeriod(splits[0]).setYearsLived(splits[1])
     }
 
     override fun setTaxonomy(taxonomy: String): GenusBuilder {

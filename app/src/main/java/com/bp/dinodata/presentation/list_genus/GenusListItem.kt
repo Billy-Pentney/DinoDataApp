@@ -39,7 +39,7 @@ fun GenusListItem(
     onClick: () -> Unit = {},
     height: Dp = 50.dp
 ) {
-    val silhouetteId = remember { convertCreatureTypeToSilhouette(genus.getCreatureType()) }
+    val silhouetteId = convertCreatureTypeToSilhouette(genus.getCreatureType())
 
     Surface(
         color = MaterialTheme.colorScheme.surface,
