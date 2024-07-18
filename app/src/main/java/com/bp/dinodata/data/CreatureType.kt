@@ -3,6 +3,7 @@ package com.bp.dinodata.data
 enum class CreatureType {
     LargeTheropod,
     SmallTheropod,
+    MediumTheropod,
     Ceratopsian,
     Ankylosaur,
     Stegosaur,
@@ -13,6 +14,7 @@ enum class CreatureType {
     Pterosaur,
     Spinosaur,
     Aquatic,
+    Plesiosaur,
     Cenezoic,
     Synapsid,
     Other,
@@ -20,6 +22,7 @@ enum class CreatureType {
     Carcharodontosaurid,
     Abelisaurid,
     Euornithopod,
-    Tyrannosaurid
+    Tyrannosaurid,
+    Therizinosaurid,
 }
 

@@ -80,4 +80,7 @@
     <string name="type_abelisaurid">Abelisaurid</string>
     <string name="type_euornithopod">Euornithopod</string>
     <string name="type_tyrannosaurid">Tyrannosaurid</string>
+    <string name="type_medium_theropod">Medium Theropod</string>
+    <string name="type_plesiosaur">Plesiosaur</string>
+    <string name="type_therizinosaurid">Therizinosaurid</string>
 </resources>

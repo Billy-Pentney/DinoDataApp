@@ -15,15 +15,18 @@ object DataParsing {
         "dromaeosaurid" to CreatureType.Dromaeosaurid,
         "euornithopod" to CreatureType.Euornithopod,
         "hadrosaur" to CreatureType.Hadrosaur,
-        "pachycephalosaur" to CreatureType.Pachycephalosaur,
+        "pachycephalosaurid" to CreatureType.Pachycephalosaur,
         "pterosaur" to CreatureType.Pterosaur,
         "sauropod" to CreatureType.Sauropod,
         "spinosaurid" to CreatureType.Spinosaur,
         "stegosaurid" to CreatureType.Stegosaur,
         "tyrannosaurid" to CreatureType.Tyrannosaurid,
         "small_theropod" to CreatureType.SmallTheropod,
+        "medium_theropod" to CreatureType.MediumTheropod,
         "large_theropod" to CreatureType.LargeTheropod,
         "ornithomimid" to CreatureType.Ornithomimid,
+        "plesiosaur" to CreatureType.Plesiosaur,
+        "therizinosaurid" to CreatureType.Therizinosaurid,
         "other" to CreatureType.Other
     )
 

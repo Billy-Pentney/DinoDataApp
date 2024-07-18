@@ -28,5 +28,8 @@ fun convertCreatureTypeToString(type: CreatureType): String? {
         CreatureType.Abelisaurid -> stringResource(R.string.type_abelisaurid)
         CreatureType.Euornithopod -> stringResource(R.string.type_euornithopod)
         CreatureType.Tyrannosaurid -> stringResource(R.string.type_tyrannosaurid)
+        CreatureType.MediumTheropod -> stringResource(R.string.type_medium_theropod)
+        CreatureType.Plesiosaur -> stringResource(R.string.type_plesiosaur)
+        CreatureType.Therizinosaurid -> stringResource(R.string.type_therizinosaurid)
     }
 }

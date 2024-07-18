@@ -14,17 +14,20 @@ fun convertCreatureTypeToSilhouette(type: CreatureType): Int? {
         CreatureType.Synapsid           -> R.drawable.type_synapsid
         CreatureType.Pachycephalosaur   -> R.drawable.type_pachycephalosaur
         CreatureType.Ornithomimid       -> R.drawable.type_ornithomimid
-        CreatureType.SmallTheropod      -> R.drawable.type_raptor
+        CreatureType.SmallTheropod      -> R.drawable.type_heterodonto
         CreatureType.Stegosaur          -> R.drawable.type_stegosaur
         CreatureType.Spinosaur          -> R.drawable.type_spinosaur
-//        CreatureType.Aquatic -> TODO()
-//        CreatureType.Cenezoic -> TODO()
-//        CreatureType.Other -> TODO()
-        CreatureType.Dromaeosaurid      -> R.drawable.type_raptor
+        CreatureType.Dromaeosaurid      -> R.drawable.type_dromaeosaur
         CreatureType.Carcharodontosaurid -> R.drawable.type_carcharo
         CreatureType.Abelisaurid        -> R.drawable.type_abeli
-//        CreatureType.Euornithopod       -> TODO()
-        CreatureType.Tyrannosaurid      -> R.drawable.type_tyranno
+        CreatureType.Therizinosaurid    -> R.drawable.type_therizinosaur
+        CreatureType.Tyrannosaurid      -> R.drawable.type_tyrannosaur
+        CreatureType.MediumTheropod     -> R.drawable.type_allosaur
+        CreatureType.Plesiosaur         -> R.drawable.type_plesiosaur
+        //        CreatureType.Euornithopod       -> TODO()
+        //        CreatureType.Aquatic -> TODO()
+        //        CreatureType.Cenezoic -> TODO()
+        CreatureType.Other              -> R.drawable.type_unknown
         else                            -> null
     }
 }
