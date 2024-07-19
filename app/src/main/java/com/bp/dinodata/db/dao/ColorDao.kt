@@ -12,4 +12,7 @@ interface ColorDao {
 
     @Query("SELECT * FROM colors")
     fun getAll(): List<ColorEntity>
+
+    @Query("SELECT * FROM colors WHERE color_name == :color LIMIT 1")
+    suspend fun getByName(color: String): ColorEntity?
 }

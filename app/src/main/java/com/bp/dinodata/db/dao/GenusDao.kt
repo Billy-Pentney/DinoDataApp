@@ -6,8 +6,11 @@ import androidx.room.MapColumn
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.bp.dinodata.data.genus.GenusPrefs
+import com.bp.dinodata.data.genus.IGenusPrefs
 import com.bp.dinodata.db.entities.ColorEntity
 import com.bp.dinodata.db.entities.GenusEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GenusDao {
@@ -33,4 +36,15 @@ interface GenusDao {
     @Query("SELECT color_name FROM genera JOIN colors ON color_id == id " +
             "WHERE name LIKE :name LIMIT 1")
     suspend fun getColorForGenusName(name: String): String?
+
+    @Query("SELECT is_favourite, color_name FROM genera JOIN colors ON color_id == id " +
+            "WHERE name LIKE :name LIMIT 1")
+    suspend fun getGenusPrefs(name: String): GenusPrefs?
+
+    @Query("SELECT is_favourite, color_name FROM genera JOIN colors ON color_id == id " +
+            "WHERE name LIKE :name LIMIT 1")
+    fun getFlow(name: String): Flow<GenusPrefs?>
+
+    @Query("UPDATE genera SET color_id = :colorId WHERE name LIKE :name")
+    suspend fun updateColor(name: String, colorId: Int)
 }

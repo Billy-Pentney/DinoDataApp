@@ -4,6 +4,7 @@ import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenusWithImages
+import kotlinx.coroutines.flow.Flow
 
 interface IGenusRepository {
     fun getAllGenera(
@@ -34,4 +35,7 @@ interface IGenusRepository {
         callback: (Map<String, MultiImageUrlData>?) -> Unit,
         onFailure: () -> Unit
     )
+
+
+    fun getGenusWithImagesFlow(genusName: String): Flow<IGenusWithImages?>
 }

@@ -11,6 +11,11 @@ import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.dataObjects
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class GenusRepository @Inject constructor(
@@ -128,6 +133,56 @@ class GenusRepository @Inject constructor(
                     Log.d(TAG, "Failed to retrieve genus data for $genusName.", exc)
                     onFailure()
                 }
+        }
+    }
+
+    private fun getGenusNameFlow(
+        genusName: String,
+        onFailure: () -> Unit = {}
+    ): Flow<IGenus?> = flow {
+        if (genusName in generaByName.keys) {
+            emit(generaByName[genusName])
+        }
+
+        if (hasNetConnectivity) {
+            val snapshot = genusCollection
+                .document(genusName)
+                .get()
+                .await()
+
+            val genusBuilder = snapshot?.data?.let { GenusBuilderImpl.fromDict(it) }
+
+            if (genusBuilder != null) {
+                val genus = genusBuilder.build()
+                emit(genus)
+            } else {
+                Log.d(TAG, "Unable to construct data object for genus $genusName.")
+                onFailure()
+            }
+        }
+        else {
+            Log.d(TAG, "Cannot retrieve genus data. No network connection")
+        }
+    }
+
+    private fun getGenusImagesFlow(genusName: String): Flow<Map<String, MultiImageUrlData>?> = flow {
+        val snapshot = genusImageCollection
+            .document(genusName)
+            .get()
+            .await()
+
+        val imageDataMap = mapToImageUrlDTOs(snapshot?.data)
+        emit(imageDataMap)
+    }
+
+    override fun getGenusWithImagesFlow(genusName: String): Flow<IGenusWithImages?> {
+        val dataFlow = getGenusNameFlow(genusName)
+        val imagesFlow = getGenusImagesFlow(genusName)
+
+        return combine(dataFlow, imagesFlow) { genusData, genusImages ->
+            genusData?.let {
+                GenusWithImages(genusData, genusImages)
+            }
         }
     }
 

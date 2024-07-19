@@ -3,20 +3,29 @@ package com.bp.dinodata.presentation.detail_genus
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IDetailedGenus
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.IGenusPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,36 +41,33 @@ class DetailGenusViewModel @Inject constructor(
         const val LOG_TAG = "DetailGenusViewModel"
     }
 
-    private val _loadState: MutableState<LoadState> = mutableStateOf(LoadState.NotLoading)
+    private val _loadState: MutableState<LoadState> = mutableStateOf(LoadState.InProgress)
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
-
-    // Stores the details for the Genus being shown
-    private var _visibleGenus: MutableStateFlow<IGenusWithImages?> = MutableStateFlow(null)
-    private var _genusColor: MutableState<String?> = mutableStateOf(null)
 
     private var _titleCardExpanded: MutableState<Boolean> = mutableStateOf(true)
 
+    // Stores the details for the Genus being shown
+    private var _genusWithImages: Flow<IGenusWithImages?> = genusUseCases.getGenusByNameFlow(currentGenusName)
+    private var _genusPrefs: Flow<IGenusPrefs?> = genusUseCases.getGenusPrefsFlow(currentGenusName)
+    private var _genusDetail: StateFlow<DetailedGenus?> = MutableStateFlow(null)
+
     init {
+        _genusDetail = combine(_genusWithImages, _genusPrefs) { genusWithImages, genusPrefs ->
+            val genusDetail = genusWithImages?.let {
+                DetailedGenus(genusWithImages, genusPrefs)
+            }
 
-        viewModelScope.launch {
-            _loadState.value = LoadState.InProgress
-            genusUseCases.getGenusByName(
-                currentGenusName,
-                onCompletion = ::updateGenus,
-                onFailure = { }
-            )
-            _genusColor.value = genusUseCases.getGenusColor(currentGenusName)
-        }
+            _loadState.value =
+                when (genusDetail != null) {
+                    true -> LoadState.Loaded
+                    false -> LoadState.Error("No genus data found!")
+                }
+
+            genusDetail
+        }.stateIn(viewModelScope, SharingStarted.Lazily, null)
     }
 
-    private fun updateGenus(genus: IGenusWithImages?) {
-        viewModelScope.launch {
-            _visibleGenus.emit(genus)
-            _loadState.value = LoadState.Loaded
-        }
-    }
-
-    fun getVisibleGenus(): StateFlow<IGenusWithImages?> = _visibleGenus
+    fun getVisibleGenus(): StateFlow<IDetailedGenus?> = _genusDetail
 
     fun getTitleCardExpandedState(): State<Boolean> = _titleCardExpanded
 
@@ -75,13 +81,13 @@ class DetailGenusViewModel @Inject constructor(
     }
 
     private fun playPronunciationFile() {
-        val name = _visibleGenus.value?.getName()
+        val name = currentGenusName
         Log.i(LOG_TAG, "Play pronunciation for $currentGenusName")
 
-        if (name == null) {
-            Log.d(LOG_TAG, "Could not retrieve genus name for TTS")
-            return
-        }
+//        if (name == null) {
+//            Log.d(LOG_TAG, "Could not retrieve genus name for TTS")
+//            return
+//        }
 
         audioPronunciationUseCases.playPrerecordedAudio(
             name,
@@ -97,7 +103,6 @@ class DetailGenusViewModel @Inject constructor(
     }
 
     fun getLoadState(): State<LoadState> = _loadState
-    fun getGenusColor(): State<String?> = _genusColor
 }
 
 

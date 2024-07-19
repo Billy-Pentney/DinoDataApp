@@ -3,7 +3,6 @@ package com.bp.dinodata.presentation.detail_genus
 import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +31,7 @@ import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,7 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -66,7 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
-import com.bp.dinodata.data.genus.Genus
+import com.bp.dinodata.data.ColorConverter
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
@@ -155,7 +154,8 @@ fun GenusTitleCard(
     modifier: Modifier = Modifier,
     innerPadding: Dp = 8.dp,
     paddingValues: PaddingValues = PaddingValues(),
-    collapseSpeed: Float = 20f
+    collapseSpeed: Float = 20f,
+    colorScheme: ColorScheme? = null
 ) {
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
@@ -172,7 +172,7 @@ fun GenusTitleCard(
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
     Surface(
-        color = MaterialTheme.colorScheme.surface,
+        color = colorScheme?.surface ?: MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(
             topStart = 0f,
@@ -300,7 +300,7 @@ fun GenusDetail(
     genus: IGenusWithImages,
     modifier: Modifier = Modifier,
     onPlayNamePronunciation: () -> Unit,
-    color: Color? = null
+    colorScheme: ColorScheme? = null
 ) {
     val outerPadding = 8.dp
     val innerPadding = 12.dp
@@ -326,7 +326,7 @@ fun GenusDetail(
     }
     
     Surface(
-        color = color ?: MaterialTheme.colorScheme.background,
+        color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         LazyColumn(
@@ -346,7 +346,8 @@ fun GenusDetail(
                         start = outerPadding,
                         end = outerPadding,
                         bottom = 10.dp
-                    )
+                    ),
+                    colorScheme = colorScheme
                 )
             }
             item {
@@ -569,7 +570,8 @@ fun PreviewGenusDetailDark() {
     DinoDataTheme(darkTheme = true) {
         GenusDetail(
             genus = GenusWithImages(styraco, imageMap),
-            onPlayNamePronunciation = {}
+            onPlayNamePronunciation = {},
+            colorScheme = ColorConverter.convertStringToTheme("GREEN")
         )
     }
 }
