@@ -27,6 +27,7 @@ object DataParsing {
         "ornithomimid" to CreatureType.Ornithomimid,
         "plesiosaur" to CreatureType.Plesiosaur,
         "therizinosaurid" to CreatureType.Therizinosaurid,
+        "synapsid" to CreatureType.Synapsid,
         "other" to CreatureType.Other
     )
 

@@ -11,13 +11,4 @@ import com.bp.dinodata.db.entities.GenusEntity
 abstract class AppDatabase : RoomDatabase() {
     abstract fun genusDao(): GenusDao
     abstract fun colorDao(): ColorDao
-
-
-    companion object {
-        fun prepopulateDatabase(appDatabase: AppDatabase) {
-
-        }
-    }
-
-
 }
