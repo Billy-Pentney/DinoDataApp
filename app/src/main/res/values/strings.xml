@@ -83,4 +83,5 @@
     <string name="type_medium_theropod">Medium Theropod</string>
     <string name="type_plesiosaur">Plesiosaur</string>
     <string name="type_therizinosaurid">Therizinosaurid</string>
+    <string name="label_locations">Locations</string>
 </resources>

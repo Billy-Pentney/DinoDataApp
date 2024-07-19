@@ -42,9 +42,13 @@ interface IHasTimePeriodInfo {
     fun getYearsLived(): String?
 }
 
+interface IHasLocationInfo {
+    fun getLocations(): List<String>
+}
+
 interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
 
-interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList, IHasTimePeriodInfo
+interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo
 
 
 
@@ -57,9 +61,10 @@ data class Genus(
     private val timePeriod: TimePeriod? = null,
     private val nameMeaning: String? = null,
     private val namePronunciation: String? = null,
-    private val length: IDescribesLength?,
-    private val weight: IDescribesWeight?,
-    private val taxonomy: List<String>,
+    private val length: IDescribesLength? = null,
+    private val weight: IDescribesWeight? = null,
+    private val taxonomy: List<String> = emptyList(),
+    private val locations: List<String> = emptyList(),
     private val imageUrlDataMap: Map<String, MultiImageUrlData>? = null
 ): IGenus {
 
@@ -91,6 +96,8 @@ data class Genus(
     override fun getWeight(): IDescribesWeight? = weight
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
+
+    override fun getLocations(): List<String> = locations
 
     fun getImageUrl(index: Int = 0): String? {
         val imageGroup = allImagesUrlData?.elementAtOrNull(index)

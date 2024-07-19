@@ -263,7 +263,7 @@ fun GenusTitleCard(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .alpha(0.6f)
-                                .padding(bottom = innerPadding, top=2.dp)
+                                .padding(bottom = innerPadding, top = 2.dp)
                         ) {
                             Icon(
                                 Icons.Filled.RecordVoiceOver,
@@ -309,7 +309,9 @@ fun GenusDetail(
 
     val cardHeight = max(150.dp, 250.dp - (cardExpansion.value/2).dp)
     
-    val iconModifier = Modifier.height(20.dp).alpha(0.75f)
+    val iconModifier = Modifier
+        .height(20.dp)
+        .alpha(0.75f)
 
     val sectionDivider: @Composable () -> Unit = {
         HorizontalDivider(
@@ -437,6 +439,14 @@ fun GenusDetail(
                         }
                     )
                     ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
+
+                    sectionDivider()
+
+                    LabelContentRow(
+                        label = stringResource(R.string.label_locations),
+                        valueContent = { /*TODO*/ }
+                    )
+                    Text(genus.getLocations().joinToString())
                 }
                 Spacer(Modifier.height(100.dp))
             }
@@ -507,7 +517,7 @@ fun PreviewGenusDetail() {
         .setLength("11-11.5 metres")
         .setWeight("4.4 tonnes")
         .setCreatureType("large theropod")
-        .setTaxonomy("Dinosauria Saurischia Theropoda Carcharodontosauridae")
+        .setTaxonomy(listOf("Dinosauria", "Saurischia", "Theropoda", "Carcharodontosauridae"))
         .build()
 
     DinoDataTheme(darkTheme = false) {
@@ -526,7 +536,7 @@ fun PreviewGenusDetailDark() {
         .setLength("5 metres")
         .setWeight("1 tonnes")
         .setCreatureType("ceratopsian")
-        .setTaxonomy("Dinosauria Saurischia Ceratopsidae Centrosaurinae")
+        .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
         .addImageUrlMap(imageData = mapOf(
             "sty" to MultiImageUrlData(
                 "styracosaurus",

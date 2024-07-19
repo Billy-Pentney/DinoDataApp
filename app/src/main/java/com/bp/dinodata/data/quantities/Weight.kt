@@ -1,5 +1,8 @@
 package com.bp.dinodata.data.quantities
 
+import android.util.Log
+import com.bp.dinodata.data.genus.GenusBuilderImpl.Companion.TAG
+
 sealed class Weight(
     valueIn: Float,
     private val unit: Units.Weight
@@ -56,14 +59,20 @@ sealed class Weight(
     override fun isAtMost(maxValue: Float): Boolean = this.value <= maxValue
 
     companion object {
+        val UnitsMap = mapOf(
+            "kg" to Units.Weight.Kg,
+            "tonnes" to Units.Weight.Tonnes,
+            "tons" to Units.Weight.TonsImperial,            /// ASSUMPTION
+        )
+
         fun make(floatValue: Float, units: Units.Weight): IWeight {
 
             // Auto-convert between kg and tonnes, depending on the given quantity
             if (units == Units.Weight.Kg && floatValue >= 1000f) {
-                return Weight.make(floatValue / 1000f, Units.Weight.Tonnes)
+                return Tonnes(floatValue / 1000f)
             }
             else if (units == Units.Weight.Tonnes && floatValue <= 1f) {
-                return Weight.make(floatValue * 1000f, Units.Weight.Kg)
+                return Kg(floatValue * 1000f)
             }
 
 
@@ -72,6 +81,27 @@ sealed class Weight(
                 Units.Weight.Tonnes -> Tonnes(floatValue)
                 Units.Weight.TonsImperial -> TonsImperial(floatValue)
                 Units.Weight.TonsUS -> TonsUS(floatValue)
+            }
+        }
+
+        fun tryMake(weightValue: String, units: Units.Weight): IDescribesWeight? {
+            try {
+                if ("-" in weightValue) {
+                    // Parse a range e.g. "100-98.1"
+                    val splits = weightValue.split("-")
+                    val lower = splits[0].toFloat()
+                    val upper = splits[1].toFloat()
+                    return WeightRange(lower, upper, units)
+                }
+                else {
+                    // Parse a single value
+                    val floatValue = weightValue.toFloat()
+                    return Weight.make(floatValue, units)
+                }
+            }
+            catch (nfe:NumberFormatException) {
+                Log.e(TAG, "Failed to parse \'$weightValue\' as float")
+                return null
             }
         }
     }
