@@ -233,13 +233,6 @@ class GenusBuilderImpl(
             Log.e(TAG, "Failed to parse \'$weightValue\' as float")
             return
         }
-
-        if (units == Units.Weight.Kg && this.weight?.isAtLeast(1000f) == true) {
-            this.weight = this.weight?.convert(Units.Weight.Tonnes)
-        }
-        else if (units == Units.Weight.Tonnes && this.weight?.isAtMost(1f) == true) {
-            this.weight = this.weight?.convert(Units.Weight.Kg)
-        }
     }
 
     override fun setWeight(weight: String): GenusBuilder {

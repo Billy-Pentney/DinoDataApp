@@ -37,6 +37,12 @@ object DataParsing {
         "piscivore" to Diet.Piscivore
     )
 
+    private val TimePeriodMap = mapOf(
+        "cretaceous" to Epoch.Cretaceous,
+        "jurassic" to Epoch.Jurassic,
+        "triassic" to Epoch.Triassic
+    )
+
     fun matchCreatureType(text: String): CreatureType? {
         val cleanText = text.lowercase().replace(" ","_")
         return if (cleanText in CreatureTypesMap.keys) {
@@ -88,6 +94,11 @@ object DataParsing {
 
     fun suggestDietSuffixes(text: String, takeTop: Int = 2): List<String> {
         val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, DietTypesMap.keys)
+        return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
+    }
+
+    fun suggestTimePeriodSuffixes(text: String, takeTop: Int = 2): List<String> {
+        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, TimePeriodMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
 

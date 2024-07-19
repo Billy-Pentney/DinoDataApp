@@ -57,6 +57,16 @@ sealed class Weight(
 
     companion object {
         fun make(floatValue: Float, units: Units.Weight): IWeight {
+
+            // Auto-convert between kg and tonnes, depending on the given quantity
+            if (units == Units.Weight.Kg && floatValue >= 1000f) {
+                return Weight.make(floatValue / 1000f, Units.Weight.Tonnes)
+            }
+            else if (units == Units.Weight.Tonnes && floatValue <= 1f) {
+                return Weight.make(floatValue * 1000f, Units.Weight.Kg)
+            }
+
+
             return when (units) {
                 Units.Weight.Kg -> Kg(floatValue)
                 Units.Weight.Tonnes -> Tonnes(floatValue)

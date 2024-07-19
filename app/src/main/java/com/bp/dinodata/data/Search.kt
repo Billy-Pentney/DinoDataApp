@@ -163,7 +163,9 @@ class TimePeriodSearchTerm(
     override fun getType(): SearchTermType = SearchTermType.TimePeriod
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> = TimePeriodFilter(periods)
     override fun generateSearchSuggestions(): List<String> {
-        // TODO - add suggestions here
+        if (queryArguments.isNotEmpty()) {
+            return DataParsing.suggestTimePeriodSuffixes(queryArguments.last())
+        }
         return emptyList()
     }
 }
