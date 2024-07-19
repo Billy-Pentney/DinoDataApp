@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Card
@@ -66,13 +67,17 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.ColorConverter
+import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TaxonTreeBuilder
+import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
+import com.bp.dinodata.data.quantities.IDescribesLength
+import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
@@ -160,7 +165,7 @@ fun GenusTitleCard(
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
     var imageIndex by remember { mutableIntStateOf(0) }
-    val genusImageUrl = genus.getImageUrl()
+    val genusImageUrl = genus.getImageUrl(imageIndex)
     val totalImages = genus.getNumDistinctImages()
 
     val scaleDueToScroll = remember {
@@ -357,80 +362,21 @@ fun GenusDetail(
                         horizontal = innerPadding + outerPadding/2
                     )
                 ) {
-                    LabelAttributeRow(
-                        label = stringResource(R.string.label_meaning),
-                        value = genus.getNameMeaning(),
-                        valueStyle = FontStyle.Italic,
-                        leadingIcon = {
-                            Icon(Icons.Filled.Book, null, modifier = iconModifier)
-                        }
-                    )
-                    LabelAttributeRow(
-                        label = stringResource(R.string.label_creature_type),
-                        value = convertCreatureTypeToString(genus.getCreatureType()),
-                        leadingIcon = {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Label,
-                                null,
-                                modifier = iconModifier
-                            )
-                        }
-                    )
-
+                    CreatureNameMeaningAndType(genus, iconModifier = iconModifier)
                     sectionDivider()
-                    LabelContentRow(
-                        label = stringResource(R.string.label_diet),
-                        valueContent = { DietIconThin(genus.getDiet()) },
-                        leadingIcon = {
-                            Icon(Icons.Sharp.Restaurant,
-                                contentDescription = null,
-                                modifier = iconModifier)
-                        }
+                    CreatureDietAndMeasurements(
+                        diet = genus.getDiet(),
+                        length = genus.getLength(),
+                        weight = genus.getWeight(),
+                        iconModifier = iconModifier
                     )
-                    LabelAttributeRow(
-                        label = stringResource(R.string.label_length),
-                        value = genus.getLength().toString(),
-                        leadingIcon = {
-                            Image(
-                                painterResource(R.drawable.icon_filled_ruler),
-                                null,
-                                modifier = iconModifier,
-                                colorFilter = ColorFilter.tint(LocalContentColor.current)
-                            )
-                        }
-                    )
-                    LabelAttributeRow(
-                        label = stringResource(R.string.label_weight),
-                        value = genus.getWeight().toString(),
-                        leadingIcon = {
-                            Image(
-                                painterResource(R.drawable.icon_filled_weight),
-                                null,
-                                modifier = iconModifier,
-                                colorFilter = ColorFilter.tint(LocalContentColor.current)
-                            )
-                        }
-                    )
-
                     sectionDivider()
-
-                    LabelContentRow(
-                        label = stringResource(R.string.label_time_period),
-                        valueContent = { TimePeriodIcon(timePeriod = genus.getTimePeriod()) },
-                        leadingIcon = {
-                            Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
-                        }
+                    CreatureTimePeriod(
+                        timePeriod = genus.getTimePeriod(),
+                        yearsLived = genus.getYearsLived(),
+                        iconModifier = iconModifier
                     )
-                    LabelAttributeRow(
-                        label = stringResource(R.string.label_years_lived),
-                        value = genus.getYearsLived(),
-                        leadingIcon = {
-                            Icon(Icons.Filled.AccessTimeFilled, null, modifier = iconModifier)
-                        }
-                    )
-
                     sectionDivider()
-
                     LabelContentRow(
                         label = stringResource(R.string.label_taxonomy),
                         valueContent = {},
@@ -445,17 +391,142 @@ fun GenusDetail(
                     )
                     ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
 
-                    sectionDivider()
-
-                    LabelContentRow(
-                        label = stringResource(R.string.label_locations),
-                        valueContent = { /*TODO*/ }
-                    )
-                    Text(genus.getLocations().joinToString())
+                    if (genus.getLocations().isNotEmpty()) {
+                        sectionDivider()
+                        CreatureLocations(
+                            locations = genus.getLocations(),
+                            iconModifier = iconModifier
+                        )
+                    }
                 }
                 Spacer(Modifier.height(100.dp))
             }
         }
+    }
+}
+
+@Composable
+fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
+    LabelContentRow(
+        label = stringResource(R.string.label_locations),
+        valueContent = { Text(locations.joinToString()) },
+        leadingIcon = {
+            Icon(
+                Icons.Filled.LocationOn, null,
+                modifier = iconModifier
+            )
+        }
+    )
+}
+
+@Composable
+fun CreatureTimePeriod(
+    timePeriod: TimePeriod?,
+    yearsLived: String?,
+    iconModifier: Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier=Modifier.fillMaxWidth()
+    ) {
+        LabelContentRow(
+            label = stringResource(R.string.label_time_period),
+            valueContent = { TimePeriodIcon(timePeriod) },
+            leadingIcon = {
+                Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
+            }
+        )
+        LabelAttributeRow(
+            label = stringResource(R.string.label_years_lived),
+            value = yearsLived,
+            leadingIcon = {
+                Icon(Icons.Filled.AccessTimeFilled, null, modifier = iconModifier)
+            }
+        )
+    }
+}
+
+@Composable
+fun CreatureDietAndMeasurements(
+    diet: Diet?,
+    length: IDescribesLength?,
+    weight: IDescribesWeight?,
+    iconModifier: Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier=Modifier.fillMaxWidth()
+    ) {
+        LabelContentRow(
+            label = stringResource(R.string.label_diet),
+            valueContent = { DietIconThin(diet) },
+            leadingIcon = {
+                Icon(
+                    Icons.Sharp.Restaurant,
+                    contentDescription = null,
+                    modifier = iconModifier
+                )
+            }
+        )
+        length?.let {
+            LabelAttributeRow(
+                label = stringResource(R.string.label_length),
+                value = length.toString(),
+                leadingIcon = {
+                    Image(
+                        painterResource(R.drawable.icon_filled_ruler),
+                        null,
+                        modifier = iconModifier,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current)
+                    )
+                }
+            )
+        }
+        weight?.let {
+            LabelAttributeRow(
+                label = stringResource(R.string.label_weight),
+                value = weight.toString(),
+                leadingIcon = {
+                    Image(
+                        painterResource(R.drawable.icon_filled_weight),
+                        null,
+                        modifier = iconModifier,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current)
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CreatureNameMeaningAndType(
+    genus: IGenusWithImages,
+    iconModifier: Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier=Modifier.fillMaxWidth()
+    ) {
+        LabelAttributeRow(
+            label = stringResource(R.string.label_meaning),
+            value = genus.getNameMeaning(),
+            valueStyle = FontStyle.Italic,
+            leadingIcon = {
+                Icon(Icons.Filled.Book, null, modifier = iconModifier)
+            }
+        )
+        LabelAttributeRow(
+            label = stringResource(R.string.label_creature_type),
+            value = convertCreatureTypeToString(genus.getCreatureType()),
+            leadingIcon = {
+                Icon(
+                    Icons.AutoMirrored.Filled.Label,
+                    null,
+                    modifier = iconModifier
+                )
+            }
+        )
     }
 }
 
