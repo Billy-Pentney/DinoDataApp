@@ -3,10 +3,12 @@ package com.bp.dinodata.di
 import android.content.Context
 import android.net.ConnectivityManager
 import androidx.core.content.ContextCompat.getSystemService
+import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.repo.AudioRepository
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.repo.IAudioRepository
 import com.bp.dinodata.repo.IGenusRepository
+import com.bp.dinodata.repo.LocalPreferencesRepository
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import com.bp.dinodata.use_cases.PlayPrerecordedAudioUseCase
@@ -46,6 +48,12 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun providesLocalPrefRepository(db: AppDatabase): LocalPreferencesRepository {
+        return LocalPreferencesRepository(db)
+    }
+
+    @Singleton
+    @Provides
     fun providesAudioRepository(
         @ApplicationContext context: Context
     ): AudioRepository {
@@ -56,8 +64,11 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesGenusUseCases(genusRepo: IGenusRepository): GenusUseCases {
-        return GenusUseCases(genusRepo)
+    fun providesGenusUseCases(
+        genusRepo: IGenusRepository,
+        localPreferencesRepo: LocalPreferencesRepository
+    ): GenusUseCases {
+        return GenusUseCases(genusRepo, localPreferencesRepo)
     }
 
     @Singleton

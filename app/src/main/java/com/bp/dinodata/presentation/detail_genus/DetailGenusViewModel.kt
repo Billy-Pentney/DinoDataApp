@@ -8,6 +8,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.genus.Genus
+import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
@@ -33,29 +36,32 @@ class DetailGenusViewModel @Inject constructor(
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
 
     // Stores the details for the Genus being shown
-    private var _visibleGenus: MutableStateFlow<Genus?> = MutableStateFlow(null)
+    private var _visibleGenus: MutableStateFlow<IGenusWithImages?> = MutableStateFlow(null)
+    private var _genusColor: MutableState<String?> = mutableStateOf(null)
 
     private var _titleCardExpanded: MutableState<Boolean> = mutableStateOf(true)
 
     init {
+
         viewModelScope.launch {
             _loadState.value = LoadState.InProgress
             genusUseCases.getGenusByName(
                 currentGenusName,
-                callback = { it?.let { updateGenus(it) } },
+                onCompletion = ::updateGenus,
                 onFailure = { }
             )
+            _genusColor.value = genusUseCases.getGenusColor(currentGenusName)
         }
     }
 
-    private fun updateGenus(genus: Genus) {
+    private fun updateGenus(genus: IGenusWithImages?) {
         viewModelScope.launch {
             _visibleGenus.emit(genus)
             _loadState.value = LoadState.Loaded
         }
     }
 
-    fun getVisibleGenus(): StateFlow<Genus?> = _visibleGenus
+    fun getVisibleGenus(): StateFlow<IGenusWithImages?> = _visibleGenus
 
     fun getTitleCardExpandedState(): State<Boolean> = _titleCardExpanded
 
@@ -90,9 +96,8 @@ class DetailGenusViewModel @Inject constructor(
         )
     }
 
-    fun getLoadState(): State<LoadState> {
-        return _loadState
-    }
+    fun getLoadState(): State<LoadState> = _loadState
+    fun getGenusColor(): State<String?> = _genusColor
 }
 
 

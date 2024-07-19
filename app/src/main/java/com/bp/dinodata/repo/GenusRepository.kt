@@ -7,6 +7,9 @@ import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.ImageUrlData.mapToImageUrlDTOs
 import com.bp.dinodata.data.MultiImageUrlData
+import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.IGenusWithImages
 import com.google.firebase.firestore.CollectionReference
 import javax.inject.Inject
 
@@ -20,7 +23,7 @@ class GenusRepository @Inject constructor(
         const val TAG = "GenusRepository"
     }
 
-    private var generaByName: Map<String, Genus> = emptyMap()
+    private var generaByName: Map<String, IGenus> = emptyMap()
 
     private val hasNetConnectivity: Boolean
         get() = connectivityManager.getNetworkCapabilities(
@@ -62,9 +65,9 @@ class GenusRepository @Inject constructor(
      * if the genus is invalid.
      * Otherwise, if an error occurred, onFailure is called.
      * */
-    override fun getGenus(
+    override fun getGenusWithImages(
         genusName: String,
-        callback: (Genus?) -> Unit,
+        onCompletion: (IGenusWithImages?) -> Unit,
         onFailure: () -> Unit
     ) {
         // Attempt to use the pre-loaded data
@@ -72,34 +75,27 @@ class GenusRepository @Inject constructor(
             Log.d(TAG, "Image-request received for existing genus $genusName")
             val genusData = generaByName[genusName]!!
 
-            if (genusData.getNumDistinctImages() > 0) {
+            if (genusData is GenusWithImages) {
                 // Early-exit if we've already gotten these images
-                callback(genusData)
+                onCompletion(genusData)
                 return
             }
             else {
                 getImagesForGenus(
                     genusName,
                     callback = { imageUrlMap ->
-                        val combinedGenusData =
-                            if (imageUrlMap != null) {
-                                Log.d(TAG, "Retrieved images for existing genus $genusName")
-                                // Make a new genus object with the images
-                                GenusBuilderImpl(genusData)
-                                    .addImageUrlMap(imageUrlMap)
-                                    .build()
-    //                            generaByName[genusName] = combinedGenusData
-                            } else {
-                                Log.d(TAG, "Received null image data for existing genus $genusName")
-                                // Return without images
-                                genusData
-                            }
-                        callback(combinedGenusData)
+                        if (imageUrlMap != null) {
+                            Log.d(TAG, "Retrieved images for existing genus $genusName")
+                        } else {
+                            Log.d(TAG, "Received null image data for existing genus $genusName")
+                        }
+                        val genusWithImageData = GenusWithImages(genusData, imageUrlMap)
+                        onCompletion(genusWithImageData)
                     },
                     onFailure = {
                         // Return but without images
                         Log.d(TAG, "Failed to get images for existing genus $genusName")
-                        callback(genusData)
+                        onCompletion(GenusWithImages(genusData))
                     }
                 )
             }
@@ -115,18 +111,13 @@ class GenusRepository @Inject constructor(
                     val genusBuilder = snapshot?.data?.let { GenusBuilderImpl.fromDict(it) }
 
                     if (genusBuilder != null) {
+                        val genusData = genusBuilder.build()
+
                         // Now, get the images (if any)
                         getImagesForGenus(
                             genusName,
-                            callback = { imageUrlMap ->
-                                imageUrlMap?.let {
-                                    genusBuilder.addImageUrlMap(imageUrlMap)
-                                }
-                                callback(genusBuilder.build())
-                            },
-                            onFailure = {
-                                callback(genusBuilder.build())
-                            }
+                            callback = { onCompletion(GenusWithImages(genusData, it)) },
+                            onFailure = { onCompletion(GenusWithImages(genusData)) }
                         )
                     } else {
                         Log.d(TAG, "Unable to construct data object for genus $genusName.")

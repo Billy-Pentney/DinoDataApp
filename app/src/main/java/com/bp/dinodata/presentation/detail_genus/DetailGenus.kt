@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.detail_genus
 import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -69,6 +71,9 @@ import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TaxonTreeBuilder
+import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
@@ -144,7 +149,7 @@ fun LabelContentRow(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun GenusTitleCard(
-    genus: Genus,
+    genus: IGenusWithImages,
     scrollState: LazyListState,
     onPlayNamePronunciation: () -> Unit,
     modifier: Modifier = Modifier,
@@ -155,9 +160,7 @@ fun GenusTitleCard(
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
     var imageIndex by remember { mutableIntStateOf(0) }
-    val genusImageUrl by remember {
-        derivedStateOf { genus.getImageUrl(imageIndex) }
-    }
+    val genusImageUrl = genus.getImageUrl()
     val totalImages = genus.getNumDistinctImages()
 
     val scaleDueToScroll = remember {
@@ -294,9 +297,10 @@ fun GenusTitleCard(
 
 @Composable
 fun GenusDetail(
-    genus: Genus,
+    genus: IGenusWithImages,
     modifier: Modifier = Modifier,
-    onPlayNamePronunciation: () -> Unit
+    onPlayNamePronunciation: () -> Unit,
+    color: Color? = null
 ) {
     val outerPadding = 8.dp
     val innerPadding = 12.dp
@@ -322,8 +326,8 @@ fun GenusDetail(
     }
     
     Surface(
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground,
+        color = color ?: MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -456,7 +460,7 @@ fun GenusDetail(
 
 @Composable
 fun ShowTaxonomicTree(
-    genus: Genus,
+    genus: IGenus,
     modifier: Modifier,
     internalCardPadding: PaddingValues = PaddingValues(16.dp)
 ) {
@@ -520,8 +524,10 @@ fun PreviewGenusDetail() {
         .setTaxonomy(listOf("Dinosauria", "Saurischia", "Theropoda", "Carcharodontosauridae"))
         .build()
 
+    val acroWithImages = GenusWithImages(acro)
+
     DinoDataTheme(darkTheme = false) {
-        GenusDetail(acro, onPlayNamePronunciation = {})
+        GenusDetail(acroWithImages, onPlayNamePronunciation = {})
     }
 }
 
@@ -537,29 +543,33 @@ fun PreviewGenusDetailDark() {
         .setWeight("1 tonnes")
         .setCreatureType("ceratopsian")
         .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
-        .addImageUrlMap(imageData = mapOf(
-            "sty" to MultiImageUrlData(
-                "styracosaurus",
-                listOf(
-                    SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
-                        imageSizes = listOf("4895x1877", "512x196"),
-                        thumbSizes = listOf("192x192", "64x64")
-                    )
-                )
-            ),
-            "sty2" to MultiImageUrlData(
-                "styracosaurus",
-                listOf(
-                    SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
-                        imageSizes = listOf("4895x1877", "512x196"),
-                        thumbSizes = listOf("192x192", "64x64")
-                    )
-                )
-            )
-        ))
         .build()
 
+    val imageMap = mapOf(
+        "sty" to MultiImageUrlData(
+            "styracosaurus",
+            listOf(
+                SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
+                    imageSizes = listOf("4895x1877", "512x196"),
+                    thumbSizes = listOf("192x192", "64x64")
+                )
+            )
+        ),
+        "sty2" to MultiImageUrlData(
+            "styracosaurus",
+            listOf(
+                SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
+                    imageSizes = listOf("4895x1877", "512x196"),
+                    thumbSizes = listOf("192x192", "64x64")
+                )
+            )
+        )
+    )
+
     DinoDataTheme(darkTheme = true) {
-        GenusDetail(styraco, onPlayNamePronunciation = {})
+        GenusDetail(
+            genus = GenusWithImages(styraco, imageMap),
+            onPlayNamePronunciation = {}
+        )
     }
 }

@@ -1,7 +1,5 @@
 package com.bp.dinodata.data.genus
 
-import com.bp.dinodata.data.MultiImageUrlData
-
 
 interface GenusBuilder {
     fun build(): Genus
@@ -19,7 +17,7 @@ interface GenusBuilder {
     fun setStartMya(startMya: String?): GenusBuilder
     fun setEndMya(endMya: String?): GenusBuilder
 
-    fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder
+//    fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder
     fun setLocations(it: List<String>?): GenusBuilder
 }
 

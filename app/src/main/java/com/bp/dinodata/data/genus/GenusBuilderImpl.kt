@@ -27,21 +27,21 @@ class GenusBuilderImpl(
     private var endMya: Int? = null,
 ): GenusBuilder {
 
-    private var multiImageUrlMap: Map<String, MultiImageUrlData> = emptyMap()
+//    private var multiImageUrlMap: Map<String, MultiImageUrlData> = emptyMap()
 
-    constructor(genus: IGenus): this(
-        name = genus.getName(),
-        nameMeaning = genus.getNameMeaning(),
-        namePronunciation = genus.getNamePronunciation(),
-        diet = genus.getDiet(),
-        yearsLived = genus.getYearsLived(),
-        timePeriod = genus.getTimePeriod(),
-        length = genus.getLength(),
-        weight = genus.getWeight(),
-        type = genus.getCreatureType(),
-        locations = genus.getLocations().toMutableList(),
-        taxonomy = genus.getListOfTaxonomy().toMutableList()
-    )
+//    constructor(genus: IGenus): this(
+//        name = genus.getName(),
+//        nameMeaning = genus.getNameMeaning(),
+//        namePronunciation = genus.getNamePronunciation(),
+//        diet = genus.getDiet(),
+//        yearsLived = genus.getYearsLived(),
+//        timePeriod = genus.getTimePeriod(),
+//        length = genus.getLength(),
+//        weight = genus.getWeight(),
+//        type = genus.getCreatureType(),
+//        locations = genus.getLocations().toMutableList(),
+//        taxonomy = genus.getListOfTaxonomy().toMutableList()
+//    )
 
     companion object {
         const val TAG = "GenusBuilder"
@@ -105,10 +105,10 @@ class GenusBuilderImpl(
         return this
     }
 
-    override fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder {
-        this.multiImageUrlMap = imageData
-        return this
-    }
+//    override fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder {
+//        this.multiImageUrlMap = imageData
+//        return this
+//    }
 
     override fun setLocations(it: List<String>?): GenusBuilder {
         it?.let {
@@ -240,8 +240,7 @@ class GenusBuilderImpl(
             namePronunciation = namePronunciation,
             type = type,
             taxonomy = taxonomy,
-            locations = locations,
-            imageUrlDataMap = multiImageUrlMap
+            locations = locations
         )
     }
 }

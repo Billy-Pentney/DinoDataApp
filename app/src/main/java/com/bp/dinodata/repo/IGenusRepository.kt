@@ -2,6 +2,8 @@ package com.bp.dinodata.repo
 
 import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.MultiImageUrlData
+import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IGenusWithImages
 
 interface IGenusRepository {
     fun getAllGenera(
@@ -16,9 +18,9 @@ interface IGenusRepository {
      * if the genus is invalid.
      * Otherwise, if an error occurred, onFailure is called.
      * */
-    fun getGenus(
+    fun getGenusWithImages(
         genusName: String,
-        callback: (Genus?) -> Unit,
+        onCompletion: (IGenusWithImages?) -> Unit,
         onFailure: () -> Unit
     )
 

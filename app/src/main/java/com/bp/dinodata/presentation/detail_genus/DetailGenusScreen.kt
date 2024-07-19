@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bp.dinodata.data.ColorConverter
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 
@@ -18,6 +21,13 @@ fun DetailGenusScreen(
 ) {
     val loadState by detailGenusViewModel.getLoadState()
     val genusState by detailGenusViewModel.getVisibleGenus().collectAsState()
+    val genusColorName by detailGenusViewModel.getGenusColor()
+
+    val genusColor by remember {
+        derivedStateOf {
+            ColorConverter.convertStringToColor(genusColorName)
+        }
+    }
 
     Scaffold { padding ->
         Crossfade(targetState = loadState, label = "GenusDetailCrossfade") {
@@ -33,7 +43,8 @@ fun DetailGenusScreen(
                             .padding(horizontal = 8.dp),
                         onPlayNamePronunciation = {
                             detailGenusViewModel.onEvent(DetailGenusUiEvent.PlayNamePronunciation)
-                        }
+                        },
+                        color = genusColor
                     )
                 }
                 is LoadState.Error -> {

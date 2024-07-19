@@ -7,7 +7,10 @@ import com.bp.dinodata.db.dao.GenusDao
 import com.bp.dinodata.db.entities.ColorEntity
 import com.bp.dinodata.db.entities.GenusEntity
 
-@Database(entities = [GenusEntity::class, ColorEntity::class], version = 1)
+@Database(
+    entities = [GenusEntity::class, ColorEntity::class],
+    version = 2
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun genusDao(): GenusDao
     abstract fun colorDao(): ColorDao

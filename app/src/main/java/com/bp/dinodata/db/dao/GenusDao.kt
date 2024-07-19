@@ -6,6 +6,7 @@ import androidx.room.MapColumn
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.bp.dinodata.db.entities.ColorEntity
 import com.bp.dinodata.db.entities.GenusEntity
 
 @Dao
@@ -24,8 +25,12 @@ interface GenusDao {
         >
 
     @Query("SELECT name, is_favourite FROM genera")
-    fun getGenusToFavouriteMap(): Map<
+    suspend fun getGenusToFavouriteMap(): Map<
             @MapColumn(columnName = "name") String,
             @MapColumn(columnName = "is_favourite") Boolean
         >
+
+    @Query("SELECT color_name FROM genera JOIN colors ON color_id == id " +
+            "WHERE name LIKE :name LIMIT 1")
+    suspend fun getColorForGenusName(name: String): String?
 }
