@@ -28,6 +28,7 @@ navigationUiKtx = "2.7.7"
 hiltVersion = "2.50"
 kspVersion = "2.0.0-1.0.22"
 googleServicesVersion = "4.4.2"
+room = "2.6.1"
 runtimeAndroid = "1.6.8"
 uiToolingPreviewAndroid = "1.6.8"
 firebaseStorageKtx = "21.0.0"
@@ -50,6 +51,8 @@ androidx-material3 = { module = "androidx.compose.material3:material3" }
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3AdaptiveNavigationSuite" }
 androidx-material3-android = { module = "androidx.compose.material3:material3-android", version.ref = "material3Android" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }

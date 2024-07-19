@@ -73,16 +73,25 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // Android Material Theming and Animations
     implementation(libs.androidx.animation)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.material3)
     implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
     implementation(libs.androidx.material3.adaptive.navigation.suite)
 
+    // Image Loading
     implementation(libs.glide)
     implementation(libs.glideCompose)
-
     implementation(libs.coil.compose)
+
+
+    // RoomDB
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    // To use Kotlin Symbol Processing (KSP)
+    ksp(libs.androidx.room.compiler)
+
 
     // Import the BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
