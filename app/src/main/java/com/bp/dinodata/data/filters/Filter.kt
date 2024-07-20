@@ -4,13 +4,12 @@ import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IHasCreatureType
 import com.bp.dinodata.data.genus.IHasDiet
-import com.bp.dinodata.data.genus.IHasMeasurements
 import com.bp.dinodata.data.genus.IHasName
 import com.bp.dinodata.data.genus.IHasTaxonomy
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
-import com.bp.dinodata.data.quantities.IDescribesLength
 
 /**
  * A filter defines one or more restrictions on items of type T.
@@ -104,33 +103,15 @@ class TimePeriodFilter(
     }
 }
 
-interface ICompositeFilter<T>: IFilter<T> {
-    fun addFilter(filter: IFilter<T>)
-}
-
-
-/**
- * A filter which is comprised of zero or more sub-filters and only accepts if and only if
- * ALL of the subfilters accept.
- */
-class ConjunctiveFilter<T>(
-    filters: List<IFilter<in T>>
-): ICompositeFilter<T> {
-    private val _filters = filters.toMutableList()
-
-    override fun acceptsItem(item: T): Boolean {
-        // Accept if and only if ALL the filters accept
-        return _filters.fold(true) { state, filter ->
-            state && filter.acceptsItem(item)
+class SelectedColorFilter(
+    private val acceptedColors: List<String?>
+): IFilter<IGenus> {
+    override fun acceptsItem(item: IGenus): Boolean {
+        if (item is ILocalPrefs) {
+            return item.getSelectedColorName() in acceptedColors
         }
-    }
-
-    override fun addFilter(filter: IFilter<T>) {
-        _filters.add(filter)
-    }
-
-    override fun toString(): String {
-        return _filters.joinToString(" && ")
+        return false
     }
 }
+
 

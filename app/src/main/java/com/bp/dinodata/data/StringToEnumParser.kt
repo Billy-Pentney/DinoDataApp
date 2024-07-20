@@ -1,8 +1,11 @@
 package com.bp.dinodata.data
 
 import android.util.Log
+import com.bp.dinodata.data.DataParsing.getLongestNonMatchingSuffixes
+import com.bp.dinodata.data.search.IGeneratesSearchSuggestions
+import com.bp.dinodata.data.search.ISearchTypeConverter
 
-object DataParsing {
+object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
 
     private val CreatureTypesMap = mapOf(
         "abelisaurid" to CreatureType.Abelisaurid,
@@ -31,20 +34,7 @@ object DataParsing {
         "other" to CreatureType.Other
     )
 
-    private val DietTypesMap = mapOf(
-        "carnivore" to Diet.Carnivore,
-        "herbivore" to Diet.Herbivore,
-        "omnivore" to Diet.Omnivore,
-        "piscivore" to Diet.Piscivore
-    )
-
-    private val TimePeriodMap = mapOf(
-        "cretaceous" to Epoch.Cretaceous,
-        "jurassic" to Epoch.Jurassic,
-        "triassic" to Epoch.Triassic
-    )
-
-    fun matchCreatureType(text: String): CreatureType? {
+    override fun matchType(text: String): CreatureType? {
         val cleanText = text.lowercase().replace(" ","_")
         return if (cleanText in CreatureTypesMap.keys) {
             CreatureTypesMap[cleanText]
@@ -55,23 +45,21 @@ object DataParsing {
         }
     }
 
-    fun matchDiet(text: String): Diet? {
-        val cleanText = text.trim().lowercase()
-        return when {
-            cleanText.startsWith("herbivor") -> Diet.Herbivore
-            cleanText.startsWith("carnivor") -> Diet.Carnivore
-            cleanText.startsWith("piscivor") -> Diet.Piscivore
-            cleanText.startsWith("omnivor") -> Diet.Omnivore
-            cleanText == "unknown" -> Diet.Unknown
-            else -> {
-                Log.d("DietParser", "Saw unfamiliar diet $text")
-                null
-            }
-        }
+    override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
+        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, CreatureTypesMap.keys)
+        return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
+}
 
-    fun matchTimePeriod(timePeriod: String): TimePeriod? {
-        val splits = timePeriod.split(" ")
+object TimePeriodConverter: ISearchTypeConverter<TimePeriod> {
+    private val TimePeriodMap = mapOf(
+        "cretaceous" to Epoch.Cretaceous,
+        "jurassic" to Epoch.Jurassic,
+        "triassic" to Epoch.Triassic
+    )
+
+    override fun matchType(text: String): TimePeriod? {
+        val splits = text.split(" ")
         var subepoch: Subepoch? = null
         var epoch: Epoch? = null
 
@@ -88,22 +76,47 @@ object DataParsing {
         return epoch?.let { TimePeriod(it, subepoch) }
     }
 
-    fun suggestCreatureTypeSuffixes(text: String, takeTop: Int = 3): List<String> {
-        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, CreatureTypesMap.keys)
-        return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
-    }
-
-    fun suggestDietSuffixes(text: String, takeTop: Int = 2): List<String> {
-        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, DietTypesMap.keys)
-        return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
-    }
-
-    fun suggestTimePeriodSuffixes(text: String, takeTop: Int = 2): List<String> {
+    override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
         val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, TimePeriodMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
+}
 
-    private fun getLongestNonMatchingSuffixes(text: String, strings: Iterable<String>): List<String> {
+
+object DietConverter: ISearchTypeConverter<Diet> {
+
+    private val DietTypesMap = mapOf(
+        "carnivore" to Diet.Carnivore,
+        "herbivore" to Diet.Herbivore,
+        "omnivore" to Diet.Omnivore,
+        "piscivore" to Diet.Piscivore
+    )
+
+    override fun matchType(text: String): Diet? {
+        val cleanText = text.trim().lowercase()
+        return when {
+            cleanText.startsWith("herbivor") -> Diet.Herbivore
+            cleanText.startsWith("carnivor") -> Diet.Carnivore
+            cleanText.startsWith("piscivor") -> Diet.Piscivore
+            cleanText.startsWith("omnivor") -> Diet.Omnivore
+            cleanText == "unknown" -> Diet.Unknown
+            else -> {
+                Log.d("DietParser", "Saw unfamiliar diet $text")
+                null
+            }
+        }
+    }
+
+    override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
+        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, DietTypesMap.keys)
+        return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
+    }
+}
+
+
+
+object DataParsing {
+    fun getLongestNonMatchingSuffixes(text: String, strings: Iterable<String>): List<String> {
         return strings.filter { it.startsWith(text) }
             .sortedByDescending { it.length }
             .map { it.removePrefix(text) }

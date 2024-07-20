@@ -1,10 +1,10 @@
 package com.bp.dinodata.use_cases
 
-import com.bp.dinodata.data.GenusSearch
+import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.GenusWithPrefs
-import com.bp.dinodata.data.genus.IGenusPrefs
+import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.repo.IGenusRepository
@@ -26,7 +26,7 @@ class GenusUseCases(
         return GenusSearch.constructFromQuery(query, capitalSensitive)
     }
 
-    fun getGenusPrefsFlow(currentGenusName: String): Flow<IGenusPrefs?> {
+    fun getGenusPrefsFlow(currentGenusName: String): Flow<ILocalPrefs?> {
         return localPrefRepository.getPrefsFlow(currentGenusName)
     }
 

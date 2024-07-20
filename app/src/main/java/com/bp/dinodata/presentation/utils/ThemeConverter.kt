@@ -3,10 +3,13 @@ package com.bp.dinodata.presentation.utils
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
+import com.bp.dinodata.data.DataParsing.getLongestNonMatchingSuffixes
+import com.bp.dinodata.data.search.IGeneratesSearchSuggestions
+import com.bp.dinodata.data.search.ISearchTypeConverter
 import com.bp.dinodata.theme.MyGrey800
 
-object ThemeConverter {
 
+object ThemeConverter: ISearchTypeConverter<String> {
 
     private val redTheme = darkColorScheme(
         surface = Color(0xFF882222)
@@ -17,7 +20,7 @@ object ThemeConverter {
     )
 
     private val yellowTheme = darkColorScheme(
-        surface = Color(0xFFAA7744)
+        surface = Color(0xFFAA9944)
     )
 
     private val greenTheme = darkColorScheme(
@@ -75,5 +78,18 @@ object ThemeConverter {
 
     fun getColor(colorName: String?): Color? {
         return stringToTheme[colorName?.uppercase()]?.surface
+    }
+
+    override fun matchType(text: String): String? {
+        val upperText = text.uppercase()
+        if (getTheme(upperText) != null) {
+            return upperText
+        }
+        return null
+    }
+
+    override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
+        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, listOfColors)
+        return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
 }

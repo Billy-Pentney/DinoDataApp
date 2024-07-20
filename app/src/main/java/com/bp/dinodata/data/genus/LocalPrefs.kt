@@ -2,17 +2,22 @@ package com.bp.dinodata.data.genus
 
 import androidx.room.ColumnInfo
 
-interface IGenusPrefs {
+interface IHasUserFavourite {
     fun isUserFavourite(): Boolean
+}
+
+interface IHasColor {
     fun getSelectedColorName(): String?
 }
 
-data class GenusPrefs(
+interface ILocalPrefs: IHasColor, IHasUserFavourite
+
+data class LocalPrefs(
     @ColumnInfo(name="is_favourite")
     private val _isFavourite: Boolean = false,
     @ColumnInfo(name="color_name")
     private val _color: String? = null
-): IGenusPrefs {
+): ILocalPrefs {
     override fun isUserFavourite(): Boolean = _isFavourite
     override fun getSelectedColorName(): String? = _color
 }

@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.IDetailedGenus
-import com.bp.dinodata.data.genus.IGenusPrefs
+import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
@@ -42,7 +42,7 @@ class DetailGenusViewModel @Inject constructor(
 
     // Stores the details for the Genus being shown
     private var _genusWithImages: Flow<IGenusWithImages?> = genusUseCases.getGenusByNameFlow(currentGenusName)
-    private var _genusPrefs: Flow<IGenusPrefs?> = genusUseCases.getGenusPrefsFlow(currentGenusName)
+    private var _genusPrefs: Flow<ILocalPrefs?> = genusUseCases.getGenusPrefsFlow(currentGenusName)
     private var _genusDetail: StateFlow<DetailedGenus?> = MutableStateFlow(null)
 
     private var _uiState: MutableState<DetailScreenUiState> = mutableStateOf(

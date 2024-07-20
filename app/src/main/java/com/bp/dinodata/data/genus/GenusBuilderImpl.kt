@@ -2,10 +2,13 @@ package com.bp.dinodata.data.genus
 
 import android.util.Log
 import com.bp.dinodata.data.CreatureType
+import com.bp.dinodata.data.CreatureTypeConverter
 import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.Diet
+import com.bp.dinodata.data.DietConverter
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.TimePeriod
+import com.bp.dinodata.data.TimePeriodConverter
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
@@ -118,12 +121,12 @@ class GenusBuilderImpl(
     }
 
     override fun setDiet(dietStr: String?): GenusBuilder {
-        this.diet = dietStr?.let { DataParsing.matchDiet(it) } ?: Diet.Unknown
+        this.diet = dietStr?.let { DietConverter.matchType(it) } ?: Diet.Unknown
         return this
     }
 
     override fun setCreatureType(type: String?): GenusBuilder {
-        this.type = type?.let { DataParsing.matchCreatureType(it) } ?: CreatureType.Other
+        this.type = type?.let { CreatureTypeConverter.matchType(it) } ?: CreatureType.Other
         return this
     }
 
@@ -133,7 +136,7 @@ class GenusBuilderImpl(
     }
 
     override fun setTimePeriod(period: String?): GenusBuilder {
-        timePeriod = period?.let { DataParsing.matchTimePeriod(it) }
+        timePeriod = period?.let { TimePeriodConverter.matchType(it) }
         return this
     }
 

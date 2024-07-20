@@ -35,13 +35,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -60,7 +57,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -75,12 +71,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.GenusSearch
+import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
-import com.bp.dinodata.data.genus.GenusPrefs
+import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.LoadState
@@ -594,7 +590,7 @@ fun PreviewListGenus() {
             Diet.Herbivore -> "GREEN"
             else -> null
         }
-        GenusWithPrefs(it, GenusPrefs(_color = color))
+        GenusWithPrefs(it, LocalPrefs(_color = color))
     }
     val generaGrouped: IResultsByLetter<IGenusWithPrefs> = ResultsByLetter(generaPrefs)
 

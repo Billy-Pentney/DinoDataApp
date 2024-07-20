@@ -1,8 +1,8 @@
 package com.bp.dinodata.presentation.list_genus
 
 import com.bp.dinodata.data.IResultsByLetter
-import com.bp.dinodata.data.ISearch
-import com.bp.dinodata.data.emptySearch
+import com.bp.dinodata.data.search.ISearch
+import com.bp.dinodata.data.search.emptySearch
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs

@@ -5,7 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bp.dinodata.data.GenusSearch
+import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.LoadState

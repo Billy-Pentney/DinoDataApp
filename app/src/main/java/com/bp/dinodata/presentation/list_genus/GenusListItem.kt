@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.data.genus.IDisplayInList
-import com.bp.dinodata.data.genus.IGenusPrefs
+import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.presentation.icons.DietIconSquare
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 
@@ -45,7 +45,7 @@ fun GenusListItem(
     val silhouetteId = convertCreatureTypeToSilhouette(genus.getCreatureType())
 
     val colorTint =
-        if (genus is IGenusPrefs) {
+        if (genus is ILocalPrefs) {
             ThemeConverter.getColor(genus.getSelectedColorName())
         }
         else {
