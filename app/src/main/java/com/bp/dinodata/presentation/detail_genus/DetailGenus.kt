@@ -69,7 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
-import com.bp.dinodata.data.ThemeConverter
+import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
@@ -699,7 +699,7 @@ fun PreviewGenusDetailDark() {
     val uiState = DetailScreenUiState(
         genusName = styraco.getName(),
         genusData = DetailedGenus(GenusWithImages(styraco, imageMap)),
-        selectedColorName = "BROWN",
+        selectedColorName = "WHITE",
         listOfColors = ThemeConverter.listOfColors,
         colorSelectDialogVisibility = true
     )

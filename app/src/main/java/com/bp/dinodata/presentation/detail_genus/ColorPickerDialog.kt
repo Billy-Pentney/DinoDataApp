@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.bp.dinodata.R
-import com.bp.dinodata.data.ThemeConverter
+import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable

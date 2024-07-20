@@ -517,7 +517,6 @@ fun ListGenusScreen(
         uiState = uiState,
         navigateToGenus = navigateToGenus,
         switchToPageByIndex = { index ->
-//            Toast.makeText(context, "Loading new page $index", Toast.LENGTH_SHORT).show()
             listGenusViewModel.onEvent(ListGenusPageUiEvent.SwitchToPage(index))
         },
         updateSearchQuery = {

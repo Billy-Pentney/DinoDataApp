@@ -1,8 +1,9 @@
-package com.bp.dinodata.data
+package com.bp.dinodata.presentation.utils
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
+import com.bp.dinodata.theme.MyGrey800
 
 object ThemeConverter {
 
@@ -47,6 +48,11 @@ object ThemeConverter {
         surface = Color(0xFF885544)
     )
 
+    private val whiteTheme = darkColorScheme(
+        surface = Color(0xFFFFFFFF),
+        onSurface = MyGrey800
+    )
+
     private val stringToTheme = mapOf(
         "RED" to redTheme,
         "ORANGE" to orangeTheme,
@@ -57,16 +63,17 @@ object ThemeConverter {
         "INDIGO" to indigoTheme,
         "VIOLET" to violetTheme,
         "PINK" to pinkTheme,
-        "BROWN" to brownTheme
+        "BROWN" to brownTheme,
+        "WHITE" to whiteTheme
     )
 
     val listOfColors = stringToTheme.keys.toList()
 
     fun getTheme(name: String?): ColorScheme? {
-        return stringToTheme[name]
+        return stringToTheme[name?.uppercase()]
     }
 
     fun getColor(colorName: String?): Color? {
-        return stringToTheme[colorName]?.surface
+        return stringToTheme[colorName?.uppercase()]?.surface
     }
 }
