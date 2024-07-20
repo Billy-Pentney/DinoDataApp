@@ -111,7 +111,7 @@ class DetailGenusViewModel @Inject constructor(
 
         audioPronunciationUseCases.playPrerecordedAudio(
             name,
-            callback = { success ->
+            onPlayerCompletion = { success ->
                 if (success) {
                     Log.d(LOG_TAG, "Successfully played \'$name\' pronunciation")
                 }

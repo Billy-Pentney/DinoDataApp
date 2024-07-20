@@ -5,7 +5,6 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
-import com.bp.dinodata.repo.AudioRepository
 import com.bp.dinodata.repo.IAudioRepository
 import java.io.File
 
@@ -13,23 +12,26 @@ class PlayPrerecordedAudioUseCase(
     private val context: Context,
     private val audioRepository: IAudioRepository
 ): IHasAudioResources {
-    private var mediaPlayer: MediaPlayer = MediaPlayer()
+    private var _mediaPlayer: MediaPlayer? = MediaPlayer()
+    private var _lastUriPlayed: Uri? = null
 
-    private var lastUri: Uri? = null
+    companion object {
+        const val TAG = "MediaPlayerUseCase"
+    }
 
     operator fun invoke(
         genusName: String,
-        callback: (Boolean) -> Unit
+        onPlayerCompletion: (Boolean) -> Unit
     ) {
         audioRepository.getAudioForGenus(genusName,
             callback = { ttsFile ->
                 playAudioFromFileAsync(
                     ttsFile,
-                    onPlay = { callback(true) },
-                    onFail = { callback(false) }
+                    onPlay = { onPlayerCompletion(true) },
+                    onFail = { onPlayerCompletion(false) }
                 )
             },
-            onError = { callback(false) }
+            onError = { onPlayerCompletion(false) }
         )
     }
 
@@ -40,32 +42,39 @@ class PlayPrerecordedAudioUseCase(
     ) {
         val uri = file.toUri()
 
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.stop()
+        val mp = _mediaPlayer ?: MediaPlayer()
+
+        if (_mediaPlayer == null) {
+            Log.i(TAG, "No MediaPlayer. Recreating...")
+            _mediaPlayer = mp
         }
 
-        if (uri != lastUri) {
-            mediaPlayer.reset()
+        if (mp.isPlaying) {
+            mp.stop()
+        }
+
+        if (uri != _lastUriPlayed) {
+            mp.reset()
             // If we've switched to a new request, we must reset, then add the new datasource
-            mediaPlayer.setDataSource(context, uri)
+            mp.setDataSource(context, uri)
             // Now, re-prepare the new source
-            mediaPlayer.prepareAsync()
+            mp.prepareAsync()
         }
         else {
             // The player is in PlaybackCompleted state, so do NOT prepare it again
-            mediaPlayer.start()
-        }
-
-        mediaPlayer.setOnPreparedListener { mp ->
-            // When the player is prepared, start it immediately
             mp.start()
         }
-        mediaPlayer.setOnCompletionListener {
+
+        mp.setOnPreparedListener { mediaPlayer ->
+            // When the player is prepared, start it immediately
+            mediaPlayer.start()
+        }
+        mp.setOnCompletionListener {
             // Copy the last successfully played URI
-            lastUri = uri
+            _lastUriPlayed = uri
             onPlay()
         }
-        mediaPlayer.setOnErrorListener { _, type, extra ->
+        mp.setOnErrorListener { _, type, extra ->
             Log.d("TTSUseCases", "AudioError (type=$type, extra=$extra)")
             onFail()
             // Indicate that this error was handled, to avoid further exceptions
@@ -74,6 +83,8 @@ class PlayPrerecordedAudioUseCase(
     }
 
     override fun close() {
-        mediaPlayer.release()
+        Log.i(TAG, "Released mediaPlayer")
+        _mediaPlayer?.release()
+        _mediaPlayer = null
     }
 }

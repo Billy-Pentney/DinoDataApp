@@ -165,7 +165,8 @@ fun GenusTitleCard(
     innerPadding: Dp = 8.dp,
     paddingValues: PaddingValues = PaddingValues(),
     collapseSpeed: Float = 20f,
-    colorScheme: ColorScheme? = null
+    colorScheme: ColorScheme? = null,
+    canPlayPronunciation: Boolean
 ) {
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
@@ -290,14 +291,17 @@ fun GenusTitleCard(
                         }
                     }
                 }
-                IconButton(
-                    onClick = onPlayNamePronunciation,
-                    modifier = Modifier.padding(bottom=1.dp)
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.VolumeUp,
-                        contentDescription = "play name pronunciation"
-                    )
+
+                if (canPlayPronunciation) {
+                    IconButton(
+                        onClick = onPlayNamePronunciation,
+                        modifier = Modifier.padding(bottom=1.dp)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = "play name pronunciation"
+                        )
+                    }
                 }
             }
         }
@@ -372,7 +376,8 @@ fun GenusDetailScreenContent(
                             end = outerPadding,
                             bottom = 10.dp
                         ),
-                        colorScheme = colorScheme
+                        colorScheme = colorScheme,
+                        canPlayPronunciation = uiState.canPlayPronunciationAudio
                     )
                 }
             }
