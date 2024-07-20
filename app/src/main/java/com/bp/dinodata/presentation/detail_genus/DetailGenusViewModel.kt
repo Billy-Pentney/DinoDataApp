@@ -40,8 +40,6 @@ class DetailGenusViewModel @Inject constructor(
 //    private val _loadState: MutableState<LoadState> = mutableStateOf(LoadState.InProgress)
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
 
-//    private var _titleCardExpanded: MutableState<Boolean> = mutableStateOf(true)
-
     // Stores the details for the Genus being shown
     private var _genusWithImages: Flow<IGenusWithImages?> = genusUseCases.getGenusByNameFlow(currentGenusName)
     private var _genusPrefs: Flow<IGenusPrefs?> = genusUseCases.getGenusPrefsFlow(currentGenusName)
@@ -83,13 +81,8 @@ class DetailGenusViewModel @Inject constructor(
         }
     }
 
-    //    fun getTitleCardExpandedState(): State<Boolean> = _titleCardExpanded
-
     fun onEvent(event: DetailGenusUiEvent) {
         when (event) {
-            is DetailGenusUiEvent.ChangeTitleCardExpansion -> {
-//                _titleCardExpanded.value = event.expanded
-            }
             DetailGenusUiEvent.PlayNamePronunciation -> playPronunciationFile()
             is DetailGenusUiEvent.SelectColor -> {
                 _uiState.value = _uiState.value.copy(
@@ -135,11 +128,9 @@ class DetailGenusViewModel @Inject constructor(
 
 
 sealed class DetailGenusUiEvent {
-
-    data class ChangeTitleCardExpansion(val expanded: Boolean): DetailGenusUiEvent()
     data object PlayNamePronunciation: DetailGenusUiEvent()
     data class ShowColorSelectDialog(val visible: Boolean): DetailGenusUiEvent()
-    data class SelectColor(val colorName: String): DetailGenusUiEvent()
+    data class SelectColor(val colorName: String?): DetailGenusUiEvent()
 }
 
 data class DetailScreenUiState(
@@ -150,6 +141,4 @@ data class DetailScreenUiState(
     val canPlayPronunciationAudio: Boolean = true,
     val listOfColors: List<String> = emptyList(),
     val selectedColorName: String? = null
-) {
-
-}
+)

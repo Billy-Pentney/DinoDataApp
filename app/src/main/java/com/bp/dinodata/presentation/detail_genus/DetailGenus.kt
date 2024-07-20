@@ -311,7 +311,7 @@ fun GenusDetailScreenContent(
     modifier: Modifier = Modifier,
     onPlayNamePronunciation: () -> Unit,
     setColorPickerDialogVisibility: (Boolean) -> Unit,
-    onColorSelect: (String) -> Unit,
+    onColorSelected: (String?) -> Unit,
 ) {
     val outerPadding = 8.dp
     val innerPadding = 12.dp
@@ -344,7 +344,7 @@ fun GenusDetailScreenContent(
             ColorPickerDialog(
                 selectedColor = uiState.selectedColorName,
                 colorNames = uiState.listOfColors,
-                onSelect = onColorSelect,
+                onColorPicked = onColorSelected,
                 onClose = {
                     setColorPickerDialogVisibility(false)
                 }
@@ -649,7 +649,7 @@ fun PreviewGenusDetail() {
                 uiState = uiState,
                 onPlayNamePronunciation = {},
                 setColorPickerDialogVisibility = {},
-                onColorSelect = {}
+                onColorSelected = {}
             )
         }
     }
@@ -694,7 +694,7 @@ fun PreviewGenusDetailDark() {
     val uiState = DetailScreenUiState(
         genusName = styraco.getName(),
         genusData = DetailedGenus(GenusWithImages(styraco, imageMap)),
-        selectedColorName = "YELLOW",
+        selectedColorName = "BROWN",
         listOfColors = ThemeConverter.listOfColors,
         colorSelectDialogVisibility = true
     )
@@ -705,7 +705,7 @@ fun PreviewGenusDetailDark() {
                 uiState = uiState,
                 onPlayNamePronunciation = {},
                 setColorPickerDialogVisibility = {},
-                onColorSelect = {}
+                onColorSelected = {}
             )
         }
     }

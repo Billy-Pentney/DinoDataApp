@@ -35,7 +35,7 @@ class GenusUseCases(
         return localPrefRepository.getPrefsFlow(currentGenusName)
     }
 
-    suspend fun updateColor(genusName: String, colorName: String) {
+    suspend fun updateColor(genusName: String, colorName: String?) {
         localPrefRepository.updateColorForGenus(genusName, colorName)
     }
 

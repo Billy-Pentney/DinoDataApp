@@ -43,6 +43,10 @@ object ThemeConverter {
         surface = Color(0xFFAA5555)
     )
 
+    private val brownTheme = darkColorScheme(
+        surface = Color(0xFF885544)
+    )
+
     private val stringToTheme = mapOf(
         "RED" to redTheme,
         "ORANGE" to orangeTheme,
@@ -52,7 +56,8 @@ object ThemeConverter {
         "BLUE" to blueTheme,
         "INDIGO" to indigoTheme,
         "VIOLET" to violetTheme,
-        "PINK" to pinkTheme
+        "PINK" to pinkTheme,
+        "BROWN" to brownTheme
     )
 
     val listOfColors = stringToTheme.keys.toList()
@@ -61,7 +66,7 @@ object ThemeConverter {
         return stringToTheme[name]
     }
 
-    fun getColor(colorName: String): Color? {
+    fun getColor(colorName: String?): Color? {
         return stringToTheme[colorName]?.surface
     }
 }

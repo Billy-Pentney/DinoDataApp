@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ILocalPreferencesRepository {
     suspend fun getColorForGenus(genusName: String): String?
-    suspend fun updateColorForGenus(name: String, color: String)
+    suspend fun updateColorForGenus(name: String, color: String?)
     suspend fun getGenusPrefs(name: String): GenusPrefs?
     fun getPrefsFlow(currentGenusName: String): Flow<IGenusPrefs?>
     suspend fun getAllColors(): List<ColorEntity>
@@ -27,17 +27,23 @@ class LocalPreferencesRepository(
         return db.genusDao().getColorForGenusName(genusName)
     }
 
-    override suspend fun updateColorForGenus(name: String, color: String) {
+    override suspend fun updateColorForGenus(name: String, color: String?) {
         Log.i(TAG, "Attempt to set color($name) = \'$color\'")
-        val colorEntity = db.colorDao().getByName(color)
 
-        if (colorEntity != null) {
-            val id = colorEntity.id
-            Log.i(TAG, "Retrieved color \'$color\' with id: $id")
-            db.genusDao().updateColor(name, id)
+        if (color != null) {
+            val colorEntity = db.colorDao().getByName(color)
+            if (colorEntity != null) {
+                val id = colorEntity.id
+                Log.i(TAG, "Retrieved color \'$color\' with id: $id")
+                db.genusDao().updateColor(name, id)
+            }
+            else {
+                Log.d(TAG, "No colors found with name $color. Cannot update genus $name.")
+            }
         }
         else {
-            Log.d(TAG, "No colors found with name $color. Cannot update genus $name.")
+            Log.i(TAG, "Clearing color for genus: $name")
+            db.genusDao().updateColor(name, null)
         }
     }
 

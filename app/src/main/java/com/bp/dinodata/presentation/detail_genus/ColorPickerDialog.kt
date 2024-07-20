@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -46,7 +45,7 @@ import com.bp.dinodata.theme.DinoDataTheme
 fun ColorPickerDialog(
     selectedColor: String? = null,
     colorNames: List<String> = ThemeConverter.listOfColors,
-    onSelect: (String) -> Unit,
+    onColorPicked: (String?) -> Unit,
     onClose: () -> Unit
 ) {
 
@@ -98,30 +97,21 @@ fun ColorPickerDialog(
                 )
             ) {
                 items(colorNames) { colorName ->
-                    val color = ThemeConverter.getColor(colorName) ?: Color.White
                     val isSelected = (selectedColor == colorName)
+                    ColorPickerSingleton(
+                        onColorPicked,
+                        colorName,
+                        isSelected
+                    )
+                }
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        IconButton(
-                            onClick = { onSelect(colorName) },
-                            modifier = Modifier
-                                .background(color, CircleShape)
-                                .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                        ) {
-                            AnimatedVisibility (isSelected) {
-                                Icon(
-                                    Icons.Filled.Check,
-                                    stringResource(R.string.desc_select_this_color),
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(4.dp)
-                                )
-                            }
-                        }
-                        Text(colorName, fontSize = 12.sp)
-                    }
+                item {
+                    val isSelected = (selectedColor == null)
+                    ColorPickerSingleton(
+                        onColorPicked,
+                        null,
+                        isSelected
+                    )
                 }
             }
 
@@ -136,13 +126,46 @@ fun ColorPickerDialog(
     }
 }
 
+@Composable
+fun ColorPickerSingleton(
+    onSelect: (String?) -> Unit,
+    colorName: String?,
+    isSelected: Boolean
+) {
+    val color = ThemeConverter.getColor(colorName) ?: Color.Transparent
+    val displayName = colorName ?: stringResource(id = R.string.text_color_none)
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        IconButton(
+            onClick = { onSelect(colorName) },
+            modifier = Modifier
+                .background(color, CircleShape)
+                .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+        ) {
+            AnimatedVisibility (isSelected) {
+                Icon(
+                    Icons.Filled.Check,
+                    stringResource(R.string.desc_select_this_color),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp)
+                )
+            }
+        }
+        Text(displayName, fontSize = 12.sp)
+    }
+}
+
+
 
 @Preview
 @Composable
 fun PreviewColorPickerDialog() {
     DinoDataTheme (darkTheme = true) {
         ColorPickerDialog(
-            onSelect = {},
+            onColorPicked = {},
             onClose = {},
             selectedColor = "PINK"
         )

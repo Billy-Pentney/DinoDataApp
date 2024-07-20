@@ -22,7 +22,7 @@ interface GenusDao {
 
 
     @Query("SELECT name, color_name FROM genera JOIN colors ON color_id == id")
-    fun getGenusToColorMap(): Map<
+    suspend fun getGenusToColorMap(): Map<
             @MapColumn(columnName = "name") String,
             @MapColumn(columnName = "color_name") String
         >
@@ -46,5 +46,5 @@ interface GenusDao {
     fun getFlow(name: String): Flow<GenusPrefs?>
 
     @Query("UPDATE genera SET color_id = :colorId WHERE name LIKE :name")
-    suspend fun updateColor(name: String, colorId: Int)
+    suspend fun updateColor(name: String, colorId: Int?)
 }
