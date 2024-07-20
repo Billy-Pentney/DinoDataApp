@@ -34,5 +34,13 @@ class GenusUseCases(
     fun getGenusPrefsFlow(currentGenusName: String): Flow<IGenusPrefs?> {
         return localPrefRepository.getPrefsFlow(currentGenusName)
     }
+
+    suspend fun updateColor(genusName: String, colorName: String) {
+        localPrefRepository.updateColorForGenus(genusName, colorName)
+    }
+
+    suspend fun getAllColors(): List<String> {
+        return localPrefRepository.getAllColors().map { it.name }
+    }
 }
 

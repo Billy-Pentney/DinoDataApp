@@ -4,6 +4,7 @@ import android.util.Log
 import com.bp.dinodata.data.genus.GenusPrefs
 import com.bp.dinodata.data.genus.IGenusPrefs
 import com.bp.dinodata.db.AppDatabase
+import com.bp.dinodata.db.entities.ColorEntity
 import kotlinx.coroutines.flow.Flow
 
 interface ILocalPreferencesRepository {
@@ -11,6 +12,7 @@ interface ILocalPreferencesRepository {
     suspend fun updateColorForGenus(name: String, color: String)
     suspend fun getGenusPrefs(name: String): GenusPrefs?
     fun getPrefsFlow(currentGenusName: String): Flow<IGenusPrefs?>
+    suspend fun getAllColors(): List<ColorEntity>
 }
 
 class LocalPreferencesRepository(
@@ -26,6 +28,7 @@ class LocalPreferencesRepository(
     }
 
     override suspend fun updateColorForGenus(name: String, color: String) {
+        Log.i(TAG, "Attempt to set color($name) = \'$color\'")
         val colorEntity = db.colorDao().getByName(color)
 
         if (colorEntity != null) {
@@ -44,5 +47,9 @@ class LocalPreferencesRepository(
 
     override fun getPrefsFlow(currentGenusName: String): Flow<IGenusPrefs?> {
         return db.genusDao().getFlow(currentGenusName)
+    }
+
+    override suspend fun getAllColors(): List<ColorEntity> {
+        return db.colorDao().getAll()
     }
 }

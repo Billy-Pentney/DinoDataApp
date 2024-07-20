@@ -3,9 +3,8 @@ package com.bp.dinodata.data
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
-import com.bp.dinodata.theme.MyGrey400
 
-object ColorConverter {
+object ThemeConverter {
 
 
     private val redTheme = darkColorScheme(
@@ -17,42 +16,52 @@ object ColorConverter {
     )
 
     private val yellowTheme = darkColorScheme(
-        surface = Color(0xFF884422)
+        surface = Color(0xFFAA7744)
     )
 
     private val greenTheme = darkColorScheme(
-        surface = Color(0xFF228822)
+        surface = Color(0xFF337733)
     )
 
     private val cyanTheme = darkColorScheme(
-        surface = Color(0xFF228899)
+        surface = Color(0xFF338899)
     )
 
     private val blueTheme = darkColorScheme(
-        surface = Color(0xFF224488)
+        surface = Color(0xFF336699)
+    )
+
+    private val indigoTheme = darkColorScheme(
+        surface = Color(0xFF554488)
     )
 
     private val violetTheme = darkColorScheme(
-        surface = Color(0xFF882288)
+        surface = Color(0xFF884488)
     )
 
     private val pinkTheme = darkColorScheme(
         surface = Color(0xFFAA5555)
     )
 
-    private val mapping = mapOf(
+    private val stringToTheme = mapOf(
         "RED" to redTheme,
         "ORANGE" to orangeTheme,
         "YELLOW" to yellowTheme,
         "GREEN" to greenTheme,
         "CYAN" to cyanTheme,
         "BLUE" to blueTheme,
+        "INDIGO" to indigoTheme,
         "VIOLET" to violetTheme,
-//        "BROWN" to Color(0xFF444400),
-//        "PINK" to Color(0xFFFF9999)
+        "PINK" to pinkTheme
     )
 
-    fun convertStringToTheme(name: String?): ColorScheme? {
-        return mapping[name]
+    val listOfColors = stringToTheme.keys.toList()
+
+    fun getTheme(name: String?): ColorScheme? {
+        return stringToTheme[name]
+    }
+
+    fun getColor(colorName: String): Color? {
+        return stringToTheme[colorName]?.surface
     }
 }

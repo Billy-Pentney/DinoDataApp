@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.detail_genus
 import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,8 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.sharp.Restaurant
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
@@ -66,13 +69,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
-import com.bp.dinodata.data.ColorConverter
+import com.bp.dinodata.data.ThemeConverter
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TaxonTreeBuilder
 import com.bp.dinodata.data.TimePeriod
+import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
@@ -81,6 +85,7 @@ import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
+import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -177,7 +182,7 @@ fun GenusTitleCard(
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
     Surface(
-        color = colorScheme?.surface ?: MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(
             topStart = 0f,
@@ -301,20 +306,18 @@ fun GenusTitleCard(
 
 
 @Composable
-fun GenusDetail(
-    genus: IGenusWithImages,
+fun GenusDetailScreenContent(
+    uiState: DetailScreenUiState,
     modifier: Modifier = Modifier,
     onPlayNamePronunciation: () -> Unit,
-    colorScheme: ColorScheme? = null
+    setColorPickerDialogVisibility: (Boolean) -> Unit,
+    onColorSelect: (String) -> Unit,
 ) {
     val outerPadding = 8.dp
     val innerPadding = 12.dp
 
     val scrollState = rememberLazyListState()
-    val cardExpansion = remember {
-        derivedStateOf { 0f }
-            //scrollState.firstVisibleItemScrollOffset }
-    }
+    val cardExpansion = remember { derivedStateOf { 0f } }
 
     val cardHeight = max(150.dp, 250.dp - (cardExpansion.value/2).dp)
     
@@ -329,37 +332,55 @@ fun GenusDetail(
                 .alpha(0.5f)
         )
     }
-    
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
-    ) {
+
+    val genus = uiState.genusData
+    val colorScheme = ThemeConverter.getTheme(uiState.selectedColorName)
+
+    if (genus == null) {
+        NoDataPlaceholder()
+    }
+    else {
+        if (uiState.colorSelectDialogVisibility) {
+            ColorPickerDialog(
+                selectedColor = uiState.selectedColorName,
+                colorNames = uiState.listOfColors,
+                onSelect = onColorSelect,
+                onClose = {
+                    setColorPickerDialogVisibility(false)
+                }
+            )
+        }
+
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             state = scrollState,
-            contentPadding = PaddingValues(horizontal=outerPadding/2),
-            modifier = modifier
+            contentPadding = PaddingValues(horizontal = outerPadding / 2),
+            modifier = modifier.background(MaterialTheme.colorScheme.background)
         ) {
             item {
-                GenusTitleCard(
-                    genus,
-                    innerPadding = innerPadding,
-                    scrollState = scrollState,
-                    onPlayNamePronunciation = onPlayNamePronunciation,
-                    modifier = Modifier.height(cardHeight),
-                    paddingValues = PaddingValues(
-                        start = outerPadding,
-                        end = outerPadding,
-                        bottom = 10.dp
-                    ),
-                    colorScheme = colorScheme
-                )
+                MaterialTheme(
+                    colorScheme = colorScheme ?: MaterialTheme.colorScheme
+                ) {
+                    GenusTitleCard(
+                        genus,
+                        innerPadding = innerPadding,
+                        scrollState = scrollState,
+                        onPlayNamePronunciation = onPlayNamePronunciation,
+                        modifier = Modifier.height(cardHeight),
+                        paddingValues = PaddingValues(
+                            start = outerPadding,
+                            end = outerPadding,
+                            bottom = 10.dp
+                        ),
+                        colorScheme = colorScheme
+                    )
+                }
             }
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(
-                        horizontal = innerPadding + outerPadding/2
+                        horizontal = innerPadding + outerPadding / 2
                     )
                 ) {
                     CreatureNameMeaningAndType(genus, iconModifier = iconModifier)
@@ -381,7 +402,7 @@ fun GenusDetail(
                         label = stringResource(R.string.label_taxonomy),
                         valueContent = {},
                         leadingIcon = {
-                            Image (
+                            Image(
                                 painterResource(id = R.drawable.icon_filled_taxon_tree),
                                 null,
                                 modifier = iconModifier,
@@ -398,11 +419,29 @@ fun GenusDetail(
                             iconModifier = iconModifier
                         )
                     }
+
+                    Spacer(modifier=Modifier.height(30.dp))
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = { setColorPickerDialogVisibility(true) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        ) {
+                            Text("PICK COLOR")
+                        }
+                    }
                 }
                 Spacer(Modifier.height(100.dp))
             }
         }
     }
+//    }
 }
 
 @Composable
@@ -598,12 +637,25 @@ fun PreviewGenusDetail() {
 
     val acroWithImages = GenusWithImages(acro)
 
+    val uiState = DetailScreenUiState(
+        genusName = acro.getName(),
+        genusData = DetailedGenus(acroWithImages),
+        selectedColorName = "RED"
+    )
+
     DinoDataTheme(darkTheme = false) {
-        GenusDetail(acroWithImages, onPlayNamePronunciation = {})
+        Surface (color = MaterialTheme.colorScheme.background) {
+            GenusDetailScreenContent(
+                uiState = uiState,
+                onPlayNamePronunciation = {},
+                setColorPickerDialogVisibility = {},
+                onColorSelect = {}
+            )
+        }
     }
 }
 
-@Preview(widthDp = 300, heightDp = 800, name = "Dark")
+@Preview(widthDp = 300, heightDp = 1200, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
     val styraco = GenusBuilderImpl("Styracosaurus")
@@ -615,6 +667,7 @@ fun PreviewGenusDetailDark() {
         .setWeight("1 tonnes")
         .setCreatureType("ceratopsian")
         .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
+        .setLocations(listOf("Canada", "USA"))
         .build()
 
     val imageMap = mapOf(
@@ -638,11 +691,22 @@ fun PreviewGenusDetailDark() {
         )
     )
 
+    val uiState = DetailScreenUiState(
+        genusName = styraco.getName(),
+        genusData = DetailedGenus(GenusWithImages(styraco, imageMap)),
+        selectedColorName = "YELLOW",
+        listOfColors = ThemeConverter.listOfColors,
+        colorSelectDialogVisibility = true
+    )
+
     DinoDataTheme(darkTheme = true) {
-        GenusDetail(
-            genus = GenusWithImages(styraco, imageMap),
-            onPlayNamePronunciation = {},
-            colorScheme = ColorConverter.convertStringToTheme("GREEN")
-        )
+        Surface (color = MaterialTheme.colorScheme.background) {
+            GenusDetailScreenContent(
+                uiState = uiState,
+                onPlayNamePronunciation = {},
+                setColorPickerDialogVisibility = {},
+                onColorSelect = {}
+            )
+        }
     }
 }
