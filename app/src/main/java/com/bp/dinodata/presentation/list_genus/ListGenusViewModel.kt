@@ -1,6 +1,5 @@
 package com.bp.dinodata.presentation.list_genus
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -8,12 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.GenusSearch
 import com.bp.dinodata.data.IResultsByLetter
-import com.bp.dinodata.data.ResultsByLetter
-import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,36 +20,24 @@ class ListGenusViewModel @Inject constructor(
     @set:Inject var genusUseCases: GenusUseCases
 ): ViewModel() {
 
-//    private var _listOfGenera: MutableStateFlow<List<Genus>> = MutableStateFlow(emptyList())
-    private var _listOfGeneraByLetter: MutableStateFlow<IResultsByLetter<IGenus>> = MutableStateFlow(ResultsByLetter())
+    private val _listOfGeneraByLetter: Flow<IResultsByLetter<IGenusWithPrefs>?> = genusUseCases.getGenusWithPrefsByLetterFlow()
 
-    private var _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
+    private val _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
 
     init {
         _uiState.value = _uiState.value.copy(loadState = LoadState.InProgress)
 
         viewModelScope.launch {
-            genusUseCases.getGeneraGroupedByLetter(
-                callback = ::updateGroupedListOfGenera,
-                onError = {
-                    Log.d("ListGenusViewModel", "Error when fetching genera", it)
+            _listOfGeneraByLetter.collect {
+                _uiState.value = _uiState.value.copy(
+                    allPageData = it,
+                    loadState = LoadState.Loaded,
+                    searchResults = it?.toList()
+                )
+
+                if (_uiState.value.searchBarVisible) {
+                    applySearchQuery(_uiState.value.search.getQuery())
                 }
-            )
-        }
-    }
-
-    private fun updateGroupedListOfGenera(genera: IResultsByLetter<IGenus>) {
-        viewModelScope.launch {
-            _listOfGeneraByLetter.value = genera
-
-            _uiState.value = _uiState.value.copy(
-                loadState = LoadState.Loaded,
-                allPageData = genera,
-                searchResults = genera.toList()
-            )
-
-            if (_uiState.value.searchBarVisible) {
-                applySearchQuery(_uiState.value.search.getQuery())
             }
         }
     }

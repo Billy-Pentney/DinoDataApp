@@ -3,6 +3,7 @@ package com.bp.dinodata.repo
 import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import kotlinx.coroutines.flow.Flow
 
@@ -11,6 +12,8 @@ interface IGenusRepository {
         callback: (List<Genus>) -> Unit,
         onError: (Exception) -> Unit
     )
+
+    fun getAllGeneraFlow(): Flow<List<IGenus>?>
 
     /**
      * Attempt to retrieve data for the genus with the given name. This includes the image

@@ -5,6 +5,8 @@ import com.bp.dinodata.data.genus.GenusPrefs
 import com.bp.dinodata.data.genus.IGenusPrefs
 import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.db.entities.ColorEntity
+import com.bp.dinodata.db.entities.GenusColorUpdate
+import com.bp.dinodata.db.entities.LocalPrefs
 import kotlinx.coroutines.flow.Flow
 
 interface ILocalPreferencesRepository {
@@ -13,6 +15,7 @@ interface ILocalPreferencesRepository {
     suspend fun getGenusPrefs(name: String): GenusPrefs?
     fun getPrefsFlow(currentGenusName: String): Flow<IGenusPrefs?>
     suspend fun getAllColors(): List<ColorEntity>
+    fun getGenusLocalPrefsFlow(): Flow<Map<String, LocalPrefs>>
 }
 
 class LocalPreferencesRepository(
@@ -27,23 +30,23 @@ class LocalPreferencesRepository(
         return db.genusDao().getColorForGenusName(genusName)
     }
 
-    override suspend fun updateColorForGenus(name: String, color: String?) {
-        Log.i(TAG, "Attempt to set color($name) = \'$color\'")
+    override suspend fun updateColorForGenus(genusName: String, color: String?) {
+        Log.i(TAG, "Attempt to set color($genusName) = \'$color\'")
 
         if (color != null) {
             val colorEntity = db.colorDao().getByName(color)
             if (colorEntity != null) {
                 val id = colorEntity.id
                 Log.i(TAG, "Retrieved color \'$color\' with id: $id")
-                db.genusDao().updateColor(name, id)
+                db.genusDao().upsertColor(GenusColorUpdate(genusName, id))
             }
             else {
-                Log.d(TAG, "No colors found with name $color. Cannot update genus $name.")
+                Log.d(TAG, "No colors found with name $color. Cannot update genus $genusName.")
             }
         }
         else {
-            Log.i(TAG, "Clearing color for genus: $name")
-            db.genusDao().updateColor(name, null)
+            Log.i(TAG, "Clearing color for genus: $genusName")
+            db.genusDao().upsertColor(GenusColorUpdate(genusName, null))
         }
     }
 
@@ -57,5 +60,9 @@ class LocalPreferencesRepository(
 
     override suspend fun getAllColors(): List<ColorEntity> {
         return db.colorDao().getAll()
+    }
+
+    override fun getGenusLocalPrefsFlow(): Flow<Map<String, LocalPrefs>> {
+        return db.genusDao().getGenusToLocalPrefsFlow()
     }
 }

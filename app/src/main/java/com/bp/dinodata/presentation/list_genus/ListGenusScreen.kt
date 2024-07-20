@@ -74,11 +74,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
+import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.GenusSearch
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
+import com.bp.dinodata.data.genus.GenusPrefs
+import com.bp.dinodata.data.genus.GenusWithPrefs
+import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
@@ -585,19 +589,27 @@ fun PreviewListGenus() {
         acro, trike, dipl, raptor, ptero, edmon,
         ankylo, stego, spino, unkn
     )
-    val generaGrouped: IResultsByLetter<IGenus> = ResultsByLetter(genera)
+    val generaPrefs = genera.map {
+        val color = when (it.getDiet()) {
+            Diet.Carnivore -> "RED"
+            Diet.Herbivore -> "GREEN"
+            else -> null
+        }
+        GenusWithPrefs(it, GenusPrefs(_color = color))
+    }
+    val generaGrouped: IResultsByLetter<IGenusWithPrefs> = ResultsByLetter(generaPrefs)
 
-    DinoDataTheme (darkTheme = false) {
+    DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
             uiState = ListGenusUiState(
                 allPageData = generaGrouped,
                 searchResults = genera,
-                selectedPageIndex = 2,
-                searchBarVisible = true,
+                selectedPageIndex = 0,
+                searchBarVisible = false,
                 search = GenusSearch(
                     query = "taxon:ab",
                     terms = listOf(),
-                    suggestedSuffixes = listOf("taxon:abelisaurinae", "diet:herbivore", "period:cretaceous")
+                    suggestedSuffixes = listOf("elisaurinae", "diet:herbivore", "period:cretaceous")
                 ),
                 loadState = LoadState.Loaded,
             ),

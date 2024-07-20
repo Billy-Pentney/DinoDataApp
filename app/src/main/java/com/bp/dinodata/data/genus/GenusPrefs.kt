@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 
 interface IGenusPrefs {
     fun isUserFavourite(): Boolean
-    fun getColorName(): String?
+    fun getSelectedColorName(): String?
 }
 
 data class GenusPrefs(
@@ -14,5 +14,5 @@ data class GenusPrefs(
     private val _color: String? = null
 ): IGenusPrefs {
     override fun isUserFavourite(): Boolean = _isFavourite
-    override fun getColorName(): String? = _color
+    override fun getSelectedColorName(): String? = _color
 }

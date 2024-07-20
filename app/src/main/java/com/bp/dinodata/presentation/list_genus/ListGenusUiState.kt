@@ -5,10 +5,11 @@ import com.bp.dinodata.data.ISearch
 import com.bp.dinodata.data.emptySearch
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.LoadState
 
 data class ListGenusUiState(
-    private val allPageData: IResultsByLetter<IGenus>? = null,
+    private val allPageData: IResultsByLetter<IGenusWithPrefs>? = null,
     val loadState: LoadState = LoadState.NotLoading,
     val searchResults: List<IGenus>? = null,
     val searchBarVisible: Boolean = false,
@@ -31,7 +32,7 @@ data class ListGenusUiState(
         )
     }
 
-    fun getPageByIndex(index: Int): List<IGenus>? {
+    fun getPageByIndex(index: Int): List<IGenusWithPrefs>? {
         return allPageData?.getGroupByIndex(index)
     }
 }

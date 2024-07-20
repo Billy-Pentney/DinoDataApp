@@ -75,7 +75,7 @@ class DetailGenusViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     genusData = it,
                     loadState = loadState,
-                    selectedColorName = it?.getColorName()
+                    selectedColorName = it?.getSelectedColorName()
                 )
             }
         }

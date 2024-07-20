@@ -1,6 +1,7 @@
 package com.bp.dinodata.presentation.list_genus
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -29,7 +31,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.bp.dinodata.data.ThemeConverter
 import com.bp.dinodata.data.genus.IDisplayInList
+import com.bp.dinodata.data.genus.IGenusPrefs
 import com.bp.dinodata.presentation.icons.DietIconSquare
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 
@@ -41,6 +45,22 @@ fun GenusListItem(
 ) {
     val silhouetteId = convertCreatureTypeToSilhouette(genus.getCreatureType())
 
+    val colorTint =
+        if (genus is IGenusPrefs) {
+            ThemeConverter.getColor(genus.getSelectedColorName())
+        }
+        else {
+            null
+        }
+
+    val brush =
+        colorTint?.let {
+            Brush.linearGradient(
+                0.3f to Color.Transparent,
+                1.0f to colorTint
+            )
+        } ?: Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
+
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(8.dp),
@@ -51,7 +71,7 @@ fun GenusListItem(
     ) {
         Box(
             contentAlignment = Alignment.BottomEnd,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().background(brush, alpha = 0.75f)
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),

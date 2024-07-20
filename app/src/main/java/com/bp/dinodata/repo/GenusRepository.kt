@@ -62,6 +62,25 @@ class GenusRepository @Inject constructor(
             .addOnFailureListener { onError(it) }
     }
 
+    override fun getAllGeneraFlow(): Flow<List<IGenus>?> = flow {
+        val snapshot = genusCollection.orderBy("name")
+            .get()
+            .await()
+
+        val lastVisible = snapshot.documents.last()
+        Log.d(TAG, "Converting documents up to ${lastVisible?.id}")
+
+        // Convert the results to Genus objects
+        val genera = snapshot.mapNotNull { doc ->
+            GenusBuilderImpl.fromDict(doc.data)?.build()
+        }
+        if (genera.isNotEmpty()) {
+            generaByName = genera.associateBy { it.getName() }
+        }
+
+        emit(genera)
+    }
+
 
     /**
      * Attempt to retrieve data for the genus with the given name. This includes the image

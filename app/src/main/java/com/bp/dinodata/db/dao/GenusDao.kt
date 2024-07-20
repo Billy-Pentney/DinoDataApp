@@ -6,10 +6,13 @@ import androidx.room.MapColumn
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.bp.dinodata.data.genus.GenusPrefs
 import com.bp.dinodata.data.genus.IGenusPrefs
 import com.bp.dinodata.db.entities.ColorEntity
+import com.bp.dinodata.db.entities.GenusColorUpdate
 import com.bp.dinodata.db.entities.GenusEntity
+import com.bp.dinodata.db.entities.LocalPrefs
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,19 +22,6 @@ interface GenusDao {
 
     @Update
     fun updateAll(vararg genera: GenusEntity)
-
-
-    @Query("SELECT name, color_name FROM genera JOIN colors ON color_id == id")
-    suspend fun getGenusToColorMap(): Map<
-            @MapColumn(columnName = "name") String,
-            @MapColumn(columnName = "color_name") String
-        >
-
-    @Query("SELECT name, is_favourite FROM genera")
-    suspend fun getGenusToFavouriteMap(): Map<
-            @MapColumn(columnName = "name") String,
-            @MapColumn(columnName = "is_favourite") Boolean
-        >
 
     @Query("SELECT color_name FROM genera JOIN colors ON color_id == id " +
             "WHERE name LIKE :name LIMIT 1")
@@ -47,4 +37,10 @@ interface GenusDao {
 
     @Query("UPDATE genera SET color_id = :colorId WHERE name LIKE :name")
     suspend fun updateColor(name: String, colorId: Int?)
+
+    @Upsert(GenusEntity::class)
+    suspend fun upsertColor(update: GenusColorUpdate)
+
+    @Query("SELECT name, color_name, is_favourite FROM genera JOIN colors ON color_id == id")
+    fun getGenusToLocalPrefsFlow(): Flow<Map<@MapColumn(columnName = "name") String, LocalPrefs>>
 }

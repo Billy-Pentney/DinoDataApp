@@ -6,13 +6,14 @@ import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
-interface IDetailedGenus: IGenusWithImages, IGenusPrefs
+interface IGenusWithPrefs: IGenus, IGenusPrefs
 
-class DetailedGenus(
-    private val genus: IGenusWithImages,
-    prefs: IGenusPrefs? = null
-): IDetailedGenus {
-    private val _prefs = prefs ?: GenusPrefs()
+class GenusWithPrefs(
+    val genus: IGenus,
+    prefsIn: IGenusPrefs? = null
+): IGenusWithPrefs {
+
+    private val prefs = prefsIn ?: GenusPrefs()
 
     override fun getTaxonomy(): String = genus.getTaxonomy()
     override fun getListOfTaxonomy(): List<String> = genus.getListOfTaxonomy()
@@ -27,10 +28,7 @@ class DetailedGenus(
     override fun getTimePeriod(): TimePeriod? = genus.getTimePeriod()
     override fun getYearsLived(): String? = genus.getYearsLived()
     override fun getLocations(): List<String> = genus.getLocations()
-    override fun getImageUrl(index: Int): String? = genus.getImageUrl(index)
-    override fun getThumbnailUrl(index: Int): String? = genus.getThumbnailUrl(index)
-    override fun getNumDistinctImages(): Int = genus.getNumDistinctImages()
 
-    override fun getSelectedColorName(): String? = _prefs.getSelectedColorName()
-    override fun isUserFavourite(): Boolean = _prefs.isUserFavourite()
+    override fun isUserFavourite(): Boolean = prefs.isUserFavourite()
+    override fun getSelectedColorName(): String? = prefs.getSelectedColorName()
 }
