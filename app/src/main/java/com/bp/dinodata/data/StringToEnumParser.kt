@@ -1,8 +1,7 @@
 package com.bp.dinodata.data
 
 import android.util.Log
-import com.bp.dinodata.data.DataParsing.getLongestNonMatchingSuffixes
-import com.bp.dinodata.data.search.IGeneratesSearchSuggestions
+import com.bp.dinodata.data.DataParsing.getLongestPotentialSuffixes
 import com.bp.dinodata.data.search.ISearchTypeConverter
 
 object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
@@ -46,7 +45,7 @@ object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
     }
 
     override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
-        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, CreatureTypesMap.keys)
+        val keysByCommonPrefix = getLongestPotentialSuffixes(text, CreatureTypesMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
 }
@@ -77,7 +76,7 @@ object TimePeriodConverter: ISearchTypeConverter<TimePeriod> {
     }
 
     override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
-        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, TimePeriodMap.keys)
+        val keysByCommonPrefix = getLongestPotentialSuffixes(text, TimePeriodMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
 }
@@ -108,7 +107,7 @@ object DietConverter: ISearchTypeConverter<Diet> {
     }
 
     override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
-        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, DietTypesMap.keys)
+        val keysByCommonPrefix = getLongestPotentialSuffixes(text, DietTypesMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
 }
@@ -116,9 +115,10 @@ object DietConverter: ISearchTypeConverter<Diet> {
 
 
 object DataParsing {
-    fun getLongestNonMatchingSuffixes(text: String, strings: Iterable<String>): List<String> {
-        return strings.filter { it.startsWith(text) }
+    fun getLongestPotentialSuffixes(matchText: String, targetStrings: Iterable<String>): List<String> {
+        return targetStrings
+            .filter { it.startsWith(matchText) }
             .sortedByDescending { it.length }
-            .map { it.removePrefix(text) }
+            .map { it.removePrefix(matchText) }
     }
 }

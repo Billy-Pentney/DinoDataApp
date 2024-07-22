@@ -64,6 +64,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -94,7 +95,7 @@ fun ListGenusScreenContent(
     spacing: Dp = 8.dp,
     outerPadding: Dp = 12.dp,
     switchToPageByIndex: (Int) -> Unit = {},
-    updateSearchQuery: (String) -> Unit,
+    updateSearchQuery: (TextFieldValue) -> Unit,
     clearSearchQuery: () -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
     prefillSearchSuggestion: () -> Unit
@@ -200,7 +201,7 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     switchToPageByIndex: (Int) -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
     clearSearchQuery: () -> Unit,
-    updateSearchQuery: (String) -> Unit,
+    updateSearchQuery: (TextFieldValue) -> Unit,
     prefillSearchSuggestion: () -> Unit
 ) {
     Column (
@@ -240,28 +241,35 @@ fun ShowHorizontalPagerOfGeneraByLetter(
 fun SearchPage(
     uiState: ListGenusUiState,
     toggleSearchBarVisibility: (Boolean) -> Unit,
-    updateSearchQuery: (String) -> Unit,
+    updateSearchQuery: (TextFieldValue) -> Unit,
     clearSearchQuery: () -> Unit,
     navigateToGenus: (String) -> Unit,
     outerPadding: Dp,
     prefillSearchSuggestion: () -> Unit
 ) {
+    val results = uiState.searchResults ?: emptyList()
+
     Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ListGenusSearchBar(
-            searchBarQuery = uiState.search.getQuery(),
             toggleVisibility = toggleSearchBarVisibility,
             updateSearchQuery = updateSearchQuery,
             clearSearchQuery = clearSearchQuery,
             modifier = Modifier.padding(horizontal = outerPadding),
             searchSuggestions = uiState.search.getSuggestedSuffixes(),
             prefillSearchSuggestion = prefillSearchSuggestion,
-            searchBarCursorAtEnd = uiState.searchBarCursorAtEnd
+            uiState = uiState
+        )
+        DividerTextRow(
+            text = stringResource(R.string.text_showing_X_creatures, results.size),
+            modifier = Modifier.padding(vertical = 8.dp, horizontal=outerPadding),
+            dividerPadding = PaddingValues(horizontal = 8.dp)
         )
         LazyListOfGenera(
-            uiState.searchResults,
+            results,
             contentPadding = PaddingValues(start = outerPadding, end = outerPadding, bottom=outerPadding),
             navigateToGenus = navigateToGenus,
-            modifier = Modifier.padding(top=outerPadding)
+            modifier = Modifier.padding(top=outerPadding),
+            showCreatureCountAtBottom = false
         )
     }
 }
@@ -462,7 +470,8 @@ fun LazyListOfGenera(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     verticalSpacing: Dp = 8.dp,
-    scrollState: LazyListState = rememberLazyListState()
+    scrollState: LazyListState = rememberLazyListState(),
+    showCreatureCountAtBottom: Boolean = true
 ) {
     val numElements = generaList?.size ?: 0
     LazyColumn(
@@ -477,14 +486,16 @@ fun LazyListOfGenera(
                 onClick = { navigateToGenus(genus.getName()) }
             )
         }
-        item {
-            DividerTextRow(
-                text = stringResource(R.string.text_showing_X_creatures, numElements),
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .padding(bottom=40.dp),
-                dividerPadding = PaddingValues(horizontal = 8.dp)
-            )
+        if (showCreatureCountAtBottom) {
+            item {
+                DividerTextRow(
+                    text = stringResource(R.string.text_showing_X_creatures, numElements),
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .padding(bottom = 40.dp),
+                    dividerPadding = PaddingValues(horizontal = 8.dp)
+                )
+            }
         }
     }
 }
@@ -603,8 +614,8 @@ fun PreviewListGenus() {
                 searchBarVisible = false,
                 search = GenusSearch(
                     query = "taxon:ab",
-                    terms = listOf(),
-                    suggestedSuffixes = listOf("elisaurinae", "diet:herbivore", "period:cretaceous")
+                    taxa = listOf("abelisauridae", "brachiosauridae"),
+                    locations = listOf("USA", "canada")
                 ),
                 loadState = LoadState.Loaded,
             ),

@@ -11,6 +11,7 @@ import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.LocalPreferencesRepository
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
+import com.bp.dinodata.use_cases.ListGenusScreenUseCases
 import com.bp.dinodata.use_cases.PlayPrerecordedAudioUseCase
 import com.bp.dinodata.use_cases.ReadTextToSpeechUseCase
 import com.google.firebase.Firebase
@@ -69,6 +70,12 @@ object AppModule {
         localPreferencesRepo: LocalPreferencesRepository
     ): GenusUseCases {
         return GenusUseCases(genusRepo, localPreferencesRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun providesListGenusUseCases(): ListGenusScreenUseCases {
+        return ListGenusScreenUseCases()
     }
 
     @Singleton

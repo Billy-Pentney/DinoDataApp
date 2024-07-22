@@ -7,6 +7,7 @@ import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IHasCreatureType
 import com.bp.dinodata.data.genus.IHasDiet
+import com.bp.dinodata.data.genus.IHasLocationInfo
 import com.bp.dinodata.data.genus.IHasName
 import com.bp.dinodata.data.genus.IHasTaxonomy
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
@@ -114,4 +115,25 @@ class SelectedColorFilter(
     }
 }
 
+
+class LocationFilter(
+    acceptedLocations: List<String>,
+    private val capitalSensitive: Boolean = false
+): IFilter<IHasLocationInfo> {
+
+    private val _acceptedLocations: List<String> = preprocessList(acceptedLocations)
+
+    private fun preprocessList(list: List<String>): List<String> {
+        return if (capitalSensitive) {
+            list
+        } else {
+            list.map { element -> element.lowercase().replace("_", " ") }
+        }
+    }
+
+    override fun acceptsItem(item: IHasLocationInfo): Boolean {
+        val locations = preprocessList(item.getLocations())
+        return locations.any { it in _acceptedLocations }
+    }
+}
 

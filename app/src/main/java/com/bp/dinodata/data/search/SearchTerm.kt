@@ -1,6 +1,6 @@
 package com.bp.dinodata.data.search
 
-import com.bp.dinodata.data.CreatureType
+import android.util.Log
 import com.bp.dinodata.data.CreatureTypeConverter
 import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.DietConverter
@@ -8,12 +8,12 @@ import com.bp.dinodata.data.TimePeriodConverter
 import com.bp.dinodata.data.filters.CreatureTypeFilter
 import com.bp.dinodata.data.filters.DietFilter
 import com.bp.dinodata.data.filters.IFilter
+import com.bp.dinodata.data.filters.LocationFilter
 import com.bp.dinodata.data.filters.NameFilter
 import com.bp.dinodata.data.filters.SelectedColorFilter
 import com.bp.dinodata.data.filters.TaxonFilter
 import com.bp.dinodata.data.filters.TimePeriodFilter
 import com.bp.dinodata.data.genus.IGenus
-import com.bp.dinodata.data.genus.IHasColor
 import com.bp.dinodata.data.genus.IHasCreatureType
 import com.bp.dinodata.data.genus.IHasDiet
 import com.bp.dinodata.data.genus.IHasName
@@ -29,14 +29,17 @@ interface ISearchTerm<T> {
 
 class GenusNameSearchTerm(
     private val query: String,
-    private val isCapitalSensitive: Boolean = false
+    private val isCapitalSensitive: Boolean = false,
+    private val searchKeywords: List<String> = emptyList()
 ): ISearchTerm<IHasName> {
     override fun getType(): SearchTermType = SearchTermType.Name
     override fun toFilter(): IFilter<IHasName> {
         return NameFilter(query, isCapitalSensitive)
     }
 
-    override fun generateSearchSuggestions(): List<String> = emptyList()
+    override fun generateSearchSuggestions(): List<String> {
+        return DataParsing.getLongestPotentialSuffixes(query, searchKeywords)
+    }
 }
 
 
@@ -61,11 +64,15 @@ abstract class ConversionBasedSearchTerm<T>(
 
 
 class TaxonNameSearchTerm(
-    private val taxonName: String
-): ISearchTerm<IHasTaxonomy> {
+    private val taxonName: String,
+    taxaList: List<String>
+): ISearchTerm<IGenus> {
+    private val _taxaList = taxaList.map { it.lowercase() }
     override fun getType(): SearchTermType = SearchTermType.Taxon
     override fun toFilter(): IFilter<in IHasTaxonomy> = TaxonFilter(taxonName)
-    override fun generateSearchSuggestions(): List<String> = emptyList()
+    override fun generateSearchSuggestions(): List<String> {
+        return DataParsing.getLongestPotentialSuffixes(taxonName, _taxaList)
+    }
 }
 
 //class CreatureTypeSearchTermTwo(
@@ -79,7 +86,7 @@ class TaxonNameSearchTerm(
 
 class CreatureTypeSearchTerm(
     private val queryArguments: List<String>
-): ISearchTerm<IHasCreatureType> {
+): ISearchTerm<IGenus> {
     private val creatureTypes = queryArguments.mapNotNull { CreatureTypeConverter.matchType(it) }
     override fun getType(): SearchTermType = SearchTermType.CreatureType
     override fun toFilter(): IFilter<in IHasCreatureType> = CreatureTypeFilter(creatureTypes)
@@ -94,7 +101,7 @@ class CreatureTypeSearchTerm(
 
 class DietSearchTerm(
     private val queryArguments: List<String>
-): ISearchTerm<IHasDiet> {
+): ISearchTerm<IGenus> {
     private val diets = queryArguments.mapNotNull { DietConverter.matchType(it) }
     override fun getType(): SearchTermType = SearchTermType.Diet
     override fun toFilter(): IFilter<in IHasDiet> = DietFilter(diets)
@@ -109,7 +116,7 @@ class DietSearchTerm(
 
 class TimePeriodSearchTerm(
     private val queryArguments: List<String>
-): ISearchTerm<IHasTimePeriodInfo> {
+): ISearchTerm<IGenus> {
     private val periods = queryArguments.mapNotNull { TimePeriodConverter.matchType(it) }
     override fun getType(): SearchTermType = SearchTermType.TimePeriod
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> = TimePeriodFilter(periods)
@@ -140,11 +147,38 @@ class SelectedColorSearchTerm(
     }
 }
 
+class LocationSearchTerm(
+    private val queryLocations: List<String>,
+    allLocations: List<String> = emptyList(),
+    private val capitalSensitive: Boolean = false
+): ISearchTerm<IGenus> {
+
+    private val _allLocations = allLocations.map { it.lowercase().replace(" ", "_") }
+
+    init {
+        Log.d("LocationSearchTerm", "Got locations length ${_allLocations.size}")
+    }
+
+    override fun generateSearchSuggestions(): List<String> {
+        val last = queryLocations.lastOrNull()
+        if (last != null) {
+            return DataParsing.getLongestPotentialSuffixes(last, _allLocations)
+        }
+        return emptyList()
+    }
+
+    override fun getType(): SearchTermType = SearchTermType.Location
+    override fun toFilter(): IFilter<in IGenus> {
+        return LocationFilter(queryLocations, capitalSensitive)
+    }
+}
+
 enum class SearchTermType {
     Name,
     CreatureType,
     Diet,
     TimePeriod,
     Taxon,
-    Color
+    Color,
+    Location
 }

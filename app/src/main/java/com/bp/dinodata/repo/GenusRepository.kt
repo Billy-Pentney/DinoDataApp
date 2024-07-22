@@ -14,6 +14,7 @@ import com.google.firebase.firestore.CollectionReference
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -78,6 +79,22 @@ class GenusRepository @Inject constructor(
         }
 
         emit(genera)
+    }
+
+    override fun getLocationsFlow(): Flow<List<String>> = getAllGeneraFlow().map { genera ->
+        genera?.fold(mutableSetOf<String>()) { locationSet, genus ->
+            val locations = genus.getLocations()
+            locationSet.addAll(locations)
+            locationSet
+        }?.toList() ?: emptyList()
+    }
+
+    override fun getAllTaxaFlow(): Flow<List<String>> = getAllGeneraFlow().map { genera ->
+        genera?.fold(mutableSetOf<String>()) { taxaSet, genus ->
+            val taxa = genus.getListOfTaxonomy()
+            taxaSet.addAll(taxa)
+            taxaSet
+        }?.toList() ?: emptyList()
     }
 
 

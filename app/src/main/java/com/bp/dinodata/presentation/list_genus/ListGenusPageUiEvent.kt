@@ -1,9 +1,11 @@
 package com.bp.dinodata.presentation.list_genus
 
+import androidx.compose.ui.text.input.TextFieldValue
+
 sealed class ListGenusPageUiEvent {
 
     data class UpdateSearchQuery(
-        val query: String,
+        val state: TextFieldValue,
         val capSensitive: Boolean = false
     ) : ListGenusPageUiEvent()
 

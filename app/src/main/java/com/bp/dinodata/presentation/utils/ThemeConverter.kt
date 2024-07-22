@@ -3,8 +3,7 @@ package com.bp.dinodata.presentation.utils
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
-import com.bp.dinodata.data.DataParsing.getLongestNonMatchingSuffixes
-import com.bp.dinodata.data.search.IGeneratesSearchSuggestions
+import com.bp.dinodata.data.DataParsing.getLongestPotentialSuffixes
 import com.bp.dinodata.data.search.ISearchTypeConverter
 import com.bp.dinodata.theme.MyGrey100
 import com.bp.dinodata.theme.MyGrey800
@@ -18,7 +17,6 @@ import com.bp.dinodata.theme.orange
 import com.bp.dinodata.theme.pink
 import com.bp.dinodata.theme.red
 import com.bp.dinodata.theme.royalBlue
-import com.bp.dinodata.theme.satinSoftBlue
 import com.bp.dinodata.theme.steelBlue
 import com.bp.dinodata.theme.violet
 import com.bp.dinodata.theme.yellow
@@ -125,7 +123,7 @@ object ThemeConverter: ISearchTypeConverter<String> {
     }
 
     override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
-        val keysByCommonPrefix = getLongestNonMatchingSuffixes(text, listOfColors)
+        val keysByCommonPrefix = getLongestPotentialSuffixes(text, listOfColors)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
 }

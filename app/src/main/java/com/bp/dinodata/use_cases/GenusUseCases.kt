@@ -1,12 +1,16 @@
 package com.bp.dinodata.use_cases
 
-import com.bp.dinodata.data.search.GenusSearch
+import android.util.Log
+import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.data.genus.IGenusWithPrefs
+import com.bp.dinodata.data.search.GenusSearch
+import com.bp.dinodata.presentation.list_genus.ISearchBarUiState
+import com.bp.dinodata.presentation.list_genus.ListGenusUiState
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
 import kotlinx.coroutines.flow.Flow
@@ -17,13 +21,16 @@ class GenusUseCases(
     private val genusRepository: IGenusRepository,
     private val localPrefRepository: ILocalPreferencesRepository
 ) {
-
     fun getGenusByNameFlow(genusName: String): Flow<IGenusWithImages?> {
         return genusRepository.getGenusWithImagesFlow(genusName)
     }
 
-    fun generateSearchFromQuery(query: String, capitalSensitive: Boolean): GenusSearch {
-        return GenusSearch.constructFromQuery(query, capitalSensitive)
+    fun getGenusLocationsFlow(): Flow<List<String>> {
+        return genusRepository.getLocationsFlow()
+    }
+
+    fun getGenusTaxaFlow(): Flow<List<String>> {
+        return genusRepository.getAllTaxaFlow()
     }
 
     fun getGenusPrefsFlow(currentGenusName: String): Flow<ILocalPrefs?> {
