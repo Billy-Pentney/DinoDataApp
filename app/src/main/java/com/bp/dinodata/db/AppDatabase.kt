@@ -10,8 +10,12 @@ import com.bp.dinodata.db.entities.GenusEntity
 
 @Database(
     entities = [GenusEntity::class, ColorEntity::class],
-    version = 5,
-    autoMigrations = [AutoMigration(4,5)]
+    version = 7,
+    autoMigrations = [
+        AutoMigration(4,5),
+        AutoMigration(5,6),
+        AutoMigration(6,7)
+    ]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun genusDao(): GenusDao

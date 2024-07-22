@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -87,9 +88,9 @@ fun ColorPickerDialog(
             Spacer(modifier = Modifier.height(12.dp))
 
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(50.dp),
+                columns = GridCells.Adaptive(65.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.Center,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.background(
                     MaterialTheme.colorScheme.primary,
@@ -132,25 +133,40 @@ fun ColorPickerSingleton(
     colorName: String?,
     isSelected: Boolean
 ) {
+    val theme = ThemeConverter.getTheme(colorName) ?: MaterialTheme.colorScheme
     val color = ThemeConverter.getColor(colorName) ?: Color.Transparent
     val displayName = colorName ?: stringResource(id = R.string.text_color_none)
 
+    val borderThickness =
+        if (isSelected) 2.dp else 0.dp
+
+    val gradientBrush = Brush.linearGradient(
+        0.0f to Color(color.red*3, color.green*3, color.blue*3),
+        0.5f to color,
+        0.8f to Color(color.red / 2, color.green / 2, color.blue / 2)
+    )
+    
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         IconButton(
             onClick = { onSelect(colorName) },
             modifier = Modifier
-                .background(color, CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                .background(gradientBrush, CircleShape)
+                .border(
+                    borderThickness,
+                    MaterialTheme.colorScheme.onSurface,
+                    CircleShape
+                )
         ) {
             AnimatedVisibility (isSelected) {
                 Icon(
                     Icons.Filled.Check,
                     stringResource(R.string.desc_select_this_color),
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(4.dp)
+                        .fillMaxSize(0.8f)
+                        .padding(4.dp),
+                    tint = theme.onSurface
                 )
             }
         }

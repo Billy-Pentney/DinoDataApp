@@ -86,4 +86,5 @@
     <string name="label_locations">Locations</string>
     <string name="desc_select_this_color">select this color</string>
     <string name="text_color_none">NONE</string>
+    <string name="action_pick_colour">Pick Colour</string>
 </resources>

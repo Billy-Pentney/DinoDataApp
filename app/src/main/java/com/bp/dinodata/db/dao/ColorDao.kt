@@ -2,13 +2,14 @@ package com.bp.dinodata.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.bp.dinodata.db.entities.ColorEntity
 
 @Dao
 interface ColorDao {
-    @Insert
-    fun insert(vararg colors: ColorEntity)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(vararg colors: ColorEntity): List<Long>
 
     @Query("SELECT * FROM colors")
     suspend fun getAll(): List<ColorEntity>

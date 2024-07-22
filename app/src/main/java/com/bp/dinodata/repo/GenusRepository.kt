@@ -11,7 +11,6 @@ import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.dataObjects
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
@@ -231,35 +230,6 @@ class GenusRepository @Inject constructor(
         }
     }
 
-
-    fun getNextPage(
-        startAfter: String?,
-        pageSize: Long = DEFAULT_PAGE_SIZE,
-        callback: (PageResult<Genus>) -> Unit,
-        onException: (Exception) -> Unit
-    ) {
-        val first = genusCollection
-            .orderBy("name")
-            .startAfter(startAfter)
-            .limit(pageSize)
-
-        first.get()
-            .addOnSuccessListener { snapshot ->
-                val lastVisible = snapshot.documents.lastOrNull()
-                Log.d(TAG, "Converting documents up to ${lastVisible?.id}")
-                // Convert the results to Genus objects
-                val nextPageGenera = snapshot.mapNotNull { doc ->
-                    GenusBuilderImpl.fromDict(doc.data)?.build()
-                }
-                callback(
-                    PageResult(
-                        data = nextPageGenera,
-                        isAllDataRetrieved = snapshot.documents.size < pageSize
-                    )
-                )
-            }
-            .addOnFailureListener(onException)
-    }
 
 }
 

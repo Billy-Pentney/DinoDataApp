@@ -19,7 +19,7 @@ data class GenusEntity(
     val name: String,
 
     @ColumnInfo(name="color_id", defaultValue = "NULL")
-    val colorId: Int? = null,
+    val colorId: Long? = null,
 
     @ColumnInfo(name="is_favourite", defaultValue = "0")
     val isFavourite: Boolean = false,

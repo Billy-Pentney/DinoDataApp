@@ -90,3 +90,20 @@ val Triassic700 = Color(0xFF066688)
 val Triassic800 = Color(0xFF035588)
 val Triassic900 = Color(0xFF004477)
 
+
+/**  Genus Colors  */
+val red = Color(0xFF993333)
+val orange = Color(0xFF994422)
+val yellow = Color(0xFFAA9944)
+val forestGreen = Color(0xFF337733)
+val cyan = Color(0xFF338899)
+val royalBlue = Color(0xFF336699)
+val indigo = Color(0xFF554488)
+val violet = Color(0xFF884488)
+val brown = Color(0xFF774433)
+val pink = Color(0xFFFC8EAC)
+val burgundy = Color(0xFF800020)
+val lime = Color(0xFF669944)
+val satinSoftBlue = Color(0xFF9CADC7)
+val steelBlue = Color(0xFF537185)
+

@@ -6,5 +6,5 @@ class GenusColorUpdate(
     @ColumnInfo(name = "name")
     val genusName: String,
     @ColumnInfo(name = "color_id")
-    val colorId: Int? = null
+    val colorId: Long? = null
 )

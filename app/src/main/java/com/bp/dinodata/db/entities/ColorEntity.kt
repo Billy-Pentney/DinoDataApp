@@ -7,9 +7,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "colors", indices = [Index("id")])
 data class ColorEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name="id")
-    val id: Int,
+    val id: Long,
 
     @ColumnInfo(name="color_name")
     val name: String

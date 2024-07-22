@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.FormatPaint
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.sharp.Restaurant
@@ -39,6 +41,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -347,11 +350,9 @@ fun GenusDetailScreenContent(
         if (uiState.colorSelectDialogVisibility) {
             ColorPickerDialog(
                 selectedColor = uiState.selectedColorName,
-                colorNames = uiState.listOfColors,
+//                colorNames = uiState.listOfColors,
                 onColorPicked = onColorSelected,
-                onClose = {
-                    setColorPickerDialogVisibility(false)
-                }
+                onClose = { setColorPickerDialogVisibility(false) }
             )
         }
 
@@ -438,7 +439,16 @@ fun GenusDetailScreenContent(
                                 contentColor = MaterialTheme.colorScheme.onSurface
                             )
                         ) {
-                            Text("PICK COLOR")
+                            Row (
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.FormatPaint,
+                                    contentDescription = "pick the paint color"
+                                )
+                                Text(stringResource(R.string.action_pick_colour))
+                            }
                         }
                     }
                 }
@@ -699,7 +709,7 @@ fun PreviewGenusDetailDark() {
     val uiState = DetailScreenUiState(
         genusName = styraco.getName(),
         genusData = DetailedGenus(GenusWithImages(styraco, imageMap)),
-        selectedColorName = "WHITE",
+        selectedColorName = "PINK",
         listOfColors = ThemeConverter.listOfColors,
         colorSelectDialogVisibility = true
     )

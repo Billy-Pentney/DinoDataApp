@@ -6,54 +6,86 @@ import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.data.DataParsing.getLongestNonMatchingSuffixes
 import com.bp.dinodata.data.search.IGeneratesSearchSuggestions
 import com.bp.dinodata.data.search.ISearchTypeConverter
+import com.bp.dinodata.theme.MyGrey100
 import com.bp.dinodata.theme.MyGrey800
+import com.bp.dinodata.theme.brown
+import com.bp.dinodata.theme.burgundy
+import com.bp.dinodata.theme.cyan
+import com.bp.dinodata.theme.forestGreen
+import com.bp.dinodata.theme.indigo
+import com.bp.dinodata.theme.lime
+import com.bp.dinodata.theme.orange
+import com.bp.dinodata.theme.pink
+import com.bp.dinodata.theme.red
+import com.bp.dinodata.theme.royalBlue
+import com.bp.dinodata.theme.satinSoftBlue
+import com.bp.dinodata.theme.steelBlue
+import com.bp.dinodata.theme.violet
+import com.bp.dinodata.theme.yellow
 
 
 object ThemeConverter: ISearchTypeConverter<String> {
 
     private val redTheme = darkColorScheme(
-        surface = Color(0xFF882222)
+        surface = red
     )
 
     private val orangeTheme = darkColorScheme(
-        surface = Color(0xFF884422)
+        surface = orange
     )
 
     private val yellowTheme = darkColorScheme(
-        surface = Color(0xFFAA9944)
+        surface = yellow
     )
 
     private val greenTheme = darkColorScheme(
-        surface = Color(0xFF337733)
+        surface = forestGreen
     )
 
     private val cyanTheme = darkColorScheme(
-        surface = Color(0xFF338899)
+        surface = cyan
     )
 
     private val blueTheme = darkColorScheme(
-        surface = Color(0xFF336699)
+        surface = royalBlue
     )
 
     private val indigoTheme = darkColorScheme(
-        surface = Color(0xFF554488)
+        surface = indigo
     )
 
     private val violetTheme = darkColorScheme(
-        surface = Color(0xFF884488)
+        surface = violet
     )
 
     private val pinkTheme = darkColorScheme(
-        surface = Color(0xFFAA5555)
+        surface = pink
     )
 
     private val brownTheme = darkColorScheme(
-        surface = Color(0xFF885544)
+        surface = brown
     )
 
     private val whiteTheme = darkColorScheme(
-        surface = Color(0xFFFFFFFF),
+        surface = Color(0xFFDDDDDD),
         onSurface = MyGrey800
+    )
+
+    private val blackTheme = darkColorScheme(
+        surface = Color(0xFF222222),
+        onSurface = MyGrey100
+    )
+
+    private val burgundyTheme = darkColorScheme(
+        surface = burgundy
+    )
+
+    private val limeTheme = darkColorScheme(
+        surface = lime
+    )
+
+    private val steelBlueTheme = darkColorScheme(
+        surface = steelBlue
     )
 
     private val stringToTheme = mapOf(
@@ -67,7 +99,11 @@ object ThemeConverter: ISearchTypeConverter<String> {
         "VIOLET" to violetTheme,
         "PINK" to pinkTheme,
         "BROWN" to brownTheme,
-        "WHITE" to whiteTheme
+        "WHITE" to whiteTheme,
+        "BLACK" to blackTheme,
+        "BURGUNDY" to burgundyTheme,
+        "LIME" to limeTheme,
+        "STEEL" to steelBlueTheme
     )
 
     val listOfColors = stringToTheme.keys.toList()

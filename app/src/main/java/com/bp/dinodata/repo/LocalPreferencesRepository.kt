@@ -15,6 +15,7 @@ interface ILocalPreferencesRepository {
     fun getPrefsFlow(currentGenusName: String): Flow<ILocalPrefs?>
     suspend fun getAllColors(): List<ColorEntity>
     fun getGenusLocalPrefsFlow(): Flow<Map<String, LocalPrefs>>
+    suspend fun addColor(colorName: String)
 }
 
 class LocalPreferencesRepository(
@@ -40,7 +41,15 @@ class LocalPreferencesRepository(
                 db.genusDao().upsertColor(GenusColorUpdate(name, id))
             }
             else {
-                Log.d(TAG, "No colors found with name $color. Cannot update genus $name.")
+                Log.d(TAG, "No colors found with name \'$color\'.")
+                val colorIds = db.colorDao().insert(ColorEntity(id=0, name=color))
+                if (colorIds.getOrNull(0) != null) {
+                    Log.d(TAG, "Created color \'$color\' with id ${colorIds[0]}")
+                    db.genusDao().upsertColor(GenusColorUpdate(name, colorIds[0]))
+                }
+                else {
+                    Log.d(TAG, "Unable to create color with name $color. Cannot update genus $name.")
+                }
             }
         }
         else {
@@ -63,5 +72,10 @@ class LocalPreferencesRepository(
 
     override fun getGenusLocalPrefsFlow(): Flow<Map<String, LocalPrefs>> {
         return db.genusDao().getGenusToLocalPrefsFlow()
+    }
+
+    override suspend fun addColor(colorName: String) {
+        // Id is auto-generated
+        db.colorDao().insert(ColorEntity(id = 0, name = colorName))
     }
 }

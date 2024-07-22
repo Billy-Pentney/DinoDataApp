@@ -586,8 +586,8 @@ fun PreviewListGenus() {
     )
     val generaPrefs = genera.map {
         val color = when (it.getDiet()) {
-            Diet.Carnivore -> "RED"
-            Diet.Herbivore -> "GREEN"
+            Diet.Carnivore -> "BURGUNDY"
+            Diet.Herbivore -> "BLACK"
             else -> null
         }
         GenusWithPrefs(it, LocalPrefs(_color = color))
