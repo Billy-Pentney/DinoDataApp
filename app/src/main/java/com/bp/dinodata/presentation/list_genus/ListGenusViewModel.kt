@@ -65,7 +65,8 @@ class ListGenusViewModel @Inject constructor(
             is ListGenusPageUiEvent.UpdateSearchQuery -> {
                 applySearchQuery(event.state)
             }
-            ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearSearchQueryOrHideSearchBar()
+            ListGenusPageUiEvent.ClearSearchQueryOrHideBar
+                -> clearSearchQueryOrHideSearchBar()
             is ListGenusPageUiEvent.ToggleSearchBar -> {
                 _uiState.value = _uiState.value.copy(searchBarVisible = event.visible)
             }
@@ -73,9 +74,12 @@ class ListGenusViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
             }
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
-                _uiState.value = listGenusUseCases
-                    .acceptSearchSuggestion(_uiState.value)
-                    .applySearch()
+                _uiState.value = listGenusUseCases.acceptSearchSuggestion(_uiState.value)
+                runSearch()
+            }
+            is ListGenusPageUiEvent.RemoveSearchTerm -> {
+                _uiState.value = _uiState.value.removeSearchTerm(event.term)
+                runSearch()
             }
         }
     }
@@ -85,14 +89,15 @@ class ListGenusViewModel @Inject constructor(
             searchQueryText = textFieldValue.text,
             cursorRange = textFieldValue.selection
         )
+        runSearch()
+    }
+
+    private fun runSearch() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.applySearch(
-                search = _uiState.value.search.copy(
-                    query = textFieldValue.text,
-                    // Update the list parameters
-                    locations = _locationsFlow.value,
-                    taxa = _taxaFlow.value
-                )
+                query = _uiState.value.searchQueryText,
+                locations = _locationsFlow.value,
+                taxa = _taxaFlow.value
             )
         }
     }

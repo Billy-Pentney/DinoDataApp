@@ -72,7 +72,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
@@ -80,6 +79,8 @@ import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenusWithPrefs
+import com.bp.dinodata.data.search.GenusSearchBuilder
+import com.bp.dinodata.data.search.ISearchTerm
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
@@ -98,7 +99,8 @@ fun ListGenusScreenContent(
     updateSearchQuery: (TextFieldValue) -> Unit,
     clearSearchQuery: () -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
-    prefillSearchSuggestion: () -> Unit
+    prefillSearchSuggestion: () -> Unit,
+    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
     val loadState = uiState.loadState
     val searchBarVisible = uiState.searchBarVisible
@@ -164,7 +166,8 @@ fun ListGenusScreenContent(
                         toggleSearchBarVisibility = toggleSearchBarVisibility,
                         clearSearchQuery = clearSearchQuery,
                         updateSearchQuery = updateSearchQuery,
-                        prefillSearchSuggestion = prefillSearchSuggestion
+                        prefillSearchSuggestion = prefillSearchSuggestion,
+                        removeSearchTerm = removeSearchTerm
                     )
                 }
 
@@ -202,7 +205,8 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     toggleSearchBarVisibility: (Boolean) -> Unit,
     clearSearchQuery: () -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
-    prefillSearchSuggestion: () -> Unit
+    prefillSearchSuggestion: () -> Unit,
+    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
     Column (
         modifier = Modifier.fillMaxSize(),
@@ -221,7 +225,8 @@ fun ShowHorizontalPagerOfGeneraByLetter(
                     clearSearchQuery,
                     navigateToGenus,
                     outerPadding,
-                    prefillSearchSuggestion
+                    prefillSearchSuggestion,
+                    removeSearchTerm
                 )
             }
             else {
@@ -245,7 +250,8 @@ fun SearchPage(
     clearSearchQuery: () -> Unit,
     navigateToGenus: (String) -> Unit,
     outerPadding: Dp,
-    prefillSearchSuggestion: () -> Unit
+    prefillSearchSuggestion: () -> Unit,
+    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
     val results = uiState.searchResults ?: emptyList()
 
@@ -257,7 +263,8 @@ fun SearchPage(
             modifier = Modifier.padding(horizontal = outerPadding),
             searchSuggestions = uiState.search.getSuggestedSuffixes(),
             prefillSearchSuggestion = prefillSearchSuggestion,
-            uiState = uiState
+            uiState = uiState,
+            onSearchTermTap = removeSearchTerm
         )
         DividerTextRow(
             text = stringResource(R.string.text_showing_X_creatures, results.size),
@@ -537,6 +544,9 @@ fun ListGenusScreen(
         },
         prefillSearchSuggestion = {
             listGenusViewModel.onEvent(ListGenusPageUiEvent.AcceptSearchSuggestion)
+        },
+        removeSearchTerm = { term ->
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.RemoveSearchTerm(term))
         }
     )
 }
@@ -612,17 +622,18 @@ fun PreviewListGenus() {
                 searchResults = genera,
                 selectedPageIndex = 0,
                 searchBarVisible = false,
-                search = GenusSearch(
+                search = GenusSearchBuilder(
                     query = "taxon:ab",
-                    taxa = listOf("abelisauridae", "brachiosauridae"),
-                    locations = listOf("USA", "canada")
-                ),
+                    locations = listOf("USA", "canada"),
+                    taxa = listOf("abelisauridae", "brachiosauridae")
+                ).build(),
                 loadState = LoadState.Loaded,
             ),
             updateSearchQuery = {},
             clearSearchQuery = {},
             toggleSearchBarVisibility = {},
-            prefillSearchSuggestion = {}
+            prefillSearchSuggestion = {},
+            removeSearchTerm = {}
         )
     }
 }

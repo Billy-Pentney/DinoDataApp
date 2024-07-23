@@ -1,6 +1,7 @@
 package com.bp.dinodata.data
 
 import android.util.Log
+import com.bp.dinodata.data.CreatureTypeConverter.CreatureTypesMap
 import com.bp.dinodata.data.DataParsing.getLongestPotentialSuffixes
 import com.bp.dinodata.data.search.ISearchTypeConverter
 
@@ -48,6 +49,10 @@ object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
         val keysByCommonPrefix = getLongestPotentialSuffixes(text, CreatureTypesMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
+
+    override fun getListOfOptions(): List<String> {
+        return CreatureTypesMap.keys.toList()
+    }
 }
 
 object TimePeriodConverter: ISearchTypeConverter<TimePeriod> {
@@ -79,6 +84,10 @@ object TimePeriodConverter: ISearchTypeConverter<TimePeriod> {
         val keysByCommonPrefix = getLongestPotentialSuffixes(text, TimePeriodMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
     }
+
+    override fun getListOfOptions(): List<String> {
+        return TimePeriodMap.keys.toList()
+    }
 }
 
 
@@ -109,6 +118,10 @@ object DietConverter: ISearchTypeConverter<Diet> {
     override fun suggestSearchSuffixes(text: String, takeTop: Int): List<String> {
         val keysByCommonPrefix = getLongestPotentialSuffixes(text, DietTypesMap.keys)
         return keysByCommonPrefix.take(takeTop.coerceAtLeast(1))
+    }
+
+    override fun getListOfOptions(): List<String> {
+        return DietTypesMap.keys.toList()
     }
 }
 

@@ -86,7 +86,7 @@ object ThemeConverter: ISearchTypeConverter<String> {
         surface = steelBlue
     )
 
-    private val stringToTheme = mapOf(
+    private val stringToTheme: Map<String, ColorScheme?> = mapOf(
         "RED" to redTheme,
         "ORANGE" to orangeTheme,
         "YELLOW" to yellowTheme,
@@ -101,10 +101,15 @@ object ThemeConverter: ISearchTypeConverter<String> {
         "BLACK" to blackTheme,
         "BURGUNDY" to burgundyTheme,
         "LIME" to limeTheme,
-        "STEEL" to steelBlueTheme
+        "STEEL" to steelBlueTheme,
+        "NONE" to null
     )
 
     val listOfColors = stringToTheme.keys.toList()
+
+    override fun getListOfOptions(): List<String> {
+        return listOfColors
+    }
 
     fun getTheme(name: String?): ColorScheme? {
         return stringToTheme[name?.uppercase()]

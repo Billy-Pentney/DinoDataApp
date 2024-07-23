@@ -25,151 +25,151 @@ interface ISearchTerm<T> {
     fun getType(): SearchTermType
     fun generateSearchSuggestions(): List<String>
     fun toFilter(): IFilter<in T>
+    fun toOriginalText(): String
 }
+
 
 class GenusNameSearchTerm(
     private val query: String,
     private val isCapitalSensitive: Boolean = false,
-    private val searchKeywords: List<String> = emptyList()
+    private val searchKeywords: List<String> = emptyList(),
 ): ISearchTerm<IHasName> {
     override fun getType(): SearchTermType = SearchTermType.Name
-    override fun toFilter(): IFilter<IHasName> {
-        return NameFilter(query, isCapitalSensitive)
-    }
+    override fun toFilter(): IFilter<IHasName> = NameFilter(query, isCapitalSensitive)
 
     override fun generateSearchSuggestions(): List<String> {
         return DataParsing.getLongestPotentialSuffixes(query, searchKeywords)
     }
+    override fun toString(): String = query
+    override fun toOriginalText(): String = query
 }
 
 
-abstract class ConversionBasedSearchTerm<T>(
-    private val queryArguments: List<String>,
-    private val converter: ISearchTypeConverter<T>,
-    private val type: SearchTermType,
-    private val filterGenerator: (List<T>) -> IFilter<in T>
-): ISearchTerm<T> {
-    private val typedItems: List<T> = queryArguments.mapNotNull { converter.matchType(it) }
+abstract class ListBasedSearchTerm(
+    private val originalText: String,
+    private val termType: SearchTermType,
+    private val allPossibleValues: List<String> = emptyList(),
+): ISearchTerm<IGenus> {
+    protected var queryArguments = listOf<String>()
 
-    override fun getType(): SearchTermType = SearchTermType.Taxon
-    override fun toFilter(): IFilter<in T> = filterGenerator(typedItems)
-    override fun generateSearchSuggestions(): List<String> {
-        val lastArg = queryArguments.lastOrNull()
-        if (lastArg != null) {
-            return converter.suggestSearchSuffixes(lastArg)
+    init {
+        // Isolate the key from the values
+        val splits = originalText.split(":")
+
+        if (splits.size > 1) {
+            val values = splits[1]
+            // We may have multiple accepted values e.g. "KEY:a+b+c", so we split
+            queryArguments = values.split("+")
         }
-        return emptyList()
+        else {
+            Log.e("ListBasedSearchTerm", "No values found in text \'$originalText\'")
+        }
     }
-}
 
-
-class TaxonNameSearchTerm(
-    private val taxonName: String,
-    taxaList: List<String>
-): ISearchTerm<IGenus> {
-    private val _taxaList = taxaList.map { it.lowercase() }
-    override fun getType(): SearchTermType = SearchTermType.Taxon
-    override fun toFilter(): IFilter<in IHasTaxonomy> = TaxonFilter(taxonName)
-    override fun generateSearchSuggestions(): List<String> {
-        return DataParsing.getLongestPotentialSuffixes(taxonName, _taxaList)
+    override fun toString(): String {
+        val type = getType().toString()
+        return "$type: ${queryArguments.joinToString(" OR ")}"
     }
-}
 
-//class CreatureTypeSearchTermTwo(
-//    queryArguments: List<String>
-//): ConversionBasedSearchTerm<CreatureType>(
-//    queryArguments,
-//    CreatureTypeConverter,
-//    SearchTermType.CreatureType,
-//    { CreatureTypeFilter(it) }
-//)
-
-class CreatureTypeSearchTerm(
-    private val queryArguments: List<String>
-): ISearchTerm<IGenus> {
-    private val creatureTypes = queryArguments.mapNotNull { CreatureTypeConverter.matchType(it) }
-    override fun getType(): SearchTermType = SearchTermType.CreatureType
-    override fun toFilter(): IFilter<in IHasCreatureType> = CreatureTypeFilter(creatureTypes)
     override fun generateSearchSuggestions(): List<String> {
         if (queryArguments.isNotEmpty()) {
             val lastArgument = queryArguments.last()
-            return CreatureTypeConverter.suggestSearchSuffixes(lastArgument)
+            val unusedValues = allPossibleValues.minus(queryArguments.toSet())
+
+            return if (lastArgument in allPossibleValues) {
+                // Add an optional argument
+                DataParsing.getLongestPotentialSuffixes("", unusedValues.map { "+$it" })
+            } else {
+                DataParsing.getLongestPotentialSuffixes(lastArgument, unusedValues)
+            }
         }
         return emptyList()
+    }
+    override fun toOriginalText(): String = originalText
+    override fun getType(): SearchTermType = termType
+}
+
+class CreatureTypeSearchTerm(
+    originalText: String,
+    possibleTypes: List<String> = CreatureTypeConverter.getListOfOptions()
+): ListBasedSearchTerm(
+    originalText,
+    termType = SearchTermType.CreatureType,
+    allPossibleValues = possibleTypes
+) {
+    override fun toFilter(): IFilter<in IHasCreatureType> {
+        val creatureTypes = queryArguments.mapNotNull { CreatureTypeConverter.matchType(it) }
+        return CreatureTypeFilter(creatureTypes)
     }
 }
 
 class DietSearchTerm(
-    private val queryArguments: List<String>
-): ISearchTerm<IGenus> {
-    private val diets = queryArguments.mapNotNull { DietConverter.matchType(it) }
-    override fun getType(): SearchTermType = SearchTermType.Diet
-    override fun toFilter(): IFilter<in IHasDiet> = DietFilter(diets)
-    override fun generateSearchSuggestions(): List<String> {
-        if (queryArguments.isNotEmpty()) {
-            val lastArgument = queryArguments.last()
-            return DietConverter.suggestSearchSuffixes(lastArgument)
-        }
-        return emptyList()
+    originalText: String,
+    possibleDiets: List<String> = DietConverter.getListOfOptions()
+): ListBasedSearchTerm(
+    originalText,
+    termType = SearchTermType.Diet,
+    allPossibleValues = possibleDiets
+) {
+    override fun toFilter(): IFilter<in IHasDiet> {
+        val diets = queryArguments.mapNotNull { DietConverter.matchType(it) }
+        return DietFilter(diets)
     }
 }
 
 class TimePeriodSearchTerm(
-    private val queryArguments: List<String>
-): ISearchTerm<IGenus> {
-    private val periods = queryArguments.mapNotNull { TimePeriodConverter.matchType(it) }
-    override fun getType(): SearchTermType = SearchTermType.TimePeriod
-    override fun toFilter(): IFilter<in IHasTimePeriodInfo> = TimePeriodFilter(periods)
-    override fun generateSearchSuggestions(): List<String> {
-        if (queryArguments.isNotEmpty()) {
-            return TimePeriodConverter.suggestSearchSuffixes(queryArguments.last())
-        }
-        return emptyList()
+    originalText: String,
+    allPossibleValues: List<String> = TimePeriodConverter.getListOfOptions()
+): ListBasedSearchTerm(
+    originalText,
+    allPossibleValues = allPossibleValues,
+    termType = SearchTermType.TimePeriod,
+) {
+    override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
+        val periods = queryArguments.mapNotNull { TimePeriodConverter.matchType(it) }
+        return TimePeriodFilter(periods)
     }
 }
 
+class TaxonNameSearchTerm(
+    originalText: String,
+    possibleTaxa: List<String> = emptyList()
+): ListBasedSearchTerm(
+    originalText = originalText,
+    termType = SearchTermType.Taxon,
+    allPossibleValues = possibleTaxa.map { it.lowercase() }
+) {
+    override fun toFilter(): IFilter<in IHasTaxonomy> = TaxonFilter(queryArguments)
+}
+
+
 class SelectedColorSearchTerm(
-    private val colorNames: List<String?>
-): ISearchTerm<IGenus> {
-    private val colorNamesUpper = colorNames.map { it?.uppercase() }
-
-    override fun getType(): SearchTermType = SearchTermType.Color
-    override fun generateSearchSuggestions(): List<String> {
-        val last = colorNamesUpper.lastOrNull()
-        if (last != null) {
-            return ThemeConverter.suggestSearchSuffixes(last).map { it.lowercase() }
-        }
-        return emptyList()
-    }
-
+    originalText: String,
+    possibleValues: List<String> = ThemeConverter.getListOfOptions()
+): ListBasedSearchTerm(
+    originalText = originalText,
+    termType = SearchTermType.Color,
+    allPossibleValues = possibleValues.map { it.lowercase() }
+) {
     override fun toFilter(): IFilter<in IGenus> {
-        return SelectedColorFilter(colorNames.map { it?.uppercase() })
+        return SelectedColorFilter(queryArguments.map { it.uppercase() })
     }
 }
 
 class LocationSearchTerm(
-    private val queryLocations: List<String>,
-    allLocations: List<String> = emptyList(),
-    private val capitalSensitive: Boolean = false
-): ISearchTerm<IGenus> {
-
-    private val _allLocations = allLocations.map { it.lowercase().replace(" ", "_") }
-
+    originalText: String,
+    allLocations: List<String> = emptyList()
+): ListBasedSearchTerm(
+    originalText = originalText,
+    termType = SearchTermType.Location,
+    allPossibleValues = allLocations.map { it.lowercase().replace(" ", "_") },
+) {
     init {
-        Log.d("LocationSearchTerm", "Got locations length ${_allLocations.size}")
+        Log.d("LocationSearchTerm", "Got locations length ${queryArguments.size}")
     }
 
-    override fun generateSearchSuggestions(): List<String> {
-        val last = queryLocations.lastOrNull()
-        if (last != null) {
-            return DataParsing.getLongestPotentialSuffixes(last, _allLocations)
-        }
-        return emptyList()
-    }
-
-    override fun getType(): SearchTermType = SearchTermType.Location
     override fun toFilter(): IFilter<in IGenus> {
-        return LocationFilter(queryLocations, capitalSensitive)
+        return LocationFilter(queryArguments)
     }
 }
 

@@ -3,10 +3,11 @@ package com.bp.dinodata.presentation.list_genus
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.bp.dinodata.data.IResultsByLetter
-import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.search.GenusSearch
+import com.bp.dinodata.data.search.GenusSearchBuilder
+import com.bp.dinodata.data.search.ISearchTerm
 import com.bp.dinodata.presentation.LoadState
 
 data class ListGenusUiState(
@@ -15,23 +16,31 @@ data class ListGenusUiState(
     val searchResults: List<IGenus>? = null,
     val searchBarVisible: Boolean = false,
     val searchQueryText: String = "",
-    val search: GenusSearch = GenusSearch(searchQueryText),
+    val search: GenusSearch = GenusSearch(),
     val pageSelectionVisible: Boolean = true,
     val selectedPageIndex: Int = 0,
     val cursorRange: TextRange = TextRange.Zero
 ): ISearchBarUiState {
     val keys: List<Char> = allPageData?.getKeys() ?: emptyList()
 
+    private val allPageDataList = allPageData?.toList() ?: emptyList()
+
     fun applySearch(
-        search: GenusSearch = this.search.copy(query=searchQueryText)
+        query: String = this.searchQueryText,
+        locations: List<String> = emptyList(),
+        taxa: List<String> = emptyList()
     ): ListGenusUiState {
-        val allData = allPageData?.toList() ?: emptyList()
-        val filter: IFilter<IGenus> = search.toFilter()
-        val filteredGenera = filter.applyTo(allData)
+        val search = GenusSearchBuilder(
+            query = query,
+            terms = search.getCompletedTerms(),
+            locations = locations,
+            taxa = taxa,
+        ).build()
 
         return this.copy(
+            searchQueryText = search.getQuery(),
             search = search,
-            searchResults = filteredGenera,
+            searchResults = search.applyTo(allPageDataList),
         )
     }
 
@@ -42,12 +51,17 @@ data class ListGenusUiState(
     fun clearSearch(): ListGenusUiState {
         return this.copy(
             searchQueryText = "",
+            search = GenusSearch(search.getCompletedTerms()),
             cursorRange = TextRange.Zero
         )
     }
 
+    override fun getFullSearchQuery(): String {
+        return search.getQuery()
+    }
+
     override fun getSearchQuery(): String {
-        return searchQueryText
+        return search.getLastTermText()
     }
 
     override fun getCursorPosition(): TextRange {
@@ -67,5 +81,21 @@ data class ListGenusUiState(
 
     override fun hasSuggestions(): Boolean {
         return search.getSuggestedSuffixes().isNotEmpty()
+    }
+
+    override fun getSearchTerms(): List<ISearchTerm<in IGenus>> {
+        return search.getAllTerms()
+    }
+
+    override fun getCompletedSearchTerms(): List<ISearchTerm<in IGenus>> {
+        return search.getCompletedTerms()
+    }
+
+    override fun removeSearchTerm(term: ISearchTerm<in IGenus>): ListGenusUiState {
+        val newSearch = search.removeTerm(term)
+        return this.copy(
+            search = newSearch,
+            searchQueryText = newSearch.getLastTermText()
+        )
     }
 }

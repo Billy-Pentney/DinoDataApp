@@ -63,12 +63,13 @@ class CreatureTypeFilter(
 //}
 
 class TaxonFilter(
-    private val taxonSearch: String
+    private val acceptedTaxa: List<String>
 ): IFilter<IHasTaxonomy> {
     override fun acceptsItem(item: IHasTaxonomy): Boolean {
-        val taxonList = item.getListOfTaxonomy()
+        val taxonList = item.getListOfTaxonomy().map { it.lowercase() }
         for (taxon in taxonList) {
-            if (taxonSearch.lowercase() in taxon.lowercase()) {
+            val intersection = acceptedTaxa.intersect(taxonList.toSet())
+            if (intersection.isNotEmpty()) {
                 return true
             }
         }
@@ -76,7 +77,7 @@ class TaxonFilter(
     }
 
     override fun toString(): String {
-        return "\'$taxonSearch\' in TAXONOMY"
+        return "${acceptedTaxa.map{"\'$it\'"}.joinToString(" or ")} in TAXONOMY"
     }
 }
 
@@ -105,11 +106,14 @@ class TimePeriodFilter(
 }
 
 class SelectedColorFilter(
-    private val acceptedColors: List<String?>
+    private val acceptedColors: List<String>
 ): IFilter<IGenus> {
+    private val acceptsUncolored = acceptedColors.contains("NONE")
+
     override fun acceptsItem(item: IGenus): Boolean {
         if (item is ILocalPrefs) {
-            return item.getSelectedColorName() in acceptedColors
+            val color = item.getSelectedColorName()
+            return color in acceptedColors || (color == null && acceptsUncolored)
         }
         return false
     }

@@ -18,5 +18,4 @@ class ListGenusScreenUseCases {
             cursorRange = TextRange(newQuery.length)
         )
     }
-
 }
