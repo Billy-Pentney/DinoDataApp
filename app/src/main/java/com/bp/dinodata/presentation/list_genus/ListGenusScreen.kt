@@ -257,14 +257,12 @@ fun SearchPage(
 
     Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ListGenusSearchBar(
-            toggleVisibility = toggleSearchBarVisibility,
             updateSearchQuery = updateSearchQuery,
             clearSearchQuery = clearSearchQuery,
-            modifier = Modifier.padding(horizontal = outerPadding),
-            searchSuggestions = uiState.search.getSuggestedSuffixes(),
             prefillSearchSuggestion = prefillSearchSuggestion,
-            uiState = uiState,
-            onSearchTermTap = removeSearchTerm
+            modifier = Modifier.padding(horizontal = outerPadding),
+            onSearchTermTap = removeSearchTerm,
+            uiState = uiState
         )
         DividerTextRow(
             text = stringResource(R.string.text_showing_X_creatures, results.size),

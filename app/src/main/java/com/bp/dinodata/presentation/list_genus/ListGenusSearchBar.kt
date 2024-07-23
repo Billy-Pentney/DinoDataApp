@@ -1,6 +1,5 @@
 package com.bp.dinodata.presentation.list_genus
 
-import android.view.WindowInsets.Side
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,10 +57,8 @@ import com.bp.dinodata.theme.MyGrey600
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListGenusSearchBar(
-    toggleVisibility: (Boolean) -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
     clearSearchQuery: () -> Unit,
-    searchSuggestions: List<String>,
     prefillSearchSuggestion: () -> Unit,
     modifier: Modifier = Modifier,
     onSearchTermTap: (ISearchTerm<in IGenus>) -> Unit,
@@ -87,30 +84,27 @@ fun ListGenusSearchBar(
         color = MaterialTheme.colorScheme.onSurface
     )
 
-    val searchSuggestion = uiState.getSearchSuggestionAutofill()
-
+    var searchSuggestion by remember { mutableStateOf("") }
     var imeAction by remember { mutableStateOf(ImeAction.Next) }
+
+    var acceptSuggestionAsQuery by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
 
     SideEffect {
         textFieldValue = textFieldValue.copy(
-            text = uiState.getSearchQuery(),
-            selection = uiState.getCursorPosition()
+            text = uiState.getQuery()
         )
-        imeAction =
-            if (uiState.hasSuggestions()) {
-                ImeAction.Next
-            } else {
-                ImeAction.Search
-            }
+        searchSuggestion = uiState.getAutofillSuggestion()
     }
-
-    var acceptSuggestionAsQuery by remember { mutableStateOf(false) }
 
     LaunchedEffect(acceptSuggestionAsQuery) {
         if (acceptSuggestionAsQuery) {
-            prefillSearchSuggestion()
             acceptSuggestionAsQuery = false
+            textFieldValue = textFieldValue.copy(
+                text = searchSuggestion,
+                selection = TextRange(searchSuggestion.length)
+            )
+            prefillSearchSuggestion()
             imeAction =
                 if (uiState.hasSuggestions())
                     ImeAction.Next
@@ -119,9 +113,7 @@ fun ListGenusSearchBar(
         }
     }
 
-    Column (
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column (modifier = Modifier.fillMaxWidth()) {
         val searchTerms = uiState.getCompletedSearchTerms()
         LazyColumn (
             horizontalAlignment = Alignment.Start,
@@ -134,7 +126,7 @@ fun ListGenusSearchBar(
                     selected = false,
                     onClick = { onSearchTermTap(term) },
                     label = {
-                        Text(term.toOriginalText(), maxLines=1)
+                        Text(term.toString(), maxLines=1)
                     },
                     leadingIcon = {
                        Icon(
@@ -238,14 +230,11 @@ fun ListGenusSearchBar(
 fun PreviewSearchBar() {
     DinoDataTheme {
         ListGenusSearchBar(
-            toggleVisibility = {},
             updateSearchQuery = {},
             clearSearchQuery = { },
-            searchSuggestions = listOf("elisauridae"),
             prefillSearchSuggestion = { },
+            onSearchTermTap = {},
             uiState = ListGenusUiState(
-                searchQueryText = "xyz",
-                cursorRange = TextRange(8),
                 searchBarVisible = true,
                 search = GenusSearchBuilder(
                     "xyz",
@@ -258,8 +247,7 @@ fun PreviewSearchBar() {
                         )
                     )
                 ).build()
-            ),
-            onSearchTermTap = {}
+            )
         )
     }
 }

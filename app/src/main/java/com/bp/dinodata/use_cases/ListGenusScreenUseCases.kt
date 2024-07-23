@@ -12,10 +12,16 @@ class ListGenusScreenUseCases {
             return uiState
         }
 
-        val newQuery = uiState.getSearchSuggestionAutofill()
-        return uiState.copy(
-            searchQueryText = newQuery,
-            cursorRange = TextRange(newQuery.length)
+        val newQuery = uiState.getAutofillSuggestion()
+        return uiState.applySearch(
+            query = newQuery
         )
+//            .copy(
+//            textFieldValue = uiState.getSearchBarTextFieldValue().copy(
+//                text = newQuery,
+//                // Move the cursor to the end of the text-box
+//                selection = TextRange(newQuery.length)
+//            )
+//        )
     }
 }

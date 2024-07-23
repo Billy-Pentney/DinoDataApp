@@ -6,8 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.LoadState
@@ -46,14 +44,9 @@ class ListGenusViewModel @Inject constructor(
                     searchResults = it?.toList()
                 )
 
-                if (_uiState.value.searchBarVisible) {
-                    applySearchQuery(
-                        TextFieldValue(
-                            _uiState.value.getSearchQuery(),
-                            _uiState.value.cursorRange
-                        )
-                    )
-                }
+//                if (_uiState.value.searchBarVisible) {
+//                    applySearchQuery(_uiState.value.)
+//                }
             }
         }
     }
@@ -63,7 +56,7 @@ class ListGenusViewModel @Inject constructor(
     fun onEvent(event: ListGenusPageUiEvent) {
         when(event) {
             is ListGenusPageUiEvent.UpdateSearchQuery -> {
-                applySearchQuery(event.state)
+                runSearch(event.state.text)
             }
             ListGenusPageUiEvent.ClearSearchQueryOrHideBar
                 -> clearSearchQueryOrHideSearchBar()
@@ -74,8 +67,8 @@ class ListGenusViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
             }
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
-                _uiState.value = listGenusUseCases.acceptSearchSuggestion(_uiState.value)
-                runSearch()
+//                _uiState.value = listGenusUseCases.acceptSearchSuggestion(_uiState.value)
+                runSearch(_uiState.value.getAutofillSuggestion())
             }
             is ListGenusPageUiEvent.RemoveSearchTerm -> {
                 _uiState.value = _uiState.value.removeSearchTerm(event.term)
@@ -84,18 +77,10 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    private fun applySearchQuery(textFieldValue: TextFieldValue) {
-        _uiState.value = _uiState.value.copy(
-            searchQueryText = textFieldValue.text,
-            cursorRange = textFieldValue.selection
-        )
-        runSearch()
-    }
-
-    private fun runSearch() {
+    private fun runSearch(query: String = _uiState.value.getQuery()) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.applySearch(
-                query = _uiState.value.searchQueryText,
+                query = query,
                 locations = _locationsFlow.value,
                 taxa = _taxaFlow.value
             )

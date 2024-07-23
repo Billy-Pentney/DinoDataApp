@@ -68,7 +68,8 @@ abstract class ListBasedSearchTerm(
 
     override fun toString(): String {
         val type = getType().toString()
-        return "$type: ${queryArguments.joinToString(" OR ")}"
+        val args = queryArguments.map { "\'$it\'" }
+        return "$type: ${args.joinToString(" or ")}"
     }
 
     override fun generateSearchSuggestions(): List<String> {
