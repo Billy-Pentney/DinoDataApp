@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.DietSearchTerm
-import com.bp.dinodata.data.search.GenusNameSearchTerm
+import com.bp.dinodata.data.search.BasicSearchTerm
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.ISearchTerm
 import com.bp.dinodata.data.search.LocationSearchTerm
@@ -85,7 +85,7 @@ fun ListGenusSearchBar(
     )
 
     var searchSuggestion by remember { mutableStateOf("") }
-    var imeAction by remember { mutableStateOf(ImeAction.Next) }
+    var imeAction by remember { mutableStateOf(ImeAction.Search) }
 
     var acceptSuggestionAsQuery by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
@@ -94,6 +94,8 @@ fun ListGenusSearchBar(
         textFieldValue = textFieldValue.copy(
             text = uiState.getQuery()
         )
+        if (uiState.hasSuggestions())
+            imeAction = ImeAction.Next
         searchSuggestion = uiState.getAutofillSuggestion()
     }
 
@@ -105,11 +107,6 @@ fun ListGenusSearchBar(
                 selection = TextRange(searchSuggestion.length)
             )
             prefillSearchSuggestion()
-            imeAction =
-                if (uiState.hasSuggestions())
-                    ImeAction.Next
-                else
-                    ImeAction.Search
         }
     }
 
@@ -126,12 +123,21 @@ fun ListGenusSearchBar(
                     selected = false,
                     onClick = { onSearchTermTap(term) },
                     label = {
-                        Text(term.toString(), maxLines=1)
+                        Text(
+                            term.toString(),
+                            modifier = Modifier.padding(vertical=4.dp),
+                            maxLines = 2
+                        )
                     },
                     leadingIcon = {
+                        val icon = term.getIconId()
+                        icon?.let {
+                            Icon(icon, "null")
+                        }
+                    },
+                    trailingIcon = {
                        Icon(
-                           Icons.Filled.Close,
-                           "remove term"
+                           Icons.Filled.Close, "remove term"
                        )
                     }
                 )
@@ -240,10 +246,10 @@ fun PreviewSearchBar() {
                     "xyz",
                     taxa = listOf("abelisauridae", "brachiosauridae"),
                     terms = listOf<ISearchTerm<in IGenus>>(
-                        GenusNameSearchTerm("abc"),
+                        BasicSearchTerm("abc"),
                         DietSearchTerm("diet:carnivore"),
                         LocationSearchTerm(
-                            "location:canada+uk"
+                            "location:canada+united_kingdom+usa+brazil"
                         )
                     )
                 ).build()

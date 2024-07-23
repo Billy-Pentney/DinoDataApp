@@ -1,6 +1,14 @@
 package com.bp.dinodata.data.search
 
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.bp.dinodata.data.CreatureTypeConverter
 import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.DietConverter
@@ -26,10 +34,11 @@ interface ISearchTerm<T> {
     fun generateSearchSuggestions(): List<String>
     fun toFilter(): IFilter<in T>
     fun toOriginalText(): String
+    fun getIconId(): ImageVector?
 }
 
 
-class GenusNameSearchTerm(
+class BasicSearchTerm(
     private val query: String,
     private val isCapitalSensitive: Boolean = false,
     private val searchKeywords: List<String> = emptyList(),
@@ -40,8 +49,11 @@ class GenusNameSearchTerm(
     override fun generateSearchSuggestions(): List<String> {
         return DataParsing.getLongestPotentialSuffixes(query, searchKeywords)
     }
-    override fun toString(): String = query
+    override fun toString(): String = "Contains: $query"
     override fun toOriginalText(): String = query
+    override fun getIconId(): ImageVector? {
+        return null
+    }
 }
 
 
@@ -49,6 +61,7 @@ abstract class ListBasedSearchTerm(
     private val originalText: String,
     private val termType: SearchTermType,
     private val allPossibleValues: List<String> = emptyList(),
+    private val imageIconVector: ImageVector? = null
 ): ISearchTerm<IGenus> {
     protected var queryArguments = listOf<String>()
 
@@ -78,8 +91,8 @@ abstract class ListBasedSearchTerm(
             val unusedValues = allPossibleValues.minus(queryArguments.toSet())
 
             return if (lastArgument in allPossibleValues) {
-                // Add an optional argument
-                DataParsing.getLongestPotentialSuffixes("", unusedValues.map { "+$it" })
+                // Encourages to add additional argument
+                listOf("+")
             } else {
                 DataParsing.getLongestPotentialSuffixes(lastArgument, unusedValues)
             }
@@ -88,6 +101,7 @@ abstract class ListBasedSearchTerm(
     }
     override fun toOriginalText(): String = originalText
     override fun getType(): SearchTermType = termType
+    override fun getIconId(): ImageVector? = imageIconVector
 }
 
 class CreatureTypeSearchTerm(
@@ -96,7 +110,8 @@ class CreatureTypeSearchTerm(
 ): ListBasedSearchTerm(
     originalText,
     termType = SearchTermType.CreatureType,
-    allPossibleValues = possibleTypes
+    allPossibleValues = possibleTypes,
+    imageIconVector = Icons.Filled.LocalOffer
 ) {
     override fun toFilter(): IFilter<in IHasCreatureType> {
         val creatureTypes = queryArguments.mapNotNull { CreatureTypeConverter.matchType(it) }
@@ -110,7 +125,8 @@ class DietSearchTerm(
 ): ListBasedSearchTerm(
     originalText,
     termType = SearchTermType.Diet,
-    allPossibleValues = possibleDiets
+    allPossibleValues = possibleDiets,
+    imageIconVector = Icons.Filled.Restaurant
 ) {
     override fun toFilter(): IFilter<in IHasDiet> {
         val diets = queryArguments.mapNotNull { DietConverter.matchType(it) }
@@ -125,6 +141,7 @@ class TimePeriodSearchTerm(
     originalText,
     allPossibleValues = allPossibleValues,
     termType = SearchTermType.TimePeriod,
+    imageIconVector = Icons.Filled.AccessTime
 ) {
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
         val periods = queryArguments.mapNotNull { TimePeriodConverter.matchType(it) }
@@ -138,7 +155,8 @@ class TaxonNameSearchTerm(
 ): ListBasedSearchTerm(
     originalText = originalText,
     termType = SearchTermType.Taxon,
-    allPossibleValues = possibleTaxa.map { it.lowercase() }
+    allPossibleValues = possibleTaxa.map { it.lowercase() },
+    imageIconVector = Icons.Filled.AccountTree
 ) {
     override fun toFilter(): IFilter<in IHasTaxonomy> = TaxonFilter(queryArguments)
 }
@@ -150,7 +168,8 @@ class SelectedColorSearchTerm(
 ): ListBasedSearchTerm(
     originalText = originalText,
     termType = SearchTermType.Color,
-    allPossibleValues = possibleValues.map { it.lowercase() }
+    allPossibleValues = possibleValues.map { it.lowercase() },
+    imageIconVector = Icons.Filled.ColorLens
 ) {
     override fun toFilter(): IFilter<in IGenus> {
         return SelectedColorFilter(queryArguments.map { it.uppercase() })
@@ -164,6 +183,7 @@ class LocationSearchTerm(
     originalText = originalText,
     termType = SearchTermType.Location,
     allPossibleValues = allLocations.map { it.lowercase().replace(" ", "_") },
+    imageIconVector = Icons.Filled.LocationOn
 ) {
     init {
         Log.d("LocationSearchTerm", "Got locations length ${queryArguments.size}")

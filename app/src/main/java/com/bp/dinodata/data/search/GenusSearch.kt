@@ -15,7 +15,7 @@ import com.bp.dinodata.data.genus.IGenus
  */
 data class GenusSearch(
     private var terms: List<ISearchTerm<in IGenus>> = emptyList(),
-    private val currentTerm: ISearchTerm<in IGenus> = GenusNameSearchTerm(""),
+    private val currentTerm: ISearchTerm<in IGenus> = BasicSearchTerm(""),
     private var capSensitive: Boolean = false,
     private val locations: List<String> = emptyList(),
     private val taxa: List<String> = emptyList(),

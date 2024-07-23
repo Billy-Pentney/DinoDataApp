@@ -24,11 +24,11 @@ class SearchTermBuilder(
         private val PREFIX_COLON_LIST = PREFIX_LIST.map { "$it:" }
     }
 
-    fun fromText(termText: String): ISearchTerm<in IGenus>? {
+    fun fromText(termText: String): ISearchTerm<in IGenus> {
         val splits = termText.trim().split(":")
 
         if (splits.size != 2) {
-            return GenusNameSearchTerm(termText, searchKeywords = PREFIX_COLON_LIST)
+            return BasicSearchTerm(termText, searchKeywords = PREFIX_COLON_LIST)
         }
 
         // If here, then we have a term of the form "X:Y"
@@ -43,7 +43,7 @@ class SearchTermBuilder(
             LOCATION_PREFIX -> LocationSearchTerm(termText, locations)
             else -> {
                 Log.d("SearchConstructor", "Unknown query filter \'$termText\'")
-                null
+                BasicSearchTerm(termText)
             }
         }
     }

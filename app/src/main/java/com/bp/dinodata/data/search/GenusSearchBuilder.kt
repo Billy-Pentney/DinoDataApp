@@ -20,7 +20,7 @@ class GenusSearchBuilder(
         possibleTimePeriods = possibleTimePeriods
     )
 
-    private var currentTerm: ISearchTerm<in IGenus> = GenusNameSearchTerm(query)
+    private var currentTerm: ISearchTerm<in IGenus> = BasicSearchTerm(query)
     private var searchTerms: MutableList<ISearchTerm<in IGenus>> = terms.toMutableList()
 
     init {
@@ -32,28 +32,48 @@ class GenusSearchBuilder(
      * @param query The raw string which is visible via the Search Bar.
      */
     private fun parseSearchTerms(query: String) {
+        // Strip whitespace from both ends, so we can retain it
+        // without it affecting the splitting into terms
+//        val prefix = query.takeWhile { it.isWhitespace() }
+        val suffix = query.takeLastWhile { it.isWhitespace() }
 
-        // Start by splitting the query at spaces
-        val querySplits = query.split(" +".toRegex())
+        if (suffix.isNotEmpty()) {
+            // The string finished with a whitespace, so we commit all terms
+            // that occur *before* that whitespace
+            val committedTermString = query.trimEnd()
+            val splits = committedTermString.split(" +".toRegex())
 
-        val lastSplit = querySplits.lastOrNull() ?: return
+            // Convert the strings to Term objects.
+            // Separate the last term, so we can decide whether it is "complete".
+            val newTerms = splits
+                .filter { it.trim().isNotEmpty() }
+                .map { searchTermBuilder.fromText(it) }
 
-        // Convert the strings to Term objects.
-        // Separate the last term, so we can decide whether it is "complete".
-        val lastTerm = searchTermBuilder.fromText(lastSplit)
-        val newTerms = querySplits.dropLast(1)
-            .filter { it.isNotBlank() }
-            .mapNotNull { searchTermBuilder.fromText(it) }
+            searchTerms.addAll(newTerms)
+            currentTerm = searchTermBuilder.fromText("")
+        }
+        else {
+            // No whitespace at end, so convert all terms
+            val splits = query
+                .trim()
+                .split(" +".toRegex())
+                .filter { it.isNotEmpty() }
 
-        searchTerms.addAll(newTerms)
+            // Convert the strings to Term objects.
+            // Separate the last term as it has *not* been finalised with a space.
+            val newTerms = splits
+                .dropLast(1)
+                .map { searchTermBuilder.fromText(it) }
 
-        currentTerm =
-            if (lastTerm != null && lastSplit.trim().isNotEmpty()) {
-                // This term is complete, it has at least one non-space character
-                lastTerm
-            } else {
-                GenusNameSearchTerm(lastSplit)
+            searchTerms.addAll(newTerms)
+
+            val remainder: String? = splits.lastOrNull()
+
+            // No spaces found in the center part
+            if (remainder != null) {
+                currentTerm = searchTermBuilder.fromText(remainder)
             }
+        }
     }
 
     fun build(): GenusSearch {
