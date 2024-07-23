@@ -67,13 +67,10 @@ class TaxonFilter(
 ): IFilter<IHasTaxonomy> {
     override fun acceptsItem(item: IHasTaxonomy): Boolean {
         val taxonList = item.getListOfTaxonomy().map { it.lowercase() }
-        for (taxon in taxonList) {
-            val intersection = acceptedTaxa.intersect(taxonList.toSet())
-            if (intersection.isNotEmpty()) {
-                return true
-            }
+        return taxonList.any {
+            itemTaxon ->
+            acceptedTaxa.any { it in itemTaxon }
         }
-        return false
     }
 
     override fun toString(): String {

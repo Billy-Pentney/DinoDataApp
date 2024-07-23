@@ -26,14 +26,15 @@ class SearchTermBuilder(
 
     fun fromText(termText: String): ISearchTerm<in IGenus> {
         val splits = termText.trim().split(":")
-
         if (splits.size != 2) {
             return BasicSearchTerm(termText, searchKeywords = PREFIX_COLON_LIST)
         }
+        return fromKeyValuePair(splits[0], splits[1])
+    }
 
+    fun fromKeyValuePair(key: String, values: String): ISearchTerm<in IGenus> {
         // If here, then we have a term of the form "X:Y"
-        val key = splits[0]
-
+        val termText = "$key:$values"
         return when (key) {
             TAXON_PREFIX    -> TaxonNameSearchTerm(termText, taxaList)
             TYPE_PREFIX     -> CreatureTypeSearchTerm(termText)

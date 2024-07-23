@@ -27,6 +27,42 @@ class GenusSearchBuilder(
         parseSearchTerms(query)
     }
 
+    companion object {
+        private val SEARCH_TERM_REGEX = "(?:(?:(\\w+):(\\w+(?:\\+\\w+)*))|(\\w+))+".toRegex()
+    }
+
+//    private fun parseSearchTermsTwo(query: String) {
+//        val matches = SEARCH_TERM_REGEX.findAll(query)
+//
+//        for (match in matches) {
+//            val key = match.groups[1]?.value
+//            val values = match.groups[2]?.value
+//            val rawText = match.groups[3]?.value
+//
+//            val term: ISearchTerm<in IGenus>? =
+//                if (key != null && values != null) {
+//                    searchTermBuilder.fromKeyValuePair(key, values)
+//                }
+//                else if (rawText != null) {
+//                    searchTermBuilder.fromText(rawText)
+//                }
+//                else {
+//                    null
+//                }
+//
+//            term?.let{ searchTerms.add(it) }
+//        }
+//
+//        if (!query.endsWith(" ")) {
+//            if (searchTerms.isNotEmpty()) {
+//                currentTerm = searchTerms.removeLast()
+//            }
+//            else {
+//                currentTerm = BasicSearchTerm("")
+//            }
+//        }
+//    }
+
     /**
      * Build a search from the raw query text as received from the UI.
      * @param query The raw string which is visible via the Search Bar.
