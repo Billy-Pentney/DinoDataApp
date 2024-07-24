@@ -118,4 +118,6 @@ val colorFavourite700 = Color(0xFF605011)
 val colorFavourite800 = Color(0xFF504008)
 val colorFavourite900 = Color(0xFF403804)
 
+val typeSpecies500 = Color(0xFF6078899)
+
 

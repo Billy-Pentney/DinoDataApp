@@ -13,21 +13,25 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = MyGrey50,
     surface = MyGrey700,
     onSurface = MyGrey50,
-    primary = MyGrey600,
+    primary = MyGrey500,
     onPrimary = MyGrey100,
     scrim = HighlightYellow,
-    onSurfaceVariant = MyGrey200
+    onSurfaceVariant = MyGrey200,
+    secondary = typeSpecies500,
+    onSecondary = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
     background = MyGrey50,
     onBackground = MyGrey900,
-    surface = MyGrey400,
-    onSurface = Color.White,
-    primary = MyGrey500,
+    surface = MyGrey200,
+    onSurface = MyGrey800,
+    primary = MyGrey400,
     onPrimary = MyGrey50,
     scrim = HighlightYellowLight,
-    onSurfaceVariant = MyGrey100
+    onSurfaceVariant = MyGrey100,
+    secondary = typeSpecies500,
+    onSecondary = Color.White
 )
 
 @Composable

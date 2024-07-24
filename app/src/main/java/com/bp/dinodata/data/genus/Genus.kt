@@ -3,8 +3,6 @@ package com.bp.dinodata.data.genus
 import androidx.compose.runtime.Immutable
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.MultiImageUrlData
-import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
@@ -32,7 +30,12 @@ interface IHasCreatureType {
     fun getCreatureType(): CreatureType
 }
 
-interface IHasNameInfo {
+interface IHasSpeciesInfo {
+    fun getSpeciesList(): List<ISpecies>
+    fun hasSpeciesInfo(): Boolean
+}
+
+interface IAdditionalNameInfo {
     fun getNameMeaning(): String?
     fun getNamePronunciation(): String?
 }
@@ -48,9 +51,8 @@ interface IHasLocationInfo {
 
 interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
 
-interface IGenus: IHasTaxonomy, IHasMeasurements, IHasNameInfo, IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo
-
-
+interface IGenus: IHasTaxonomy, IHasMeasurements, IAdditionalNameInfo,
+    IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo
 
 @Immutable
 data class Genus(
@@ -65,6 +67,7 @@ data class Genus(
     private val weight: IDescribesWeight? = null,
     private val taxonomy: List<String> = emptyList(),
     private val locations: List<String> = emptyList(),
+    private val species: List<ISpecies> = emptyList()
 ): IGenus {
     override fun getTaxonomy(): String = taxonomy.joinToString("\n")
     override fun getListOfTaxonomy(): List<String> = taxonomy
@@ -93,6 +96,8 @@ data class Genus(
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 
     override fun getLocations(): List<String> = locations
+    override fun getSpeciesList(): List<ISpecies> = species
+    override fun hasSpeciesInfo(): Boolean = species.isNotEmpty()
 
 }
 

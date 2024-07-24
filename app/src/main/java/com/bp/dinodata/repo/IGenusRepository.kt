@@ -1,8 +1,6 @@
 package com.bp.dinodata.repo
 
-import com.bp.dinodata.data.genus.Genus
 import com.bp.dinodata.data.MultiImageUrlData
-import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +11,7 @@ interface IGenusRepository {
      * If the data is not retrieved, then onError is invoked with the exception which was triggered.
      */
     fun getAllGenera(
-        callback: (List<Genus>) -> Unit,
+        callback: (List<IGenus>) -> Unit,
         onError: (Exception) -> Unit
     )
 

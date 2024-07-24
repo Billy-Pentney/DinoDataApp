@@ -21,15 +21,15 @@ interface GenusDao {
     @Update
     fun updateAll(vararg genera: GenusEntity)
 
-    @Query("SELECT color_name FROM genera JOIN colors ON color_id == id " +
+    @Query("SELECT color_name FROM genera LEFT JOIN colors ON color_id == id " +
             "WHERE name LIKE :name LIMIT 1")
     suspend fun getColorForGenusName(name: String): String?
 
-    @Query("SELECT is_favourite, color_name FROM genera JOIN colors ON color_id == id " +
+    @Query("SELECT is_favourite, color_name FROM genera LEFT JOIN colors ON color_id == id " +
             "WHERE name LIKE :name LIMIT 1")
     suspend fun getGenusPrefs(name: String): LocalPrefs?
 
-    @Query("SELECT is_favourite, color_name FROM genera JOIN colors ON color_id == id " +
+    @Query("SELECT is_favourite, color_name FROM genera LEFT JOIN colors ON color_id == id " +
             "WHERE name LIKE :name LIMIT 1")
     fun getFlow(name: String): Flow<LocalPrefs?>
 
@@ -45,9 +45,8 @@ interface GenusDao {
     @Upsert(GenusEntity::class)
     suspend fun upsertFavourite(genusFavouriteUpdate: GenusFavouriteUpdate)
 
-
-
-    @Query("SELECT name, color_name, is_favourite FROM genera JOIN colors ON color_id == id")
+    @Query("SELECT name, color_name, is_favourite FROM genera " +
+            "LEFT JOIN colors ON color_id == id")
     fun getGenusToLocalPrefsFlow(): Flow<Map<@MapColumn(columnName = "name") String, LocalPrefs>>
 
 }

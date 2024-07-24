@@ -3,8 +3,7 @@ package com.bp.dinodata.repo
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
-import com.bp.dinodata.data.genus.Genus
-import com.bp.dinodata.data.genus.GenusBuilderImpl
+import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.ImageUrlData.mapToImageUrlDTOs
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.genus.GenusWithImages
@@ -36,7 +35,7 @@ class GenusRepository @Inject constructor(
         )?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
 
     override fun getAllGenera(
-        callback: (List<Genus>) -> Unit,
+        callback: (List<IGenus>) -> Unit,
         onError: (Exception) -> Unit
     ) {
         val first = genusCollection
@@ -51,7 +50,7 @@ class GenusRepository @Inject constructor(
 
                 // Convert the results to Genus objects
                 val genera = snapshot.mapNotNull { doc ->
-                    GenusBuilderImpl.fromDict(doc.data)?.build()
+                    GenusBuilder.fromDict(doc.data)?.build()
                 }
                 if (genera.isNotEmpty()) {
                     generaByName = genera.associateBy { it.getName() }
@@ -72,7 +71,7 @@ class GenusRepository @Inject constructor(
 
         // Convert the results to Genus objects
         val genera = snapshot.mapNotNull { doc ->
-            GenusBuilderImpl.fromDict(doc.data)?.build()
+            GenusBuilder.fromDict(doc.data)?.build()
         }
         if (genera.isNotEmpty()) {
             generaByName = genera.associateBy { it.getName() }
@@ -148,7 +147,7 @@ class GenusRepository @Inject constructor(
                 .document(genusName)
                 .get()
                 .addOnSuccessListener { snapshot ->
-                    val genusBuilder = snapshot?.data?.let { GenusBuilderImpl.fromDict(it) }
+                    val genusBuilder = snapshot?.data?.let { GenusBuilder.fromDict(it) }
 
                     if (genusBuilder != null) {
                         val genusData = genusBuilder.build()
@@ -185,7 +184,7 @@ class GenusRepository @Inject constructor(
                 .get()
                 .await()
 
-            val genusBuilder = snapshot?.data?.let { GenusBuilderImpl.fromDict(it) }
+            val genusBuilder = snapshot?.data?.let { GenusBuilder.fromDict(it) }
 
             if (genusBuilder != null) {
                 val genus = genusBuilder.build()

@@ -1,7 +1,7 @@
 package com.bp.dinodata.data.quantities
 
 import android.util.Log
-import com.bp.dinodata.data.genus.GenusBuilderImpl.Companion.TAG
+import com.bp.dinodata.data.genus.GenusBuilder.Companion.TAG
 
 sealed class Weight(
     valueIn: Float,

@@ -2,24 +2,29 @@ package com.bp.dinodata.presentation.detail_genus
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,13 +37,13 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.FormatPaint
+import androidx.compose.material.icons.filled.Interests
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,7 +53,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -58,7 +62,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,7 +86,7 @@ import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.genus.GenusBuilderImpl
+import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TaxonTreeBuilder
@@ -92,6 +95,8 @@ import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
+import com.bp.dinodata.data.genus.ILocalPrefs
+import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.convertCreatureTypeToString
@@ -102,7 +107,6 @@ import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
-import kotlin.math.min
 
 
 @Composable
@@ -171,14 +175,14 @@ fun LabelContentRow(
 @Composable
 fun GenusTitleCard(
     genus: IGenusWithImages,
-    scrollState: LazyListState,
     onPlayNamePronunciation: () -> Unit,
     modifier: Modifier = Modifier,
     innerPadding: Dp = 8.dp,
     paddingValues: PaddingValues = PaddingValues(),
-    collapseSpeed: Float = 20f,
-    colorScheme: ColorScheme? = null,
-    canPlayPronunciation: Boolean
+    canPlayPronunciation: Boolean,
+    colorScheme: ColorScheme,
+    setColorPickerDialogVisibility: (Boolean) -> Unit,
+    toggleItemAsFavourite: (Boolean) -> Unit
 ) {
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
@@ -186,136 +190,189 @@ fun GenusTitleCard(
     val genusImageUrl = genus.getImageUrl(imageIndex)
     val totalImages = genus.getNumDistinctImages()
 
-    val scaleDueToScroll = remember {
-        mutableFloatStateOf(
-            1f - min(1f,scrollState.firstVisibleItemScrollOffset / collapseSpeed)
-        )
+    val isFavourite = if (genus is ILocalPrefs) {
+            genus.isUserFavourite()
+        }
+        else {
+            false
+        }
+
+    var preferencesButtonsVisible by remember {
+        mutableStateOf(true)
     }
 
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 4.dp,
-        shape = RoundedCornerShape(
-            topStart = 0f,
-            topEnd = 0f,
-            bottomEnd = 50f,
-            bottomStart = 50f
+    Card (
+        modifier = Modifier.padding(paddingValues),
+        shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp),
+        colors = CardDefaults.cardColors(
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize()
-            .padding(paddingValues)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        )
     ) {
-        Column (
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.Bottom,
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            Box (
-                contentAlignment = Alignment.BottomEnd
-            ) {
-                GlideImage(
-                    model = genusImageUrl,
-                    alignment = Alignment.CenterEnd,
-                    contentScale = ContentScale.Fit,
-                    failure = placeholder(R.drawable.unkn),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxHeight(0.2f + 0.4f * scaleDueToScroll.floatValue)
-                        .padding(start = 40.dp, end = 20.dp, bottom = 30.dp)
-                        .offset(x = 10.dp, y = 0.dp)
-                        .fillMaxWidth()
-                        .alpha(
-                            0.3f * scaleDueToScroll.floatValue
-                        )
-                        .animateContentSize()
-                )
-                if (totalImages > 1) {
-//                    Text("Showing $genusImageUrl")
-                    Row {
-                        IconButton(
-                            onClick = { imageIndex-- },
-                            enabled = imageIndex > 0
-                        ) {
-                            Icon(
-                                Icons.Filled.ChevronLeft,
-                                contentDescription = "switch to previous image"
-                            )
-                        }
-                        IconButton(
-                            onClick = { imageIndex++ },
-                            enabled = imageIndex < totalImages-1
-                        ) {
-                            Icon(
-                                Icons.Filled.ChevronRight,
-                                contentDescription = "switch to next image"
-                            )
-                        }
-                    }
-                }
-            }
-
-            Row (
-                modifier = Modifier
+        MaterialTheme(colorScheme = colorScheme) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(
+                    topStart = 0f,
+                    topEnd = 0f,
+                    bottomEnd = 50f,
+                    bottomStart = 50f
+                ),
+                modifier = modifier
                     .fillMaxWidth()
-                    .padding(start = innerPadding),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                    .animateContentSize()
+                    .padding(paddingValues)
             ) {
-                Column (
-                    modifier = Modifier,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                Box(
+                    modifier = Modifier.height(IntrinsicSize.Min)
                 ) {
-                    val pronunciation = genus.getNamePronunciation()
-
-                    val titleOffset = if (pronunciation != null) 10.dp else 0.dp
-                    val titleBottomPadding = innerPadding - titleOffset
-
-                    Text(
-                        genus.getName(),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 26.sp,
-                        fontStyle = FontStyle.Italic,
+                    Box(
+                        contentAlignment = Alignment.BottomEnd,
                         modifier = Modifier
-                            .padding(bottom = titleBottomPadding)
-                            .offset(y = titleOffset)
-                    )
-
-                    pronunciation?.let {
-                        Row (
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                            .align(Alignment.TopEnd)
+                            .padding(top = 20.dp)
+                            .fillMaxHeight(0.7f)
+                    ) {
+                        GlideImage(
+                            model = genusImageUrl,
+                            alignment = Alignment.CenterEnd,
+                            contentScale = ContentScale.Fit,
+                            failure = placeholder(R.drawable.unkn),
+                            contentDescription = null,
                             modifier = Modifier
-                                .alpha(0.6f)
-                                .padding(bottom = innerPadding, top = 2.dp)
+                                .fillMaxHeight()
+                                .padding(start = 40.dp, end = 20.dp, bottom = 20.dp)
+                                .offset(x = 10.dp, y = 0.dp)
+                                .fillMaxWidth()
+                                .alpha(0.4f)
+                                .animateContentSize()
+                        )
+                        if (totalImages > 1) {
+                            Row {
+                                IconButton(
+                                    onClick = { imageIndex-- },
+                                    enabled = imageIndex > 0
+                                ) {
+                                    Icon(
+                                        Icons.Filled.ChevronLeft,
+                                        contentDescription = "switch to previous image"
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { imageIndex++ },
+                                    enabled = imageIndex < totalImages - 1
+                                ) {
+                                    Icon(
+                                        Icons.Filled.ChevronRight,
+                                        contentDescription = "switch to next image"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth()
+                            .padding(start = innerPadding),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        val pronunciation = genus.getNamePronunciation()
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                            modifier = Modifier.padding(bottom = innerPadding)
                         ) {
-                            Icon(
-                                Icons.Filled.RecordVoiceOver,
-                                null,
-                                modifier=Modifier.height(20.dp),
-                            )
+                            AnimatedVisibility(
+                                isFavourite,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                Icon(
+                                    Icons.Filled.Star,
+                                    null,
+                                    modifier = Modifier.padding(bottom = 2.dp)
+                                )
+                            }
+
                             Text(
-                                pronunciation,
-                                fontStyle = FontStyle.Italic
+                                genus.getName(),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 26.sp,
+                                fontStyle = FontStyle.Italic,
                             )
+
+                            pronunciation?.let {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .alpha(0.7f)
+                                        .padding(top = 2.dp)
+                                ) {
+        //                            Icon(
+        //                                Icons.Filled.RecordVoiceOver,
+        //                                null,
+        //                                modifier = Modifier.height(20.dp),
+        //                            )
+                                    if (canPlayPronunciation) {
+                                        IconButton(
+                                            onClick = onPlayNamePronunciation,
+                                            modifier = Modifier
+//                                                .padding(bottom = 1.dp)
+                                                .size(24.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.AutoMirrored.Filled.VolumeUp,
+                                                contentDescription = "play name pronunciation",
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        pronunciation,
+                                        fontStyle = FontStyle.Italic
+                                    )
+                                }
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = !preferencesButtonsVisible,
+                            enter = fadeIn(), exit = fadeOut()
+                        ) {
+                            IconButton(onClick = { preferencesButtonsVisible = true }) {
+                                Icon(
+                                    Icons.Filled.KeyboardArrowDown,
+                                    contentDescription = "show edit buttons"
+                                )
+                            }
                         }
                     }
                 }
-
-                if (canPlayPronunciation) {
-                    IconButton(
-                        onClick = onPlayNamePronunciation,
-                        modifier = Modifier.padding(bottom=1.dp)
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.VolumeUp,
-                            contentDescription = "play name pronunciation"
-                        )
-                    }
-                }
             }
+        }
+
+        AnimatedVisibility(
+            visible = preferencesButtonsVisible,
+            enter = expandVertically(expandFrom = Alignment.Top) { _ -> 0 },
+            exit = shrinkVertically(shrinkTowards = Alignment.Top) { _ -> 0 }
+        ) {
+            UpdateGenusLocalPreferencesButtons(
+                setColorPickerDialogVisibility,
+                toggleItemAsFavourite,
+                isFavourite,
+                modifier = Modifier.padding(vertical=8.dp),
+                hideButtons = {
+                    preferencesButtonsVisible = false
+                }
+            )
+            Spacer(modifier=Modifier.height(4.dp))
         }
     }
 }
@@ -336,7 +393,7 @@ fun GenusDetailScreenContent(
     val scrollState = rememberLazyListState()
     val cardExpansion = remember { derivedStateOf { 0f } }
 
-    val cardHeight = max(150.dp, 250.dp - (cardExpansion.value/2).dp)
+    val cardHeight = max(150.dp, 240.dp - (cardExpansion.value/2).dp)
     
     val iconModifier = Modifier
         .height(20.dp)
@@ -352,8 +409,6 @@ fun GenusDetailScreenContent(
 
     val genus = uiState.genusData
     val colorScheme = ThemeConverter.getTheme(uiState.selectedColorName)
-
-    val isFavourite = genus?.isUserFavourite() ?: false
 
     if (genus == null) {
         NoDataPlaceholder()
@@ -375,39 +430,26 @@ fun GenusDetailScreenContent(
             modifier = modifier.background(MaterialTheme.colorScheme.background)
         ) {
             item {
-                MaterialTheme(
-                    colorScheme = colorScheme ?: MaterialTheme.colorScheme
-                ) {
-                    GenusTitleCard(
-                        genus,
-                        innerPadding = innerPadding,
-                        scrollState = scrollState,
-                        onPlayNamePronunciation = onPlayNamePronunciation,
-                        modifier = Modifier.height(cardHeight),
-                        paddingValues = PaddingValues(
-                            start = outerPadding,
-                            end = outerPadding,
-                            bottom = 4.dp
-                        ),
-                        colorScheme = colorScheme,
-                        canPlayPronunciation = uiState.canPlayPronunciationAudio
-                    )
-                }
+                GenusTitleCard(
+                    genus,
+                    onPlayNamePronunciation = onPlayNamePronunciation,
+                    modifier = Modifier.height(cardHeight),
+                    innerPadding = innerPadding,
+                    canPlayPronunciation = uiState.canPlayPronunciationAudio,
+                    colorScheme = colorScheme ?: MaterialTheme.colorScheme,
+                    setColorPickerDialogVisibility = setColorPickerDialogVisibility,
+                    toggleItemAsFavourite = toggleItemAsFavourite
+                )
             }
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(
-                        horizontal = innerPadding + outerPadding / 2
-                    )
+                    modifier = Modifier
+                        .padding(
+                            horizontal = innerPadding + outerPadding / 2
+                        )
+                        .padding(top = 16.dp)
                 ) {
-                    UpdateGenusLocalPreferencesButtons(
-                        setColorPickerDialogVisibility,
-                        toggleItemAsFavourite,
-                        isFavourite
-                    )
-                    Spacer(modifier=Modifier.height(4.dp))
-
                     CreatureNameMeaningAndType(genus, iconModifier = iconModifier)
                     sectionDivider()
                     CreatureDietAndMeasurements(
@@ -437,12 +479,15 @@ fun GenusDetailScreenContent(
                     )
                     ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
 
-                    if (genus.getLocations().isNotEmpty()) {
+                    val locations = genus.getLocations()
+                    if (locations.isNotEmpty()) {
                         sectionDivider()
-                        CreatureLocations(
-                            locations = genus.getLocations(),
-                            iconModifier = iconModifier
-                        )
+                        CreatureLocations(locations, iconModifier)
+                    }
+
+                    if (genus.hasSpeciesInfo()) {
+                        sectionDivider()
+                        ShowCreatureSpeciesCards(genus, iconModifier)
                     }
                 }
                 Spacer(Modifier.height(100.dp))
@@ -455,14 +500,17 @@ fun GenusDetailScreenContent(
 fun UpdateGenusLocalPreferencesButtons(
     setColorPickerDialogVisibility: (Boolean) -> Unit,
     toggleItemAsFavourite: (Boolean) -> Unit,
-    isFavourite: Boolean
+    isFavourite: Boolean,
+    modifier: Modifier = Modifier,
+    hideButtons: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
 
     Row (
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
     ) {
+        Spacer(modifier=Modifier.weight(1f))
         Button(
             onClick = {
                 val nowIsFavourite = !isFavourite
@@ -518,6 +566,20 @@ fun UpdateGenusLocalPreferencesButtons(
                 Icons.Filled.ColorLens,
                 contentDescription = "choose the color"
             )
+        }
+        Spacer(modifier=Modifier.weight(1f))
+        hideButtons?.let {
+            IconButton(
+                onClick = hideButtons,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            ) {
+                Icon(
+                    Icons.Filled.KeyboardArrowUp,
+                    contentDescription = "hide buttons"
+                )
+            }
         }
     }
 }
@@ -695,6 +757,36 @@ fun ShowTaxonomicTree(
     }
 }
 
+
+@Composable
+fun ShowCreatureSpeciesCards(
+    genus: IGenus,
+    iconModifier: Modifier = Modifier
+) {
+
+    Column (
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        LabelContentRow(
+            label = stringResource(R.string.label_known_species),
+            valueContent = {},
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Interests,
+                    null,
+                    modifier = iconModifier
+                )
+            }
+        )
+        Spacer(modifier=Modifier.height(4.dp))
+        genus.getSpeciesList().forEach {
+            SpeciesListItem(it, genus.getName())
+        }
+    }
+}
+
+
 @Preview(
     widthDp = 300,
     heightDp = 500,
@@ -702,7 +794,7 @@ fun ShowTaxonomicTree(
 )
 @Composable
 fun PreviewGenusDetail() {
-    val acro = GenusBuilderImpl("Acrocanthosaurus")
+    val acro = GenusBuilder("Acrocanthosaurus")
         .setDiet("Carnivorous")
         .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")
 //        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
@@ -737,7 +829,7 @@ fun PreviewGenusDetail() {
 @Preview(widthDp = 300, heightDp = 1200, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
-    val styraco = GenusBuilderImpl("Styracosaurus")
+    val styraco = GenusBuilder("Styracosaurus")
         .setDiet("Herbivorous")
         .splitTimePeriodAndYears("Early Cretaceous, 70-65.5 mya")
         .setNamePronunciation("'sty-RAK-oh-SORE-us'")
@@ -747,6 +839,16 @@ fun PreviewGenusDetailDark() {
         .setCreatureType("ceratopsian")
         .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
         .setLocations(listOf("Canada", "USA"))
+        .setSpecies(
+            listOf(
+                mapOf(
+                    "name" to "albertensis",
+                    "discovered_by" to "Marsh",
+                    "discovered_year" to "1885",
+                    "is_type" to "true"
+                )
+            )
+        )
         .build()
 
     val imageMap = mapOf(
@@ -772,7 +874,10 @@ fun PreviewGenusDetailDark() {
 
     val uiState = DetailScreenUiState(
         genusName = styraco.getName(),
-        genusData = DetailedGenus(GenusWithImages(styraco, imageMap)),
+        genusData = DetailedGenus(
+            GenusWithImages(styraco, imageMap),
+            LocalPrefs(_isFavourite = true)
+        ),
         selectedColorName = "PINK",
         listOfColors = ThemeConverter.listOfColors,
         colorSelectDialogVisibility = false

@@ -34,7 +34,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -72,7 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.genus.GenusBuilderImpl
+import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
@@ -546,49 +544,49 @@ fun ListGenusScreen(
 @Preview(widthDp=400)
 @Composable
 fun PreviewListGenus() {
-    val acro = GenusBuilderImpl("Acrocanthosaurus")
+    val acro = GenusBuilder("Acrocanthosaurus")
         .setDiet("Carnivorous")
         .setTimePeriod("Late Cretaceous")
         .setCreatureType("large theropod")
         .build()
-    val trike = GenusBuilderImpl("Triceratops")
+    val trike = GenusBuilder("Triceratops")
         .setDiet("Herbivorous")
         .setTimePeriod("Cretaceous")
         .setCreatureType("ceratopsian")
         .build()
-    val dipl = GenusBuilderImpl("Diplodocus")
+    val dipl = GenusBuilder("Diplodocus")
         .setDiet("Herbivorous")
         .setTimePeriod("Jurassic")
         .setCreatureType("sauropod")
         .build()
-    val edmon = GenusBuilderImpl("Edmontosaurus")
+    val edmon = GenusBuilder("Edmontosaurus")
         .setDiet("Herbivorous")
         .setTimePeriod("Jurassic")
         .setCreatureType("hadrosaur")
         .build()
-    val ptero = GenusBuilderImpl("Pteranodon")
+    val ptero = GenusBuilder("Pteranodon")
         .setDiet("Piscivorous")
         .setTimePeriod("Jurassic")
         .setCreatureType("pterosaur")
         .build()
-    val raptor = GenusBuilderImpl("Velociraptor")
+    val raptor = GenusBuilder("Velociraptor")
         .setDiet("Carnivorous")
         .setTimePeriod("Cretaceous")
         .setCreatureType("small theropod")
         .build()
-    val ankylo = GenusBuilderImpl("Ankylosaurus")
+    val ankylo = GenusBuilder("Ankylosaurus")
         .setDiet("Herbivorous")
         .setTimePeriod("Cretaceous")
         .setCreatureType("ankylosaurid")
         .build()
-    val stego = GenusBuilderImpl("Stegosaurus")
+    val stego = GenusBuilder("Stegosaurus")
         .setDiet("Herbivorous")
         .setTimePeriod("Jurassic")
         .setCreatureType("Stegosaurid").build()
-    val spino = GenusBuilderImpl("Spinosaurus").setDiet("Piscivorous")
+    val spino = GenusBuilder("Spinosaurus").setDiet("Piscivorous")
         .setTimePeriod("Cretaceous")
         .setCreatureType("spinosaur").build()
-    val unkn = GenusBuilderImpl("Othersaurus").setDiet("Nuts")
+    val unkn = GenusBuilder("Othersaurus").setDiet("Nuts")
         .setTimePeriod("Other")
         .setCreatureType("other").build()
 

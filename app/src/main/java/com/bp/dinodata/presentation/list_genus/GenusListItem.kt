@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -43,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.GenusBuilder
-import com.bp.dinodata.data.genus.GenusBuilderImpl
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.data.genus.IDisplayInList
@@ -54,7 +50,6 @@ import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.colorFavourite500
 import com.bp.dinodata.theme.colorFavourite700
-import com.bp.dinodata.theme.colorFavourite800
 
 @Composable
 fun GenusListItem(
@@ -190,7 +185,7 @@ fun GenusListItem(
 @Composable
 fun PreviewGenusListItem() {
 
-    val genus = GenusBuilderImpl("Styracosaurus")
+    val genus = GenusBuilder("Styracosaurus")
         .setDiet("herbivore")
         .setCreatureType("ceratopsian")
         .build()

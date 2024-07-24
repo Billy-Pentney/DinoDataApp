@@ -95,4 +95,6 @@
     <string name="description_remove_favourite">remove from favourites</string>
     <string name="toast_removed_favourite">Removed from favourites!</string>
     <string name="toast_added_favourite">Added to favourites!</string>
+    <string name="label_known_species">Known Species</string>
+    <string name="badge_species_type">TYPE</string>
 </resources>

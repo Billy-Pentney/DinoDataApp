@@ -28,6 +28,8 @@ class GenusWithPrefs(
     override fun getTimePeriod(): TimePeriod? = genus.getTimePeriod()
     override fun getYearsLived(): String? = genus.getYearsLived()
     override fun getLocations(): List<String> = genus.getLocations()
+    override fun getSpeciesList(): List<ISpecies> = genus.getSpeciesList()
+    override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()
 
     override fun isUserFavourite(): Boolean = prefs.isUserFavourite()
     override fun getSelectedColorName(): String? = prefs.getSelectedColorName()
