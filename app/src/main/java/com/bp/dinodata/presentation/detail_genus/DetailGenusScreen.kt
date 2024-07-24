@@ -30,7 +30,6 @@ fun DetailGenusScreen(
             when (it) {
                 LoadState.InProgress -> {
                     Log.d("DetailGenus", "Load in progress. Nothing to show")
-//                    NoDataPlaceholder()
                 }
                 LoadState.Loaded -> {
                     GenusDetailScreenContent(
@@ -38,17 +37,8 @@ fun DetailGenusScreen(
                         modifier = Modifier
                             .padding(padding)
                             .padding(horizontal = 8.dp),
-                        onPlayNamePronunciation = {
-                            detailGenusViewModel.onEvent(DetailGenusUiEvent.PlayNamePronunciation)
-                        },
-                        onColorSelected = { colorName ->
-                            detailGenusViewModel.onEvent(DetailGenusUiEvent.SelectColor(colorName))
-                        },
-                        setColorPickerDialogVisibility = { visible ->
-                            detailGenusViewModel.onEvent(DetailGenusUiEvent.ShowColorSelectDialog(visible))
-                        },
-                        toggleItemAsFavourite = { isFavourite: Boolean ->
-                            detailGenusViewModel.onEvent(DetailGenusUiEvent.ToggleItemFavouriteStatus(isFavourite))
+                        onEvent = { event: DetailGenusUiEvent ->
+                            detailGenusViewModel.onEvent(event)
                         }
                     )
                 }

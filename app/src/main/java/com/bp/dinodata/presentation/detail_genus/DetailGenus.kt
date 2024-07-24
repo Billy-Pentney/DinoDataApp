@@ -32,16 +32,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AccessTimeFilled
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Interests
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.sharp.Restaurant
@@ -102,6 +105,7 @@ import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
+import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -173,7 +177,7 @@ fun LabelContentRow(
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun GenusTitleCard(
+fun GenusTitleCardAndControls(
     genus: IGenusWithImages,
     onPlayNamePronunciation: () -> Unit,
     modifier: Modifier = Modifier,
@@ -182,7 +186,9 @@ fun GenusTitleCard(
     canPlayPronunciation: Boolean,
     colorScheme: ColorScheme,
     setColorPickerDialogVisibility: (Boolean) -> Unit,
-    toggleItemAsFavourite: (Boolean) -> Unit
+    toggleItemAsFavourite: (Boolean) -> Unit,
+    controlsExpanded: Boolean = false,
+    showControls: (Boolean) -> Unit
 ) {
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
@@ -196,10 +202,6 @@ fun GenusTitleCard(
         else {
             false
         }
-
-    var preferencesButtonsVisible by remember {
-        mutableStateOf(true)
-    }
 
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
@@ -343,10 +345,10 @@ fun GenusTitleCard(
                         }
 
                         AnimatedVisibility(
-                            visible = !preferencesButtonsVisible,
+                            visible = !controlsExpanded,
                             enter = fadeIn(), exit = fadeOut()
                         ) {
-                            IconButton(onClick = { preferencesButtonsVisible = true }) {
+                            IconButton(onClick = { showControls(true) }) {
                                 Icon(
                                     Icons.Filled.KeyboardArrowDown,
                                     contentDescription = "show edit buttons"
@@ -359,7 +361,7 @@ fun GenusTitleCard(
         }
 
         AnimatedVisibility(
-            visible = preferencesButtonsVisible,
+            visible = controlsExpanded,
             enter = expandVertically(expandFrom = Alignment.Top) { _ -> 0 },
             exit = shrinkVertically(shrinkTowards = Alignment.Top) { _ -> 0 }
         ) {
@@ -369,7 +371,7 @@ fun GenusTitleCard(
                 isFavourite,
                 modifier = Modifier.padding(vertical=8.dp),
                 hideButtons = {
-                    preferencesButtonsVisible = false
+                    showControls(false)
                 }
             )
             Spacer(modifier=Modifier.height(4.dp))
@@ -382,10 +384,7 @@ fun GenusTitleCard(
 fun GenusDetailScreenContent(
     uiState: DetailScreenUiState,
     modifier: Modifier = Modifier,
-    onPlayNamePronunciation: () -> Unit,
-    setColorPickerDialogVisibility: (Boolean) -> Unit,
-    onColorSelected: (String?) -> Unit,
-    toggleItemAsFavourite: (Boolean) -> Unit
+    onEvent: (DetailGenusUiEvent) -> Unit
 ) {
     val outerPadding = 8.dp
     val innerPadding = 12.dp
@@ -411,15 +410,16 @@ fun GenusDetailScreenContent(
     val colorScheme = ThemeConverter.getTheme(uiState.selectedColorName)
 
     if (genus == null) {
-        NoDataPlaceholder()
+        LoadingItemsPlaceholder()
     }
     else {
-        if (uiState.colorSelectDialogVisibility) {
+        if (uiState.colorSelectDialogVisible) {
             ColorPickerDialog(
                 selectedColor = uiState.selectedColorName,
-//                colorNames = uiState.listOfColors,
-                onColorPicked = onColorSelected,
-                onClose = { setColorPickerDialogVisibility(false) }
+                onColorPicked = { onEvent(DetailGenusUiEvent.SelectColor(it)) },
+                onClose = {
+                    onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+                }
             )
         }
 
@@ -430,15 +430,25 @@ fun GenusDetailScreenContent(
             modifier = modifier.background(MaterialTheme.colorScheme.background)
         ) {
             item {
-                GenusTitleCard(
+                GenusTitleCardAndControls(
                     genus,
-                    onPlayNamePronunciation = onPlayNamePronunciation,
+                    onPlayNamePronunciation = {
+                        onEvent(DetailGenusUiEvent.PlayNamePronunciation)
+                    },
                     modifier = Modifier.height(cardHeight),
                     innerPadding = innerPadding,
                     canPlayPronunciation = uiState.canPlayPronunciationAudio,
                     colorScheme = colorScheme ?: MaterialTheme.colorScheme,
-                    setColorPickerDialogVisibility = setColorPickerDialogVisibility,
-                    toggleItemAsFavourite = toggleItemAsFavourite
+                    setColorPickerDialogVisibility = {
+                        onEvent(DetailGenusUiEvent.ShowColorSelectDialog(true))
+                    },
+                    toggleItemAsFavourite = {
+                        onEvent(DetailGenusUiEvent.ToggleItemFavouriteStatus(it))
+                    },
+                    controlsExpanded = uiState.preferencesCardExpanded,
+                    showControls = {
+                        onEvent(DetailGenusUiEvent.SetPreferencesCardExpansion(it))
+                    }
                 )
             }
             item {
@@ -537,7 +547,7 @@ fun UpdateGenusLocalPreferencesButtons(
                 ) {
                     if (it) {
                         Icon(
-                            Icons.Filled.Star,
+                            Icons.Filled.Remove,
                             contentDescription = stringResource(R.string.description_remove_favourite)
                         )
                         Text(
@@ -545,7 +555,7 @@ fun UpdateGenusLocalPreferencesButtons(
                         )
                     } else {
                         Icon(
-                            Icons.Filled.StarOutline,
+                            Icons.Filled.Favorite,
                             contentDescription = stringResource(R.string.description_add_to_favourite)
                         )
                         Text(
@@ -817,10 +827,7 @@ fun PreviewGenusDetail() {
         Surface (color = MaterialTheme.colorScheme.background) {
             GenusDetailScreenContent(
                 uiState = uiState,
-                onPlayNamePronunciation = {},
-                setColorPickerDialogVisibility = {},
-                onColorSelected = {},
-                toggleItemAsFavourite = {}
+                onEvent = {}
             )
         }
     }
@@ -876,21 +883,19 @@ fun PreviewGenusDetailDark() {
         genusName = styraco.getName(),
         genusData = DetailedGenus(
             GenusWithImages(styraco, imageMap),
-            LocalPrefs(_isFavourite = true)
+            LocalPrefs(_isFavourite = false)
         ),
         selectedColorName = "PINK",
         listOfColors = ThemeConverter.listOfColors,
-        colorSelectDialogVisibility = false
+        colorSelectDialogVisible = false,
+        preferencesCardExpanded = true
     )
 
     DinoDataTheme(darkTheme = true) {
         Surface (color = MaterialTheme.colorScheme.background) {
             GenusDetailScreenContent(
                 uiState = uiState,
-                onPlayNamePronunciation = {},
-                setColorPickerDialogVisibility = {},
-                onColorSelected = {},
-                toggleItemAsFavourite = {}
+                onEvent = {}
             )
         }
     }

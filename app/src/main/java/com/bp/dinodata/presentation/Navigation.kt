@@ -2,6 +2,7 @@ package com.bp.dinodata.presentation
 
 import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -53,7 +54,9 @@ fun MyNavigation(
             arguments = listOf(navArgument(genusKey){ type = NavType.StringType }),
             enterTransition = { fadeIn() + scaleIn() },
             exitTransition = { fadeOut() + shrinkOut() },
-            popExitTransition = { fadeOut() + scaleOut()},
+            popExitTransition = { fadeOut(
+                animationSpec = tween(200)
+            ) + scaleOut(targetScale = 0.5f)},
             popEnterTransition = { fadeIn() }
         ) {
             DetailGenusScreen(

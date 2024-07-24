@@ -51,12 +51,6 @@ class DetailGenusViewModel @Inject constructor(
 
     init {
 
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                listOfColors = genusUseCases.getAllColors()
-            )
-        }
-
         _genusDetail = combine(_genusWithImages, _genusPrefs) { genusWithImages, genusPrefs ->
             genusWithImages?.let {
                 DetailedGenus(genusWithImages, genusPrefs)
@@ -97,13 +91,18 @@ class DetailGenusViewModel @Inject constructor(
             }
             is DetailGenusUiEvent.ShowColorSelectDialog -> {
                 _uiState.value = _uiState.value.copy(
-                    colorSelectDialogVisibility = event.visible
+                    colorSelectDialogVisible = event.visible
                 )
             }
             is DetailGenusUiEvent.ToggleItemFavouriteStatus -> {
                 viewModelScope.launch {
                     genusUseCases.updateFavouriteStatus(currentGenusName, event.isFavourite)
                 }
+            }
+            is DetailGenusUiEvent.SetPreferencesCardExpansion -> {
+                _uiState.value = _uiState.value.copy(
+                    preferencesCardExpanded = event.expanded
+                )
             }
         }
     }
@@ -137,14 +136,16 @@ sealed class DetailGenusUiEvent {
     data class ShowColorSelectDialog(val visible: Boolean): DetailGenusUiEvent()
     data class SelectColor(val colorName: String?): DetailGenusUiEvent()
     data class ToggleItemFavouriteStatus(val isFavourite: Boolean): DetailGenusUiEvent()
+    data class SetPreferencesCardExpansion(val expanded: Boolean): DetailGenusUiEvent()
 }
 
 data class DetailScreenUiState(
     val genusName: String,
     val loadState: LoadState = LoadState.NotLoading,
     val genusData: IDetailedGenus? = null,
-    val colorSelectDialogVisibility: Boolean = false,
+    val colorSelectDialogVisible: Boolean = false,
     val canPlayPronunciationAudio: Boolean = true,
+    val preferencesCardExpanded: Boolean = false,
     val listOfColors: List<String> = emptyList(),
     val selectedColorName: String? = null
 )
