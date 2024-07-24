@@ -100,6 +100,11 @@ class DetailGenusViewModel @Inject constructor(
                     colorSelectDialogVisibility = event.visible
                 )
             }
+            is DetailGenusUiEvent.ToggleItemFavouriteStatus -> {
+                viewModelScope.launch {
+                    genusUseCases.updateFavouriteStatus(currentGenusName, event.isFavourite)
+                }
+            }
         }
     }
 
@@ -131,6 +136,7 @@ sealed class DetailGenusUiEvent {
     data object PlayNamePronunciation: DetailGenusUiEvent()
     data class ShowColorSelectDialog(val visible: Boolean): DetailGenusUiEvent()
     data class SelectColor(val colorName: String?): DetailGenusUiEvent()
+    data class ToggleItemFavouriteStatus(val isFavourite: Boolean): DetailGenusUiEvent()
 }
 
 data class DetailScreenUiState(

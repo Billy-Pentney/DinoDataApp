@@ -67,7 +67,8 @@ fun DietIconThin(
     showName: Boolean = true,
     borderThickness: Dp = 1.dp,
     imagePadding: Dp = 3.dp,
-    cornerRadius: Dp = 8.dp
+    cornerRadius: Dp = 8.dp,
+    modifier: Modifier = Modifier
 ) {
     val img = convertDietToImageResId(diet)
     val dietName = diet?.toString() ?: Diet.Unknown.toString()
@@ -85,7 +86,7 @@ fun DietIconThin(
             color = MaterialTheme.colorScheme.onSurface,
             shape = iconShape,
             contentColor = Color.Black,
-            modifier = Modifier
+            modifier = modifier
                 .height(34.dp)
                 .width(IntrinsicSize.Min),
             shadowElevation = 4.dp
@@ -143,13 +144,15 @@ private fun convertDietToLinearBrush(diet: Diet?): Brush {
 
 @Composable
 fun DietIconSquare(
-    diet: Diet?
+    diet: Diet?,
+    modifier: Modifier = Modifier
 ) {
     DietIconThin(
         diet = diet,
         showName = false,
         borderThickness = 1.dp,
-        imagePadding = 2.dp
+        imagePadding = 2.dp,
+        modifier = modifier
     )
 }
 

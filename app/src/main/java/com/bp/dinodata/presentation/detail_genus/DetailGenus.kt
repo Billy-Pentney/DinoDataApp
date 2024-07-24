@@ -1,6 +1,8 @@
 package com.bp.dinodata.presentation.detail_genus
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,9 +31,14 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.FormatPaint
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +48,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +68,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -187,7 +196,7 @@ fun GenusTitleCard(
 
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp,
+        shadowElevation = 4.dp,
         shape = RoundedCornerShape(
             topStart = 0f,
             topEnd = 0f,
@@ -319,6 +328,7 @@ fun GenusDetailScreenContent(
     onPlayNamePronunciation: () -> Unit,
     setColorPickerDialogVisibility: (Boolean) -> Unit,
     onColorSelected: (String?) -> Unit,
+    toggleItemAsFavourite: (Boolean) -> Unit
 ) {
     val outerPadding = 8.dp
     val innerPadding = 12.dp
@@ -342,6 +352,8 @@ fun GenusDetailScreenContent(
 
     val genus = uiState.genusData
     val colorScheme = ThemeConverter.getTheme(uiState.selectedColorName)
+
+    val isFavourite = genus?.isUserFavourite() ?: false
 
     if (genus == null) {
         NoDataPlaceholder()
@@ -375,7 +387,7 @@ fun GenusDetailScreenContent(
                         paddingValues = PaddingValues(
                             start = outerPadding,
                             end = outerPadding,
-                            bottom = 10.dp
+                            bottom = 4.dp
                         ),
                         colorScheme = colorScheme,
                         canPlayPronunciation = uiState.canPlayPronunciationAudio
@@ -389,6 +401,13 @@ fun GenusDetailScreenContent(
                         horizontal = innerPadding + outerPadding / 2
                     )
                 ) {
+                    UpdateGenusLocalPreferencesButtons(
+                        setColorPickerDialogVisibility,
+                        toggleItemAsFavourite,
+                        isFavourite
+                    )
+                    Spacer(modifier=Modifier.height(4.dp))
+
                     CreatureNameMeaningAndType(genus, iconModifier = iconModifier)
                     sectionDivider()
                     CreatureDietAndMeasurements(
@@ -425,38 +444,82 @@ fun GenusDetailScreenContent(
                             iconModifier = iconModifier
                         )
                     }
-
-                    Spacer(modifier=Modifier.height(30.dp))
-
-                    Row (
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Button(
-                            onClick = { setColorPickerDialogVisibility(true) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Row (
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Filled.FormatPaint,
-                                    contentDescription = "pick the paint color"
-                                )
-                                Text(stringResource(R.string.action_pick_colour))
-                            }
-                        }
-                    }
                 }
                 Spacer(Modifier.height(100.dp))
             }
         }
     }
-//    }
+}
+
+@Composable
+fun UpdateGenusLocalPreferencesButtons(
+    setColorPickerDialogVisibility: (Boolean) -> Unit,
+    toggleItemAsFavourite: (Boolean) -> Unit,
+    isFavourite: Boolean
+) {
+    val context = LocalContext.current
+
+    Row (
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+    ) {
+        Button(
+            onClick = {
+                val nowIsFavourite = !isFavourite
+                toggleItemAsFavourite(nowIsFavourite)
+
+                if (nowIsFavourite) {
+                    Toast.makeText(context,
+                        context.getString(R.string.toast_added_favourite), Toast.LENGTH_SHORT).show()
+                }
+                else {
+                    Toast.makeText(context,
+                        context.getString(R.string.toast_removed_favourite), Toast.LENGTH_SHORT).show()
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
+        ) {
+            Crossfade (isFavourite, label="favouriteButtonFade") {
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (it) {
+                        Icon(
+                            Icons.Filled.Star,
+                            contentDescription = stringResource(R.string.description_remove_favourite)
+                        )
+                        Text(
+                            stringResource(id = R.string.action_remove_favourite)
+                        )
+                    } else {
+                        Icon(
+                            Icons.Filled.StarOutline,
+                            contentDescription = stringResource(R.string.description_add_to_favourite)
+                        )
+                        Text(
+                            stringResource(id = R.string.action_set_favourite)
+                        )
+                    }
+                }
+            }
+        }
+        IconButton(
+            onClick = { setColorPickerDialogVisibility(true) },
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
+        ) {
+            Icon(
+                Icons.Filled.ColorLens,
+                contentDescription = "choose the color"
+            )
+        }
+    }
 }
 
 @Composable
@@ -664,7 +727,8 @@ fun PreviewGenusDetail() {
                 uiState = uiState,
                 onPlayNamePronunciation = {},
                 setColorPickerDialogVisibility = {},
-                onColorSelected = {}
+                onColorSelected = {},
+                toggleItemAsFavourite = {}
             )
         }
     }
@@ -711,7 +775,7 @@ fun PreviewGenusDetailDark() {
         genusData = DetailedGenus(GenusWithImages(styraco, imageMap)),
         selectedColorName = "PINK",
         listOfColors = ThemeConverter.listOfColors,
-        colorSelectDialogVisibility = true
+        colorSelectDialogVisibility = false
     )
 
     DinoDataTheme(darkTheme = true) {
@@ -720,7 +784,8 @@ fun PreviewGenusDetailDark() {
                 uiState = uiState,
                 onPlayNamePronunciation = {},
                 setColorPickerDialogVisibility = {},
-                onColorSelected = {}
+                onColorSelected = {},
+                toggleItemAsFavourite = {}
             )
         }
     }

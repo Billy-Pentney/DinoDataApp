@@ -11,9 +11,10 @@ import androidx.compose.ui.graphics.Color
 private val DarkColorScheme = darkColorScheme(
     background = MyGrey800,
     onBackground = MyGrey50,
-    surface = MyGrey600,
+    surface = MyGrey700,
     onSurface = MyGrey50,
-    primary = MyGrey700,
+    primary = MyGrey600,
+    onPrimary = MyGrey100,
     scrim = HighlightYellow,
     onSurfaceVariant = MyGrey200
 )
@@ -24,6 +25,7 @@ private val LightColorScheme = lightColorScheme(
     surface = MyGrey400,
     onSurface = Color.White,
     primary = MyGrey500,
+    onPrimary = MyGrey50,
     scrim = HighlightYellowLight,
     onSurfaceVariant = MyGrey100
 )

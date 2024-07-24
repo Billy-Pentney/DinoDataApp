@@ -62,5 +62,9 @@ class GenusUseCases(
             it?.let { ResultsByLetter(it) }
         }
     }
+
+    suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean) {
+        localPrefRepository.updateFavouriteStatus(currentGenusName, favourite)
+    }
 }
 

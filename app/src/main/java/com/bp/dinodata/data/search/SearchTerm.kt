@@ -29,7 +29,7 @@ import com.bp.dinodata.data.genus.IHasTaxonomy
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 import com.bp.dinodata.presentation.utils.ThemeConverter
 
-interface ISearchTerm<T> {
+interface ISearchTerm<T>: IFilter<T> {
     fun getType(): SearchTermType
     fun generateSearchSuggestions(): List<String>
     fun toFilter(): IFilter<in T>
@@ -43,6 +43,8 @@ class BasicSearchTerm(
     private val isCapitalSensitive: Boolean = false,
     private val searchKeywords: List<String> = emptyList(),
 ): ISearchTerm<IHasName> {
+    private val filter = this.toFilter()
+
     override fun getType(): SearchTermType = SearchTermType.Name
     override fun toFilter(): IFilter<IHasName> = NameFilter(query, isCapitalSensitive)
 
@@ -54,6 +56,8 @@ class BasicSearchTerm(
     override fun getIconId(): ImageVector? {
         return null
     }
+
+    override fun acceptsItem(item: IHasName): Boolean = filter.acceptsItem(item)
 }
 
 
@@ -64,6 +68,7 @@ abstract class ListBasedSearchTerm(
     private val imageIconVector: ImageVector? = null
 ): ISearchTerm<IGenus> {
     protected var queryArguments = listOf<String>()
+    protected val filter = this.toFilter()
 
     init {
         // Isolate the key from the values
@@ -102,6 +107,8 @@ abstract class ListBasedSearchTerm(
     override fun toOriginalText(): String = originalText
     override fun getType(): SearchTermType = termType
     override fun getIconId(): ImageVector? = imageIconVector
+
+    override fun acceptsItem(item: IGenus): Boolean = this.filter.acceptsItem(item)
 }
 
 class CreatureTypeSearchTerm(

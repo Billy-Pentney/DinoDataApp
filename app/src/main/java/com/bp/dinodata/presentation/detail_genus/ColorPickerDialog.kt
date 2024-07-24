@@ -106,21 +106,25 @@ fun ColorPickerDialog(
                     )
                 }
 
-                item {
-                    val isSelected = (selectedColor == null)
-                    ColorPickerSingleton(
-                        onColorPicked,
-                        null,
-                        isSelected
-                    )
-                }
+                // None item is not necessary since "NONE" is in the list of color options
+//                item {
+//                    val isSelected = (selectedColor == null)
+//                    ColorPickerSingleton(
+//                        onColorPicked,
+//                        null,
+//                        isSelected
+//                    )
+//                }
             }
 
             Row(
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(onClick = onClose) {
-                    Text("Done", color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        stringResource(R.string.action_done),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }

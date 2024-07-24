@@ -54,6 +54,9 @@ data class GenusSearch(
         return FilterBuilderImpl(filters).build()
     }
 
+    // TODO - make the search store the partial results after each filter, thus avoiding the full recalculation
+//    private val searchResults: List<List<IGenus>>? = null
+//
     override fun acceptsItem(item: IGenus): Boolean {
         return this.toFilter().acceptsItem(item)
     }

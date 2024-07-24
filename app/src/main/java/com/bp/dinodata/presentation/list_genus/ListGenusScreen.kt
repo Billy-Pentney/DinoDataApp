@@ -83,6 +83,8 @@ import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.ISearchTerm
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.DividerTextRow
+import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
+import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
 import kotlinx.coroutines.launch
@@ -172,23 +174,13 @@ fun ListGenusScreenContent(
                 }
 
                 LoadState.InProgress -> {
-                    // Loading items Placeholder
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .alpha(0.5f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)
-                    ) {
-                        CircularProgressIndicator(color = White)
-                        Text(stringResource(R.string.info_loading_placeholder))
-                    }
+                    LoadingItemsPlaceholder()
                 }
 
                 is LoadState.Error -> {
                     Text("Sorry! An error occurred. Reason: ${loadState.reason}")
+                    MissingDataPlaceholder()
                 }
-
                 else -> {}
             }
         }
@@ -363,9 +355,10 @@ fun HorizontalPagerOfGenera(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
                         .aspectRatio(if (isSelected) 0.8f else 0.5f)
-                        .clickable(onClick = { switchToPageByIndex(index) })
                         .clip(RoundedCornerShape(8.dp))
                         .background(color = color)
+                        .clickable(onClick = { switchToPageByIndex(index) })
+
                 ) {
                     Text(
                         key,
@@ -609,7 +602,11 @@ fun PreviewListGenus() {
             Diet.Herbivore -> "BLACK"
             else -> null
         }
-        GenusWithPrefs(it, LocalPrefs(_color = color))
+        val prefs = LocalPrefs(
+            _color = color,
+            _isFavourite = it.getDiet() == Diet.Herbivore
+        )
+        GenusWithPrefs(it,prefs)
     }
     val generaGrouped: IResultsByLetter<IGenusWithPrefs> = ResultsByLetter(generaPrefs)
 
@@ -618,7 +615,7 @@ fun PreviewListGenus() {
             uiState = ListGenusUiState(
                 allPageData = generaGrouped,
                 searchResults = genera,
-                selectedPageIndex = 0,
+                selectedPageIndex = 5,
                 searchBarVisible = false,
                 search = GenusSearchBuilder(
                     query = "taxon:ab",

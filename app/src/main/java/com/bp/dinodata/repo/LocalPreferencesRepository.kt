@@ -6,6 +6,7 @@ import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.db.entities.ColorEntity
 import com.bp.dinodata.db.entities.GenusColorUpdate
+import com.bp.dinodata.db.entities.GenusFavouriteUpdate
 import kotlinx.coroutines.flow.Flow
 
 interface ILocalPreferencesRepository {
@@ -16,6 +17,7 @@ interface ILocalPreferencesRepository {
     suspend fun getAllColors(): List<ColorEntity>
     fun getGenusLocalPrefsFlow(): Flow<Map<String, LocalPrefs>>
     suspend fun addColor(colorName: String)
+    suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean)
 }
 
 class LocalPreferencesRepository(
@@ -77,5 +79,11 @@ class LocalPreferencesRepository(
     override suspend fun addColor(colorName: String) {
         // Id is auto-generated
         db.colorDao().insert(ColorEntity(id = 0, name = colorName))
+    }
+
+    override suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean) {
+        db.genusDao().upsertFavourite(
+            GenusFavouriteUpdate(currentGenusName, favourite)
+        )
     }
 }

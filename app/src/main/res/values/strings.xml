@@ -87,4 +87,12 @@
     <string name="desc_select_this_color">select this color</string>
     <string name="text_color_none">NONE</string>
     <string name="action_pick_colour">Pick Colour</string>
+    <string name="label_favourite">Favourite</string>
+    <string name="action_set_favourite">Favourite</string>
+    <string name="action_remove_favourite">Unfavourite</string>
+    <string name="action_done">Done</string>
+    <string name="description_add_to_favourite">add to favourites</string>
+    <string name="description_remove_favourite">remove from favourites</string>
+    <string name="toast_removed_favourite">Removed from favourites!</string>
+    <string name="toast_added_favourite">Added to favourites!</string>
 </resources>

@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bp.dinodata.presentation.LoadState
+import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 
 @Composable
@@ -45,15 +46,18 @@ fun DetailGenusScreen(
                         },
                         setColorPickerDialogVisibility = { visible ->
                             detailGenusViewModel.onEvent(DetailGenusUiEvent.ShowColorSelectDialog(visible))
+                        },
+                        toggleItemAsFavourite = { isFavourite: Boolean ->
+                            detailGenusViewModel.onEvent(DetailGenusUiEvent.ToggleItemFavouriteStatus(isFavourite))
                         }
                     )
                 }
                 is LoadState.Error -> {
                     Log.e("DetailGenusScreen", "An error occurred when fetching the genus data.")
-                    NoDataPlaceholder()
+                    MissingDataPlaceholder()
                 }
                 LoadState.NotLoading -> {
-                    NoDataPlaceholder()
+                    MissingDataPlaceholder()
                 }
             }
         }

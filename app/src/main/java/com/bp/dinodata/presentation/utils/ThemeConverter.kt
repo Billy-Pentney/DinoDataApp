@@ -57,7 +57,8 @@ object ThemeConverter: ISearchTypeConverter<String> {
     )
 
     private val pinkTheme = darkColorScheme(
-        surface = pink
+        surface = pink,
+        onSurface = Color(0xFF552211)
     )
 
     private val brownTheme = darkColorScheme(
