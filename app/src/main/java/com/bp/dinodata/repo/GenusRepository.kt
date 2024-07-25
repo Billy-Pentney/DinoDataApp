@@ -10,6 +10,8 @@ import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
@@ -62,9 +64,21 @@ class GenusRepository @Inject constructor(
     }
 
     override fun getAllGeneraFlow(): Flow<List<IGenus>?> = flow {
-        val snapshot = genusCollection.orderBy("name")
-            .get()
-            .await()
+        val job = genusCollection.orderBy("name").get()
+
+        var snapshot: QuerySnapshot? = null
+
+        try {
+            snapshot = job.await()
+        }
+        catch(ex: FirebaseFirestoreException) {
+            Log.e(TAG, "Failed to retrieve genera", ex)
+            emit(null)
+        }
+
+        if (snapshot == null) {
+            return@flow
+        }
 
         val lastVisible = snapshot.documents.last()
         Log.d(TAG, "Converting documents up to ${lastVisible?.id}")

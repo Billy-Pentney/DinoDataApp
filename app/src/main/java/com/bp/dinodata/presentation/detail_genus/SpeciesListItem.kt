@@ -66,7 +66,8 @@ fun SpeciesListItem(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 )
                 if (species.isTypeSpecies()) {
                     Text(
@@ -74,6 +75,7 @@ fun SpeciesListItem(
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSecondary,
                         fontWeight = FontWeight.Bold,
+                        maxLines=1,
                         modifier = Modifier
                             .shadow(4.dp)
                             .background(
@@ -97,7 +99,7 @@ fun SpeciesListItem(
     }
 }
 
-@Preview
+@Preview(widthDp=250)
 @Composable
 fun PreviewSpeciesListItem() {
     val species = SpeciesBuilder("atokensis")

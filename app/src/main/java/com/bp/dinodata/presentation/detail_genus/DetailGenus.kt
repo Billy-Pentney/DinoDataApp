@@ -72,6 +72,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -596,16 +597,29 @@ fun UpdateGenusLocalPreferencesButtons(
 
 @Composable
 fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
-    LabelContentRow(
-        label = stringResource(R.string.label_locations),
-        valueContent = { Text(locations.joinToString()) },
-        leadingIcon = {
-            Icon(
-                Icons.Filled.LocationOn, null,
-                modifier = iconModifier
-            )
+    Column (
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        LabelContentRow(
+            label = stringResource(R.string.label_locations),
+            valueContent = {
+//                Text(locations.joinToString())
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.LocationOn, null,
+                    modifier = iconModifier
+                )
+            }
+        )
+        val undisplayedLocations = locationAtlas(locations, modifier = Modifier.shadow(4.dp))
+        if (undisplayedLocations.isNotEmpty()) {
+            Row {
+                Text("+ ${undisplayedLocations.joinToString(", ")}")
+            }
         }
-    )
+    }
 }
 
 @Composable

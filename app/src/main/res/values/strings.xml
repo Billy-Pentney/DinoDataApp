@@ -97,4 +97,41 @@
     <string name="toast_added_favourite">Added to favourites!</string>
     <string name="label_known_species">Known Species</string>
     <string name="badge_species_type">TYPE</string>
+
+    <string name="location_uk_full">United Kingdom</string>
+    <string name="location_uk_short">UK</string>
+    <string name="location_france">France</string>
+    <string name="location_germany">Germany</string>
+    <string name="location_belgium">Belgium</string>
+    <string name="location_switzerland">Switzerland</string>
+    <string name="location_spain">Spain</string>
+    <string name="location_portugal">Portugal</string>
+    <string name="location_romania">Romania</string>
+    <string name="location_russia">Russia</string>
+    <string name="location_mongolia">Mongolia</string>
+    <string name="location_china">China</string>
+    <string name="location_korea">Korea</string>
+    <string name="location_japan">Japan</string>
+    <string name="location_india">India</string>
+    <string name="location_kazakhstan">Kazakhstan</string>
+    <string name="location_australia">Australia</string>
+    <string name="location_madagascar">Madagascar</string>
+    <string name="location_lesotho">Lesotho</string>
+    <string name="location_south_africa">South Africa</string>
+    <string name="location_zimbabwe">Zimbabwe</string>
+    <string name="location_niger">Niger</string>
+    <string name="location_algeria">Algeria</string>
+    <string name="location_morocco">Morocco</string>
+    <string name="location_tanzania">Tanzania</string>
+    <string name="location_tunisia">Tunisia</string>
+    <string name="location_egypt">Egypt</string>
+    <string name="location_argentina">Argentina</string>
+    <string name="location_uruguay">Uruguay</string>
+    <string name="location_brazil">Brazil</string>
+    <string name="location_mexico">Mexico</string>
+    <string name="location_usa_full">United States</string>
+    <string name="location_usa_short">USA</string>
+    <string name="location_canada">Canada</string>
+    <string name="location_antarctica">Antarctica</string>
+
 </resources>
