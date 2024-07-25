@@ -47,7 +47,6 @@ object LocationToAtlasMarker {
         "Spain" to Marker(0.463f, 0.337f, R.string.location_spain),
         "Japan" to Marker(0.835f, 0.355f, R.string.location_japan),
         "Madagascar" to Marker(0.597f, 0.63f, R.string.location_madagascar),
-        "Tanzania" to Marker(0.563f, 0.571f, R.string.location_tanzania),
         "India" to Marker(0.685f, 0.425f, R.string.location_india),
         "Egypt" to Marker(0.548f, 0.411f, R.string.location_egypt),
         "Morocco" to Marker(0.454f, 0.376f, R.string.location_morocco),
@@ -70,7 +69,9 @@ object LocationToAtlasMarker {
         "South Africa" to Marker(0.535f, 0.685f, R.string.location_south_africa),
         "Tunisia" to Marker(0.495f, 0.36f, R.string.location_tunisia),
         "Switzerland" to Marker(0.489f, 0.294f, R.string.location_switzerland),
-        "Zimbabwe" to Marker(0.555f, 0.625f, R.string.location_zimbabwe)
+        "Zimbabwe" to Marker(0.555f, 0.625f, R.string.location_zimbabwe),
+        "Tanzania" to Marker(0.566f, 0.567f, R.string.location_tanzania),
+        "Malawi" to Marker(0.565f, 0.605f, R.string.location_malawi)
     )
 
     fun getPosition(location: String): Marker? {

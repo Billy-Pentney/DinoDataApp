@@ -133,5 +133,6 @@
     <string name="location_usa_short">USA</string>
     <string name="location_canada">Canada</string>
     <string name="location_antarctica">Antarctica</string>
+    <string name="location_malawi">Malawi</string>
 
 </resources>
