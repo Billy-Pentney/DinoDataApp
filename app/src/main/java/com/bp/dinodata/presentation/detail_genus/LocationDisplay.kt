@@ -49,7 +49,7 @@ fun locationAtlas(
     initialZoom: Float = 1f
 ): List<String> {
     val onTapIconColor = remember { Color.Red }
-    val defaultIconSize = remember { 12.dp }
+    val defaultIconSize = remember { 26.dp }
 
     val shape = RoundedCornerShape(8.dp)
     val markerIcon = remember { Icons.Filled.LocationOn }
