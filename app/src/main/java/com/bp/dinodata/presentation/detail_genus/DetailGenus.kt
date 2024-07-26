@@ -32,8 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AccessTimeFilled
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -46,7 +44,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -65,7 +62,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -103,11 +99,11 @@ import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
-import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -180,6 +176,8 @@ fun LabelContentRow(
 @Composable
 fun GenusTitleCardAndControls(
     genus: IGenusWithImages,
+    visibleImageIndex: Int = 0,
+    uiState: ImageIndexControlState,
     onPlayNamePronunciation: () -> Unit,
     modifier: Modifier = Modifier,
     innerPadding: Dp = 8.dp,
@@ -189,12 +187,12 @@ fun GenusTitleCardAndControls(
     setColorPickerDialogVisibility: (Boolean) -> Unit,
     toggleItemAsFavourite: (Boolean) -> Unit,
     controlsExpanded: Boolean = false,
-    showControls: (Boolean) -> Unit
+    showControls: (Boolean) -> Unit,
+    updateVisibleImageIndex: (Int) -> Unit,
 ) {
 //    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
 
-    var imageIndex by remember { mutableIntStateOf(0) }
-    val genusImageUrl = genus.getImageUrl(imageIndex)
+    val genusImageUrl = genus.getImageUrl(visibleImageIndex)
     val totalImages = genus.getNumDistinctImages()
 
     val isFavourite = if (genus is ILocalPrefs) {
@@ -258,8 +256,8 @@ fun GenusTitleCardAndControls(
                         if (totalImages > 1) {
                             Row {
                                 IconButton(
-                                    onClick = { imageIndex-- },
-                                    enabled = imageIndex > 0
+                                    onClick = { updateVisibleImageIndex(-1) },
+                                    enabled = uiState.canDecreaseImageIndex()
                                 ) {
                                     Icon(
                                         Icons.Filled.ChevronLeft,
@@ -267,8 +265,8 @@ fun GenusTitleCardAndControls(
                                     )
                                 }
                                 IconButton(
-                                    onClick = { imageIndex++ },
-                                    enabled = imageIndex < totalImages - 1
+                                    onClick = { updateVisibleImageIndex(1) },
+                                    enabled = uiState.canIncreaseImageIndex()
                                 ) {
                                     Icon(
                                         Icons.Filled.ChevronRight,
@@ -319,16 +317,10 @@ fun GenusTitleCardAndControls(
                                         .alpha(0.7f)
                                         .padding(top = 2.dp)
                                 ) {
-        //                            Icon(
-        //                                Icons.Filled.RecordVoiceOver,
-        //                                null,
-        //                                modifier = Modifier.height(20.dp),
-        //                            )
                                     if (canPlayPronunciation) {
                                         IconButton(
                                             onClick = onPlayNamePronunciation,
                                             modifier = Modifier
-//                                                .padding(bottom = 1.dp)
                                                 .size(24.dp)
                                         ) {
                                             Icon(
@@ -407,16 +399,18 @@ fun GenusDetailScreenContent(
         )
     }
 
-    val genus = uiState.genusData
-    val colorScheme = ThemeConverter.getTheme(uiState.selectedColorName)
+    val genus = uiState.getGenusData()
 
     if (genus == null) {
         LoadingItemsPlaceholder()
     }
     else {
+        val colorName = genus.getSelectedColorName()
+        val colorScheme = ThemeConverter.getTheme(colorName)
+
         if (uiState.colorSelectDialogVisible) {
             ColorPickerDialog(
-                selectedColor = uiState.selectedColorName,
+                selectedColor = colorName,
                 onColorPicked = { onEvent(DetailGenusUiEvent.SelectColor(it)) },
                 onClose = {
                     onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
@@ -433,9 +427,9 @@ fun GenusDetailScreenContent(
             item {
                 GenusTitleCardAndControls(
                     genus,
-                    onPlayNamePronunciation = {
-                        onEvent(DetailGenusUiEvent.PlayNamePronunciation)
-                    },
+                    visibleImageIndex = genus.getPreferredImageIndex(),
+                    uiState = uiState,
+                    onPlayNamePronunciation = { onEvent(DetailGenusUiEvent.PlayNamePronunciation) },
                     modifier = Modifier.height(cardHeight),
                     innerPadding = innerPadding,
                     canPlayPronunciation = uiState.canPlayPronunciationAudio,
@@ -449,6 +443,11 @@ fun GenusDetailScreenContent(
                     controlsExpanded = uiState.preferencesCardExpanded,
                     showControls = {
                         onEvent(DetailGenusUiEvent.SetPreferencesCardExpansion(it))
+                    },
+                    updateVisibleImageIndex = { increment ->
+                        if (increment != 0) {
+                            onEvent(DetailGenusUiEvent.UpdateVisibleImageIndex(increment))
+                        }
                     }
                 )
             }
@@ -833,8 +832,7 @@ fun PreviewGenusDetail() {
 
     val uiState = DetailScreenUiState(
         genusName = acro.getName(),
-        genusData = DetailedGenus(acroWithImages),
-        selectedColorName = "RED"
+        genusData = DataState.Success(DetailedGenus(acroWithImages))
     )
 
     DinoDataTheme(darkTheme = false) {
@@ -895,11 +893,12 @@ fun PreviewGenusDetailDark() {
 
     val uiState = DetailScreenUiState(
         genusName = styraco.getName(),
-        genusData = DetailedGenus(
-            GenusWithImages(styraco, imageMap),
-            LocalPrefs(_isFavourite = false)
+        genusData = DataState.Success(
+            DetailedGenus(
+                GenusWithImages(styraco, imageMap),
+                LocalPrefs(_isFavourite = false)
+            )
         ),
-        selectedColorName = "PINK",
         listOfColors = ThemeConverter.listOfColors,
         colorSelectDialogVisible = false,
         preferencesCardExpanded = true

@@ -32,5 +32,7 @@ class GenusWithPrefs(
     override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()
 
     override fun isUserFavourite(): Boolean = prefs.isUserFavourite()
+    override fun getPreferredImageIndex(): Int = prefs.getPreferredImageIndex()
+
     override fun getSelectedColorName(): String? = prefs.getSelectedColorName()
 }

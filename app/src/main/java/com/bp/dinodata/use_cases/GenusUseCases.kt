@@ -1,16 +1,12 @@
 package com.bp.dinodata.use_cases
 
-import android.util.Log
-import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.GenusWithPrefs
-import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.data.genus.IGenusWithPrefs
-import com.bp.dinodata.data.search.GenusSearch
-import com.bp.dinodata.presentation.list_genus.ISearchBarUiState
-import com.bp.dinodata.presentation.list_genus.ListGenusUiState
+import com.bp.dinodata.data.genus.ILocalPrefs
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
 import kotlinx.coroutines.flow.Flow
@@ -21,8 +17,15 @@ class GenusUseCases(
     private val genusRepository: IGenusRepository,
     private val localPrefRepository: ILocalPreferencesRepository
 ) {
-    fun getGenusByNameFlow(genusName: String): Flow<IGenusWithImages?> {
-        return genusRepository.getGenusWithImagesFlow(genusName)
+    fun getGenusByNameFlow(genusName: String): Flow<DataState<IGenusWithImages>> {
+        return genusRepository.getGenusWithImagesFlow(genusName).map {
+            if (it == null) {
+                DataState.Failed("Null data")
+            }
+            else {
+                DataState.Success(it)
+            }
+        }
     }
 
     fun getGenusLocationsFlow(): Flow<List<String>> {
@@ -57,14 +60,26 @@ class GenusUseCases(
         }
     }
 
-    fun getGenusWithPrefsByLetterFlow(): Flow<IResultsByLetter<IGenusWithPrefs>?> {
+    fun getGenusWithPrefsByLetterFlow(): Flow<DataState<IResultsByLetter<IGenusWithPrefs>>> {
         return getGenusWithPrefsFlow().map {
-            it?.let { ResultsByLetter(it) }
+            if (it != null) {
+                DataState.Success(ResultsByLetter(it))
+            }
+            else {
+                DataState.Failed("no data retrieved")
+            }
         }
     }
 
     suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean) {
         localPrefRepository.updateFavouriteStatus(currentGenusName, favourite)
+    }
+
+    suspend fun updateSelectedImageIndex(
+        genusName: String,
+        newImageIndex: Int
+    ) {
+        localPrefRepository.updateSelectedImageIndex(genusName, newImageIndex)
     }
 }
 

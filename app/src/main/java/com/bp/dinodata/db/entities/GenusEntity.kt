@@ -23,4 +23,7 @@ data class GenusEntity(
 
     @ColumnInfo(name="is_favourite", defaultValue = "0")
     val isFavourite: Boolean = false,
+
+    @ColumnInfo(name="image_index", defaultValue = "0")
+    val imageIndex: Int = 0
 )

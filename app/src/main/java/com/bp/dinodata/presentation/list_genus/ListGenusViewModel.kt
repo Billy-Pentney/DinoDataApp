@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenusWithPrefs
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.LoadState
+import com.bp.dinodata.presentation.map
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.ListGenusScreenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +27,8 @@ class ListGenusViewModel @Inject constructor(
     @set:Inject var listGenusUseCases: ListGenusScreenUseCases
 ): ViewModel() {
 
-    private val _listOfGeneraByLetter: Flow<IResultsByLetter<IGenusWithPrefs>?> = genusUseCases.getGenusWithPrefsByLetterFlow()
+    private val _listOfGeneraByLetter: Flow<DataState<IResultsByLetter<IGenusWithPrefs>>>
+        = genusUseCases.getGenusWithPrefsByLetterFlow()
     private val _locationsFlow: StateFlow<List<String>> = genusUseCases.getGenusLocationsFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     private val _taxaFlow: StateFlow<List<String>> = genusUseCases.getGenusTaxaFlow()
@@ -38,15 +41,13 @@ class ListGenusViewModel @Inject constructor(
 
         viewModelScope.launch {
             _listOfGeneraByLetter.collect {
+                val searchInitial = it.map { data -> data.toList() }
+
                 _uiState.value = _uiState.value.copy(
                     allPageData = it,
                     loadState = LoadState.Loaded,
-                    searchResults = it?.toList()
+                    searchResults = searchInitial
                 )
-
-//                if (_uiState.value.searchBarVisible) {
-//                    applySearchQuery(_uiState.value.)
-//                }
             }
         }
     }

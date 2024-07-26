@@ -20,7 +20,7 @@ import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 interface IFilter<T> {
     /** Returns true if and only if the given item matches this filter. */
     fun acceptsItem(item: T): Boolean
-    fun applyTo(list: Iterable<T>): List<T> {
+    fun<R:T> applyTo(list: Iterable<R>): List<T> {
         return list.filter { acceptsItem(it) }
     }
 }

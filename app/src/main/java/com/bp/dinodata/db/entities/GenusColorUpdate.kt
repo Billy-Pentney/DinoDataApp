@@ -15,3 +15,10 @@ class GenusFavouriteUpdate(
     @ColumnInfo(name = "is_favourite")
     val isFavourite: Boolean = false
 )
+
+class GenusImageIndexUpdate(
+    @ColumnInfo(name = "name")
+    val genusName: String,
+    @ColumnInfo(name = "image_index")
+    val imageIndex: Int = 0
+)

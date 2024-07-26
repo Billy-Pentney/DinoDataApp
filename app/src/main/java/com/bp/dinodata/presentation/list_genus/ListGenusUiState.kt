@@ -1,28 +1,32 @@
 package com.bp.dinodata.presentation.list_genus
 
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.ISearchTerm
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.LoadState
+import com.bp.dinodata.presentation.map
 
 data class ListGenusUiState(
-    private val allPageData: IResultsByLetter<IGenusWithPrefs>? = null,
+    val allPageData: DataState<IResultsByLetter<IGenusWithPrefs>> = DataState.Idle(),
     val loadState: LoadState = LoadState.NotLoading,
-    val searchResults: List<IGenus>? = null,
+    val searchResults: DataState<out List<IGenus>> = DataState.Idle(),
     val searchBarVisible: Boolean = false,
-//    val textFieldValue: TextFieldValue = TextFieldValue(),
     val search: GenusSearch = GenusSearch(),
     val pageSelectionVisible: Boolean = true,
     val selectedPageIndex: Int = 0,
 ): ISearchBarUiState {
-    val keys: List<Char> = allPageData?.getKeys() ?: emptyList()
+    val keys: List<Char> = getData()?.getKeys() ?: emptyList()
 
-    private val allPageDataList = allPageData?.toList() ?: emptyList()
+    fun getData(): IResultsByLetter<IGenusWithPrefs>? {
+        if (allPageData is DataState.Success) {
+            return allPageData.data
+        }
+        return null
+    }
 
     fun applySearch(
         query: String = getQuery(),
@@ -37,16 +41,15 @@ data class ListGenusUiState(
         ).build()
 
         return this.copy(
-//            textFieldValue = textFieldValue.copy(
-//                text = search.getQuery()
-//            ),
             search = search,
-            searchResults = search.applyTo(allPageDataList),
+            searchResults = allPageData.map {
+                search.applyTo(it)
+            },
         )
     }
 
     fun getPageByIndex(index: Int): List<IGenusWithPrefs>? {
-        return allPageData?.getGroupByIndex(index)
+        return getData()?.getGroupByIndex(index)
     }
 
     fun clearSearch(): ListGenusUiState {

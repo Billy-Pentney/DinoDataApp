@@ -8,10 +8,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.genus.DetailedGenus
-import com.bp.dinodata.data.genus.IDetailedGenus
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.LoadState
+import com.bp.dinodata.presentation.map
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,39 +38,34 @@ class DetailGenusViewModel @Inject constructor(
         const val LOG_TAG = "DetailGenusViewModel"
     }
 
-//    private val _loadState: MutableState<LoadState> = mutableStateOf(LoadState.InProgress)
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
 
     // Stores the details for the Genus being shown
-    private var _genusWithImages: Flow<IGenusWithImages?> = genusUseCases.getGenusByNameFlow(currentGenusName)
-    private var _genusPrefs: Flow<ILocalPrefs?> = genusUseCases.getGenusPrefsFlow(currentGenusName)
-    private var _genusDetail: StateFlow<DetailedGenus?> = MutableStateFlow(null)
+    private var _genusWithImages: Flow<DataState<IGenusWithImages>>
+        = genusUseCases.getGenusByNameFlow(currentGenusName)
+    // Store the local preferences (color/favourite.. etc.) for the genus, if they exist
+    private var _genusPrefs: Flow<ILocalPrefs?>
+        = genusUseCases.getGenusPrefsFlow(currentGenusName)
+    // Combined unit for this genus
+    private var _genusDetail: StateFlow<DataState<out DetailedGenus>>
+        = MutableStateFlow(DataState.Idle())
 
     private var _uiState: MutableState<DetailScreenUiState> = mutableStateOf(
-        DetailScreenUiState(currentGenusName, loadState = LoadState.InProgress)
+        DetailScreenUiState(currentGenusName)
     )
 
     init {
 
         _genusDetail = combine(_genusWithImages, _genusPrefs) { genusWithImages, genusPrefs ->
-            genusWithImages?.let {
-                DetailedGenus(genusWithImages, genusPrefs)
+            genusWithImages.map { data ->
+                DetailedGenus(data, genusPrefs)
             }
-        }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+        }.stateIn(viewModelScope, SharingStarted.Lazily, DataState.LoadInProgress())
 
         viewModelScope.launch {
             _genusDetail.collectLatest {
-                val loadState =
-                    if (it != null) {
-                        LoadState.Loaded
-                    } else {
-                        LoadState.Error("no genus detail data!")
-                    }
-
                 _uiState.value = _uiState.value.copy(
-                    genusData = it,
-                    loadState = loadState,
-                    selectedColorName = it?.getSelectedColorName()
+                    genusData = it
                 )
             }
         }
@@ -79,9 +75,6 @@ class DetailGenusViewModel @Inject constructor(
         when (event) {
             DetailGenusUiEvent.PlayNamePronunciation -> playPronunciationFile()
             is DetailGenusUiEvent.SelectColor -> {
-                _uiState.value = _uiState.value.copy(
-                    selectedColorName = event.colorName
-                )
                 viewModelScope.launch {
                     genusUseCases.updateColor(
                         currentGenusName,
@@ -103,6 +96,15 @@ class DetailGenusViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     preferencesCardExpanded = event.expanded
                 )
+            }
+            is DetailGenusUiEvent.UpdateVisibleImageIndex -> {
+                _uiState.value = _uiState.value.tryUpdateImageIndex(event.increment)
+                viewModelScope.launch {
+                    genusUseCases.updateSelectedImageIndex(
+                        currentGenusName,
+                        _uiState.value.getCurrentImageIndex()
+                    )
+                }
             }
         }
     }
@@ -137,15 +139,7 @@ sealed class DetailGenusUiEvent {
     data class SelectColor(val colorName: String?): DetailGenusUiEvent()
     data class ToggleItemFavouriteStatus(val isFavourite: Boolean): DetailGenusUiEvent()
     data class SetPreferencesCardExpansion(val expanded: Boolean): DetailGenusUiEvent()
+
+    data class UpdateVisibleImageIndex(val increment: Int): DetailGenusUiEvent()
 }
 
-data class DetailScreenUiState(
-    val genusName: String,
-    val loadState: LoadState = LoadState.NotLoading,
-    val genusData: IDetailedGenus? = null,
-    val colorSelectDialogVisible: Boolean = false,
-    val canPlayPronunciationAudio: Boolean = true,
-    val preferencesCardExpanded: Boolean = false,
-    val listOfColors: List<String> = emptyList(),
-    val selectedColorName: String? = null
-)

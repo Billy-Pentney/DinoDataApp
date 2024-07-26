@@ -36,4 +36,5 @@ class DetailedGenus(
 
     override fun getSelectedColorName(): String? = _prefs.getSelectedColorName()
     override fun isUserFavourite(): Boolean = _prefs.isUserFavourite()
+    override fun getPreferredImageIndex(): Int = _prefs.getPreferredImageIndex()
 }

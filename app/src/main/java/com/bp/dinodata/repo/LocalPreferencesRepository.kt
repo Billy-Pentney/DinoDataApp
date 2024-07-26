@@ -7,6 +7,7 @@ import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.db.entities.ColorEntity
 import com.bp.dinodata.db.entities.GenusColorUpdate
 import com.bp.dinodata.db.entities.GenusFavouriteUpdate
+import com.bp.dinodata.db.entities.GenusImageIndexUpdate
 import kotlinx.coroutines.flow.Flow
 
 interface ILocalPreferencesRepository {
@@ -18,6 +19,7 @@ interface ILocalPreferencesRepository {
     fun getGenusLocalPrefsFlow(): Flow<Map<String, LocalPrefs>>
     suspend fun addColor(colorName: String)
     suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean)
+    suspend fun updateSelectedImageIndex(genusName: String, newImageIndex: Int)
 }
 
 class LocalPreferencesRepository(
@@ -84,6 +86,12 @@ class LocalPreferencesRepository(
     override suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean) {
         db.genusDao().upsertFavourite(
             GenusFavouriteUpdate(currentGenusName, favourite)
+        )
+    }
+
+    override suspend fun updateSelectedImageIndex(genusName: String, newImageIndex: Int) {
+        db.genusDao().upsertImageIndex(
+            GenusImageIndexUpdate(genusName, newImageIndex)
         )
     }
 }

@@ -79,6 +79,7 @@ import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.ISearchTerm
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
@@ -102,7 +103,6 @@ fun ListGenusScreenContent(
     prefillSearchSuggestion: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
-    val loadState = uiState.loadState
     val searchBarVisible = uiState.searchBarVisible
 
     Scaffold(
@@ -152,34 +152,35 @@ fun ListGenusScreenContent(
         }
     ) { pad ->
 
-        Column (
-            modifier = Modifier.padding(pad)
-        ) {
-            when (loadState) {
-                LoadState.Loaded -> {
-                    ShowHorizontalPagerOfGeneraByLetter(
-                        uiState = uiState,
-                        spacing = spacing,
-                        outerPadding = outerPadding,
-                        navigateToGenus = navigateToGenus,
-                        switchToPageByIndex = switchToPageByIndex,
-                        toggleSearchBarVisibility = toggleSearchBarVisibility,
-                        clearSearchQuery = clearSearchQuery,
-                        updateSearchQuery = updateSearchQuery,
-                        prefillSearchSuggestion = prefillSearchSuggestion,
-                        removeSearchTerm = removeSearchTerm
-                    )
-                }
+        Column (modifier = Modifier.padding(pad)) {
+            Crossfade (uiState.allPageData, label="listCrossfade") {
+                when (it) {
+                    is DataState.Success -> {
+                        ShowHorizontalPagerOfGeneraByLetter(
+                            uiState = uiState,
+                            spacing = spacing,
+                            outerPadding = outerPadding,
+                            navigateToGenus = navigateToGenus,
+                            switchToPageByIndex = switchToPageByIndex,
+                            toggleSearchBarVisibility = toggleSearchBarVisibility,
+                            clearSearchQuery = clearSearchQuery,
+                            updateSearchQuery = updateSearchQuery,
+                            prefillSearchSuggestion = prefillSearchSuggestion,
+                            removeSearchTerm = removeSearchTerm
+                        )
+                    }
 
-                LoadState.InProgress -> {
-                    LoadingItemsPlaceholder()
-                }
+                    is DataState.LoadInProgress -> {
+                        LoadingItemsPlaceholder()
+                    }
 
-                is LoadState.Error -> {
-                    Text("Sorry! An error occurred. Reason: ${loadState.reason}")
-                    MissingDataPlaceholder()
+                    is DataState.Failed -> {
+                        Text("Sorry! An error occurred. Reason: ${it.reason}")
+                        MissingDataPlaceholder()
+                    }
+
+                    else -> {}
                 }
-                else -> {}
             }
         }
     }
@@ -243,7 +244,14 @@ fun SearchPage(
     prefillSearchSuggestion: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
-    val results = uiState.searchResults ?: emptyList()
+    val searchState = uiState.searchResults
+    val searchResults =
+        when (searchState) {
+            is DataState.Success -> searchState.data
+            is DataState.Failed -> emptyList()
+            is DataState.Idle -> emptyList()
+            is DataState.LoadInProgress -> emptyList()
+        }
 
     Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ListGenusSearchBar(
@@ -255,12 +263,12 @@ fun SearchPage(
             uiState = uiState
         )
         DividerTextRow(
-            text = stringResource(R.string.text_showing_X_creatures, results.size),
+            text = stringResource(R.string.text_showing_X_creatures, searchResults.size),
             modifier = Modifier.padding(vertical = 8.dp, horizontal=outerPadding),
             dividerPadding = PaddingValues(horizontal = 8.dp)
         )
         LazyListOfGenera(
-            results,
+            searchResults,
             contentPadding = PaddingValues(start = outerPadding, end = outerPadding, bottom=outerPadding),
             navigateToGenus = navigateToGenus,
             modifier = Modifier.padding(top=outerPadding),
@@ -611,8 +619,8 @@ fun PreviewListGenus() {
     DinoDataTheme (darkTheme = true) {
         ListGenusScreenContent(
             uiState = ListGenusUiState(
-                allPageData = generaGrouped,
-                searchResults = genera,
+                allPageData = DataState.Success(generaGrouped),
+                searchResults = DataState.Success(genera),
                 selectedPageIndex = 5,
                 searchBarVisible = false,
                 search = GenusSearchBuilder(

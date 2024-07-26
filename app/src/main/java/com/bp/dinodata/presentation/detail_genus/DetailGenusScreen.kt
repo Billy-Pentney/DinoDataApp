@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
@@ -18,20 +19,21 @@ import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 fun DetailGenusScreen(
     detailGenusViewModel: DetailGenusViewModel
 ) {
-//    val genusState by detailGenusViewModel.getVisibleGenus().collectAsState()
     val uiState by remember { detailGenusViewModel.getUiState() }
-    val loadState = uiState.loadState
+    val dataState = uiState.genusData
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-
     ) { padding ->
-        Crossfade(targetState = loadState, label = "GenusDetailCrossfade") {
+        Crossfade(
+            targetState = dataState,
+            label = "GenusDetailCrossfade"
+        ) {
             when (it) {
-                LoadState.InProgress -> {
+                is DataState.LoadInProgress -> {
                     Log.d("DetailGenus", "Load in progress. Nothing to show")
                 }
-                LoadState.Loaded -> {
+                is DataState.Success -> {
                     GenusDetailScreenContent(
                         uiState = uiState,
                         modifier = Modifier
@@ -42,11 +44,11 @@ fun DetailGenusScreen(
                         }
                     )
                 }
-                is LoadState.Error -> {
+                is DataState.Failed -> {
                     Log.e("DetailGenusScreen", "An error occurred when fetching the genus data.")
                     MissingDataPlaceholder()
                 }
-                LoadState.NotLoading -> {
+                is DataState.Idle -> {
                     MissingDataPlaceholder()
                 }
             }
