@@ -13,11 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
@@ -26,12 +23,8 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
@@ -56,7 +49,7 @@ fun locationAtlas(
     initialZoom: Float = 1f
 ): List<String> {
     val onTapIconColor = remember { Color.Red }
-    val defaultIconSize = remember { 26.dp }
+    val defaultIconSize = remember { 12.dp }
 
     val shape = RoundedCornerShape(8.dp)
     val markerIcon = remember { Icons.Filled.LocationOn }
@@ -81,16 +74,18 @@ fun locationAtlas(
             contentDescription = "atlas",
             alpha = 0.35f,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxWidth(1f)
+            modifier = Modifier
+                .fillMaxWidth(1f)
+//                .border(2.dp, Color.Yellow)
         )
 
         val iconSize = defaultIconSize / (1+(scale-1)/2)
 
         val iconX = iconSize / 2
-        val iconY = iconSize * 0.75f
+        val iconY = iconSize * 0.9f
 
         for (locationName in locations) {
-            val markerPos = LocationToAtlasMarker.getPosition(locationName)
+            val markerPos = AtlasMarkers.getPosition(locationName)
 
             if (markerPos == null) {
                 undisplayedLocations.add(locationName)
@@ -100,8 +95,8 @@ fun locationAtlas(
             val tooltipState = rememberTooltipState()
 
             // Compute the position of this marker within the map image
-            val xDp = (markerPos.x * sizeDp.first.value).dp - iconX
-            val yDp = (markerPos.y * sizeDp.second.value).dp - iconY
+            val xDp = (markerPos.getX() * sizeDp.first.value).dp - iconX
+            val yDp = (markerPos.getY() * sizeDp.second.value).dp - iconY
 
             // If the tooltip is visible, change the color
             val iconColor =
@@ -109,12 +104,12 @@ fun locationAtlas(
                     onTapIconColor
                 }
                 else {
-                    markerPos.color
+                    markerPos.getMarkerColor()
                 }
 
             // Attempt to retrieve the localised region name (from strings.xml).
             // But if this fails, just use the given name in the Tooltip.
-            val tooltipText = markerPos.textId?.let { stringResource(it) } ?: locationName
+            val tooltipText = markerPos.getTextId()?.let { stringResource(it) } ?: locationName
 
             Box(modifier = Modifier.offset(xDp, yDp)) {
                 // Show a tooltip with this region's name when tapped
@@ -133,6 +128,7 @@ fun locationAtlas(
                                     tooltipState.show(MutatePriority.UserInput)
                                 }
                             }
+//                            .border(1.dp, Color.Red)
                     )
                 }
             }
@@ -150,7 +146,9 @@ fun PreviewLocationAtlas() {
             modifier = Modifier.width(1080.dp)
         ) {
             locationAtlas(
-                locations = LocationToAtlasMarker.getAllKnownKeys().takeLast(5),
+                locations = AtlasMarkers.getKeysForRegion(
+                    AtlasMarkers.EUROPE
+                )
             )
         }
     }
