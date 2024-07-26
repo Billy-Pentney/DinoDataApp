@@ -8,13 +8,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.genus.DetailedGenus
-import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IGenusWithImages
+import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.map
-import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
+import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

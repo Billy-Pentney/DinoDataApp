@@ -70,17 +70,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.genus.GenusBuilder
-import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
-import com.bp.dinodata.data.genus.LocalPrefs
+import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.GenusWithPrefs
+import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
+import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.ISearchTerm
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
@@ -628,7 +627,6 @@ fun PreviewListGenus() {
                     locations = listOf("USA", "canada"),
                     taxa = listOf("abelisauridae", "brachiosauridae")
                 ).build(),
-                loadState = LoadState.Loaded,
             ),
             updateSearchQuery = {},
             clearSearchQuery = {},

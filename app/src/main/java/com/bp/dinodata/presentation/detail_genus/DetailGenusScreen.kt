@@ -11,9 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
-import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 
 @Composable
 fun DetailGenusScreen(

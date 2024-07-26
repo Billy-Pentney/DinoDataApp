@@ -7,12 +7,10 @@ import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.ISearchTerm
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.LoadState
 import com.bp.dinodata.presentation.map
 
 data class ListGenusUiState(
     val allPageData: DataState<IResultsByLetter<IGenusWithPrefs>> = DataState.Idle(),
-    val loadState: LoadState = LoadState.NotLoading,
     val searchResults: DataState<out List<IGenus>> = DataState.Idle(),
     val searchBarVisible: Boolean = false,
     val search: GenusSearch = GenusSearch(),
