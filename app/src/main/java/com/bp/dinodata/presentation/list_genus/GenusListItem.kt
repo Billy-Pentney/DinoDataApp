@@ -20,6 +20,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,7 +63,11 @@ fun GenusListItem(
     onClick: () -> Unit = {},
     height: Dp = 54.dp
 ) {
-    val silhouetteId = convertCreatureTypeToSilhouette(genus.getCreatureType())
+    var silhouetteId by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(genus) {
+        silhouetteId = convertCreatureTypeToSilhouette(genus.getCreatureType())
+    }
 
     val colorTint =
         if (genus is ILocalPrefs) {
@@ -157,14 +167,13 @@ fun GenusListItem(
             }
             silhouetteId?.let {
                 Image(
-                    painter = painterResource(id = silhouetteId),
+                    painter = painterResource(id = it),
                     contentDescription = "creature type",
                     modifier = Modifier
                         .alpha(0.4f)
                         .zIndex(1f)
                         .padding(top = 5.dp)
                         .fillMaxHeight()
-//                        .fillMaxWidth(0.33f)
                         .absoluteOffset(x = 25.dp, y = 0.dp)
                         .clipToBounds(),
                     alignment = Alignment.BottomEnd,

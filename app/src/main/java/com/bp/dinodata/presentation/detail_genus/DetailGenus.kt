@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AccessTimeFilled
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -257,7 +258,7 @@ fun GenusTitleCardAndControls(
                             Row {
                                 IconButton(
                                     onClick = { updateVisibleImageIndex(-1) },
-                                    enabled = uiState.canDecreaseImageIndex()
+                                    enabled = visibleImageIndex > 0
                                 ) {
                                     Icon(
                                         Icons.Filled.ChevronLeft,
@@ -266,7 +267,7 @@ fun GenusTitleCardAndControls(
                                 }
                                 IconButton(
                                     onClick = { updateVisibleImageIndex(1) },
-                                    enabled = uiState.canIncreaseImageIndex()
+                                    enabled = visibleImageIndex < genus.getNumDistinctImages()-1
                                 ) {
                                     Icon(
                                         Icons.Filled.ChevronRight,
@@ -555,7 +556,7 @@ fun UpdateGenusLocalPreferencesButtons(
                         )
                     } else {
                         Icon(
-                            Icons.Filled.Favorite,
+                            Icons.Filled.Add,
                             contentDescription = stringResource(R.string.description_add_to_favourite)
                         )
                         Text(

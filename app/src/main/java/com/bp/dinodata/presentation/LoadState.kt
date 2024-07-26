@@ -17,6 +17,6 @@ fun<T,R> DataState<T>.map(mappingFunc: (T) -> R): DataState<out R> {
         is Failed -> Failed(this.reason)
         is Idle -> Idle()
         is LoadInProgress -> LoadInProgress()
-        is Success -> { Success(mappingFunc(this.data)) }
+        is Success -> Success(mappingFunc(this.data))
     }
 }

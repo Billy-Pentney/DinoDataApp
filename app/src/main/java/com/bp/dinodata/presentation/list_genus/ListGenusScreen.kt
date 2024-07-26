@@ -40,6 +40,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -47,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -85,6 +87,7 @@ import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 
@@ -150,36 +153,33 @@ fun ListGenusScreenContent(
             )
         }
     ) { pad ->
-
-        Column (modifier = Modifier.padding(pad)) {
-            Crossfade (uiState.allPageData, label="listCrossfade") {
-                when (it) {
-                    is DataState.Success -> {
-                        ShowHorizontalPagerOfGeneraByLetter(
-                            uiState = uiState,
-                            spacing = spacing,
-                            outerPadding = outerPadding,
-                            navigateToGenus = navigateToGenus,
-                            switchToPageByIndex = switchToPageByIndex,
-                            toggleSearchBarVisibility = toggleSearchBarVisibility,
-                            clearSearchQuery = clearSearchQuery,
-                            updateSearchQuery = updateSearchQuery,
-                            prefillSearchSuggestion = prefillSearchSuggestion,
-                            removeSearchTerm = removeSearchTerm
-                        )
-                    }
-
-                    is DataState.LoadInProgress -> {
-                        LoadingItemsPlaceholder()
-                    }
-
-                    is DataState.Failed -> {
-                        Text("Sorry! An error occurred. Reason: ${it.reason}")
-                        MissingDataPlaceholder()
-                    }
-
-                    else -> {}
+        Crossfade (uiState.allPageData, label="listCrossfade", modifier = Modifier.padding(pad)) {
+            when (it) {
+                is DataState.Success -> {
+                    ShowHorizontalPagerOfGeneraByLetter(
+                        uiState = uiState,
+                        spacing = spacing,
+                        outerPadding = outerPadding,
+                        navigateToGenus = navigateToGenus,
+                        switchToPageByIndex = switchToPageByIndex,
+                        toggleSearchBarVisibility = toggleSearchBarVisibility,
+                        clearSearchQuery = clearSearchQuery,
+                        updateSearchQuery = updateSearchQuery,
+                        prefillSearchSuggestion = prefillSearchSuggestion,
+                        removeSearchTerm = removeSearchTerm
+                    )
                 }
+
+                is DataState.LoadInProgress -> {
+                    LoadingItemsPlaceholder()
+                }
+
+                is DataState.Failed -> {
+                    Text("Sorry! An error occurred. Reason: ${it.reason}")
+                    MissingDataPlaceholder()
+                }
+
+                else -> {}
             }
         }
     }
@@ -198,36 +198,35 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     prefillSearchSuggestion: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+    val searchVisible = uiState.searchBarVisible
+
+    Crossfade(
+        targetState = searchVisible,
+        label="search_or_page_select"
     ) {
-        Crossfade(
-            targetState = uiState.searchBarVisible,
-            label="search_or_page_select",
-            modifier = Modifier.padding(top=outerPadding)
-        ) {
-            if (it) {
-                SearchPage(
-                    uiState,
-                    toggleSearchBarVisibility,
-                    updateSearchQuery,
-                    clearSearchQuery,
-                    navigateToGenus,
-                    outerPadding,
-                    prefillSearchSuggestion,
-                    removeSearchTerm
-                )
-            }
-            else {
-                HorizontalPagerOfGenera(
-                    uiState,
-                    switchToPageByIndex,
-                    outerPadding,
-                    spacing,
-                    navigateToGenus
-                )
-            }
+        if (it) {
+            SearchPage(
+                uiState,
+                toggleSearchBarVisibility,
+                updateSearchQuery,
+                clearSearchQuery,
+                navigateToGenus,
+                outerPadding,
+                prefillSearchSuggestion,
+                removeSearchTerm,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            HorizontalPagerOfGenera(
+                currentPageIndex = uiState.selectedPageIndex,
+                pageKeys = uiState.keys.map { char -> char.toString() },
+                getPageByIndex = { page -> uiState.getPageByIndex(page) ?: emptyList() },
+                switchToPageByIndex = switchToPageByIndex,
+                outerPadding = outerPadding,
+                spacing = spacing,
+                navigateToGenus = navigateToGenus,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
@@ -241,31 +240,40 @@ fun SearchPage(
     navigateToGenus: (String) -> Unit,
     outerPadding: Dp,
     prefillSearchSuggestion: () -> Unit,
-    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
+    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val searchState = uiState.searchResults
     val searchResults =
-        when (searchState) {
+        when (val searchState = uiState.searchResults) {
             is DataState.Success -> searchState.data
             is DataState.Failed -> emptyList()
             is DataState.Idle -> emptyList()
             is DataState.LoadInProgress -> emptyList()
         }
 
-    Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        ListGenusSearchBar(
-            updateSearchQuery = updateSearchQuery,
-            clearSearchQuery = clearSearchQuery,
-            prefillSearchSuggestion = prefillSearchSuggestion,
-            modifier = Modifier.padding(horizontal = outerPadding),
-            onSearchTermTap = removeSearchTerm,
-            uiState = uiState
-        )
-        DividerTextRow(
-            text = stringResource(R.string.text_showing_X_creatures, searchResults.size),
-            modifier = Modifier.padding(vertical = 8.dp, horizontal=outerPadding),
-            dividerPadding = PaddingValues(horizontal = 8.dp)
-        )
+    Column (
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface (
+            shadowElevation = 4.dp
+        ) {
+            Column {
+                ListGenusSearchBar(
+                    updateSearchQuery = updateSearchQuery,
+                    clearSearchQuery = clearSearchQuery,
+                    prefillSearchSuggestion = prefillSearchSuggestion,
+                    modifier = Modifier.padding(horizontal = outerPadding),
+                    onSearchTermTap = removeSearchTerm,
+                    uiState = uiState
+                )
+                DividerTextRow(
+                    text = stringResource(R.string.text_showing_X_creatures, searchResults.size),
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = outerPadding),
+                    dividerPadding = PaddingValues(horizontal = 8.dp)
+                )
+            }
+        }
         LazyListOfGenera(
             searchResults,
             contentPadding = PaddingValues(start = outerPadding, end = outerPadding, bottom=outerPadding),
@@ -278,44 +286,43 @@ fun SearchPage(
 
 @Composable
 fun HorizontalPagerOfGenera(
-    uiState: ListGenusUiState,
+    currentPageIndex: Int = 0,
+    getPageByIndex: (Int) -> List<IGenus>,
+    pageKeys: List<String>,
     switchToPageByIndex: (Int) -> Unit,
     outerPadding: Dp,
     spacing: Dp,
-    navigateToGenus: (String) -> Unit
+    navigateToGenus: (String) -> Unit,
+    modifier: Modifier
 ) {
+    var selectedPageIndex by remember { mutableIntStateOf(0) }
 
-    val keys = uiState.keys
-    val selectedPageIndex = uiState.selectedPageIndex
-
-    if (keys.isEmpty()) {
+    if (pageKeys.isEmpty()) {
         NoDataPlaceholder()
         return
     }
 
-    val keyIndices = remember { keys.indices.toList() }
-
+    val keyIndices = remember { pageKeys.indices.toList() }
     val coroutineScope = rememberCoroutineScope()
+    val horizontalPagerState = rememberPagerState { pageKeys.size }
 
-    val horizontalPagerState = rememberPagerState { keys.size }
-
-    LaunchedEffect(horizontalPagerState) {
-        // Collect from the a snapshotFlow reading the currentPage
-        snapshotFlow { horizontalPagerState.currentPage }.collect { page ->
-            // Do something with each page change, for example:
-            // viewModel.sendPageSelectedEvent(page)
-            Log.d("ListGenusScreenPager", "Page changed to $page")
-            switchToPageByIndex(page)
-        }
-    }
-
-    LaunchedEffect(selectedPageIndex) {
+    LaunchedEffect(currentPageIndex) {
+        selectedPageIndex = currentPageIndex
         if (selectedPageIndex != horizontalPagerState.currentPage) {
             coroutineScope.launch {
                 horizontalPagerState.scrollToPage(selectedPageIndex)
             }
         }
     }
+
+    LaunchedEffect(null) {
+        // Collect from the a snapshotFlow reading the currentPage
+        snapshotFlow { horizontalPagerState.currentPage }.collectLatest { page ->
+            Log.d("ListGenusScreenPager", "Page changed to $page")
+            switchToPageByIndex(page)
+        }
+    }
+
 
     // Monitoring nested scroll within the page
     var persistScrollY by remember { mutableFloatStateOf(0f) }
@@ -330,7 +337,10 @@ fun HorizontalPagerOfGenera(
         }
     }
 
-    Column {
+    Column (
+        modifier = modifier.padding(top=outerPadding),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         val rowScrollState = rememberLazyListState()
 
         // Show the keys as a scrollable row.
@@ -345,7 +355,7 @@ fun HorizontalPagerOfGenera(
             state = rowScrollState
         ) {
             items(keyIndices) { index ->
-                val key = keys[index].toString()
+                val key = pageKeys[index]
                 val isSelected = (selectedPageIndex == index)
                 val color =
                     if (isSelected) MaterialTheme.colorScheme.surface
@@ -379,10 +389,11 @@ fun HorizontalPagerOfGenera(
                 }
             }
         }
+
         // Horizontal Scroll Indicator
-        if (keys.size > 3) {
-            val startPosition = selectedPageIndex.toFloat() / keys.size
-            val endPosition = selectedPageIndex.toFloat() / keys.size
+        if (pageKeys.size > 3) {
+            val startPosition = selectedPageIndex.toFloat() / pageKeys.size
+            val endPosition = selectedPageIndex.toFloat() / pageKeys.size
             Row (
                 modifier= Modifier
                     .fillMaxWidth()
@@ -421,11 +432,11 @@ fun HorizontalPagerOfGenera(
             pageNestedScrollConnection = nestedScrollConnection,
             modifier = Modifier.fillMaxHeight()
         ) { pageNum ->
-            val generaList = uiState.getPageByIndex(pageNum) ?: emptyList()
-            ListOfGenera(
-                generaList,
+            val data = remember { getPageByIndex(pageNum) }
+            LazyListOfGenera(
+                data,
                 verticalSpacing = spacing,
-                outerPadding = outerPadding,
+//                outerPadding = outerPadding,
                 navigateToGenus = navigateToGenus,
                 modifier = Modifier.nestedScroll(nestedScrollConnection)
             )

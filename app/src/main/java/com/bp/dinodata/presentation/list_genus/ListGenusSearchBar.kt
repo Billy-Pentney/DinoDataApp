@@ -67,14 +67,14 @@ fun ListGenusSearchBar(
     val focusManager = LocalFocusManager.current
 
     val textFieldColors = TextFieldDefaults.colors(
-        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+        focusedContainerColor = MaterialTheme.colorScheme.background,
         focusedTextColor = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
         disabledTextColor = MaterialTheme.colorScheme.onSurface,
         cursorColor = MaterialTheme.colorScheme.onSurface,
         focusedIndicatorColor = MaterialTheme.colorScheme.onSurface,
-        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface
+        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface,
     )
 
     val interactionSource = remember { MutableInteractionSource() }
