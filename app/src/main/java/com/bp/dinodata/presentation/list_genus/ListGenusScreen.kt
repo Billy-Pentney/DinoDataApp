@@ -494,10 +494,11 @@ fun LazyListOfGenera(
         contentPadding = contentPadding,
         modifier = modifier.fillMaxWidth()
     ) {
-        items(generaList ?: emptyList()) { genus ->
+        items(generaList ?: emptyList(), key = { it.getName() }) { genus ->
             GenusListItem(
                 genus = genus,
-                onClick = { navigateToGenus(genus.getName()) }
+                onClick = { navigateToGenus(genus.getName()) },
+                modifier = Modifier.animateItem()
             )
         }
         if (showCreatureCountAtBottom) {

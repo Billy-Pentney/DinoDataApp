@@ -22,7 +22,12 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TooltipScope
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -70,10 +75,11 @@ fun DietIconThin(
     cornerRadius: Dp = 8.dp,
     modifier: Modifier = Modifier
 ) {
-    val img = convertDietToImageResId(diet)
+    var img by remember { mutableIntStateOf(convertDietToImageResId(diet)) }
+    var iconBrush by remember { mutableStateOf(convertDietToLinearBrush(diet)) }
+
     val dietName = diet?.toString() ?: Diet.Unknown.toString()
 
-    val iconBrush = convertDietToLinearBrush(diet)
     val iconShape = RoundedCornerShape(cornerRadius)
     val innerShape = RoundedCornerShape(cornerRadius - 1.dp)
 

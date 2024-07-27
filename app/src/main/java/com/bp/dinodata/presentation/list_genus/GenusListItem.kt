@@ -1,5 +1,8 @@
 package com.bp.dinodata.presentation.list_genus
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,11 +64,12 @@ import com.bp.dinodata.theme.colorFavourite700
 fun GenusListItem(
     genus: IDisplayInList,
     onClick: () -> Unit = {},
-    height: Dp = 54.dp
+    height: Dp = 54.dp,
+    modifier: Modifier = Modifier
 ) {
     var silhouetteId by remember { mutableStateOf<Int?>(null) }
 
-    LaunchedEffect(genus) {
+    LaunchedEffect(null) {
         silhouetteId = convertCreatureTypeToSilhouette(genus.getCreatureType())
     }
 
@@ -94,18 +98,18 @@ fun GenusListItem(
         )
 
     val shape = RoundedCornerShape(8.dp)
-    val modifier: Modifier =
+    val cardModifier: Modifier =
         if (isFavourite) {
-            Modifier.border(2.dp, colorFavourite700, shape)
+            modifier.border(2.dp, colorFavourite700, shape)
         }
         else {
-            Modifier
+            modifier
         }
     
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = shape,
-        modifier = Modifier
+        modifier = cardModifier
             .fillMaxWidth()
             .height(height),
         onClick = onClick
@@ -165,9 +169,13 @@ fun GenusListItem(
                     )
                 }
             }
-            silhouetteId?.let {
+            AnimatedVisibility(
+                silhouetteId != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 Image(
-                    painter = painterResource(id = it),
+                    painter = painterResource(id = silhouetteId!!),
                     contentDescription = "creature type",
                     modifier = Modifier
                         .alpha(0.4f)
