@@ -27,6 +27,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.ISpecies
 import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.theme.DinoDataTheme
+import com.bp.dinodata.theme.typeSpecies500
 
 @Composable
 fun SpeciesListItem(
@@ -65,21 +66,21 @@ fun SpeciesListItem(
                     speciesNomial.toString(),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     fontStyle = FontStyle.Italic,
-                    modifier = Modifier.fillMaxWidth(0.8f)
+                    modifier = Modifier.weight(1f)
                 )
                 if (species.isTypeSpecies()) {
                     Text(
                         stringResource(R.string.badge_species_type),
                         fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = Color.White,
                         fontWeight = FontWeight.Bold,
                         maxLines=1,
                         modifier = Modifier
                             .shadow(4.dp)
                             .background(
-                                color = MaterialTheme.colorScheme.secondary,
+                                color = typeSpecies500,
                                 shape = RoundedCornerShape(4.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 0.dp)

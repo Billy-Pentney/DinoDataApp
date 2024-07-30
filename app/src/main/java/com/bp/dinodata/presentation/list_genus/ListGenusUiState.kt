@@ -16,54 +16,77 @@ data class ListGenusUiState(
     val search: GenusSearch = GenusSearch(),
     val pageSelectionVisible: Boolean = true,
     val selectedPageIndex: Int = 0,
+    val currentQueryText: String = "",
+    private val locations: List<String> = emptyList(),
+    private val taxa: List<String> = emptyList()
 ): ISearchBarUiState {
-    val keys: List<Char> = getData()?.getKeys() ?: emptyList()
+    val letterKeys: List<Char> = getDataOrNull()?.getKeys() ?: emptyList()
 
-    fun getData(): IResultsByLetter<IGenusWithPrefs>? {
+    fun getDataOrNull(): IResultsByLetter<IGenusWithPrefs>? {
         if (allPageData is DataState.Success) {
             return allPageData.data
         }
         return null
     }
 
-    fun applySearch(
-        query: String = getQuery(),
-        locations: List<String> = emptyList(),
-        taxa: List<String> = emptyList()
+    /**
+     * Constructs a search from the current query text-box content and any existing terms.
+     * @param locations A list of all known locations, to be used in the predictive auto-fill.
+     * @param taxa A list of all known taxa (e.g. clades/families), to be used in the predictive auto-fill.
+     * @return A new UiState with the constructed search and the resulting search items.
+     */
+    fun makeNewSearch(
+        locations: List<String> = this.locations,
+        taxa: List<String> = this.taxa
     ): ListGenusUiState {
         val search = GenusSearchBuilder(
-            query = query,
+            query = this.currentQueryText,
             terms = search.getCompletedTerms(),
             locations = locations,
             taxa = taxa,
         ).build()
 
         return this.copy(
+            // Update the visible query text with the last term in the search object.
+            // This removes completed terms (i.e. those followed by a space).
+            currentQueryText = search.getQuery(),
             search = search,
-            searchResults = allPageData.map {
-                search.applyTo(it)
-            },
+            searchResults = DataState.Idle()
+        )
+    }
+
+    override fun runSearch(): ListGenusUiState {
+        return this.copy (
+            searchResults = allPageData.map { search.applyTo(it) }
         )
     }
 
     fun getPageByIndex(index: Int): List<IGenusWithPrefs>? {
-        return getData()?.getGroupByIndex(index)
+        return getDataOrNull()?.getGroupByIndex(index)
     }
 
     fun clearSearch(): ListGenusUiState {
         return this.copy(
+            currentQueryText = "",
             search = GenusSearch(search.getCompletedTerms()),
+            searchResults = allPageData.map { it.toList() }
         )
     }
 
     override fun getFullQuery(): String = search.getFullQuery()
-    override fun getQuery(): String = search.getQuery()
+    override fun getQuery(): String = currentQueryText
     override fun isQueryEmpty(): Boolean = search.isQueryEmpty()
     override fun getSuggestedSuffixes(): List<String> = search.getSuggestedSuffixes()
     override fun getAutofillSuggestion(): String = search.getAutofillSuggestion()
     override fun hasSuggestions(): Boolean = search.getSuggestedSuffixes().isNotEmpty()
     override fun getCompletedSearchTerms(): List<ISearchTerm<in IGenus>> =
         search.getCompletedTerms()
+
+    override fun updateSearchQuery(newQuery: String): ListGenusUiState {
+        return this.copy(
+            currentQueryText = newQuery
+        )
+    }
 
     override fun removeSearchTerm(term: ISearchTerm<in IGenus>): ListGenusUiState {
         val newSearch = search.removeTerm(term)

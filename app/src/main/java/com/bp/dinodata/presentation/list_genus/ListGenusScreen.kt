@@ -32,6 +32,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -103,6 +104,7 @@ fun ListGenusScreenContent(
     clearSearchQuery: () -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
     prefillSearchSuggestion: () -> Unit,
+    runSearch: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
     val searchBarVisible = uiState.searchBarVisible
@@ -143,7 +145,7 @@ fun ListGenusScreenContent(
                             }
                             else {
                                 Icon(
-                                    Icons.Filled.SearchOff,
+                                    Icons.Filled.KeyboardArrowUp,
                                     contentDescription = stringResource(R.string.desc_close_search)
                                 )
                             }
@@ -166,7 +168,8 @@ fun ListGenusScreenContent(
                         clearSearchQuery = clearSearchQuery,
                         updateSearchQuery = updateSearchQuery,
                         prefillSearchSuggestion = prefillSearchSuggestion,
-                        removeSearchTerm = removeSearchTerm
+                        removeSearchTerm = removeSearchTerm,
+                        runSearch = runSearch
                     )
                 }
 
@@ -193,6 +196,7 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     navigateToGenus: (String) -> Unit,
     switchToPageByIndex: (Int) -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
+    runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
     prefillSearchSuggestion: () -> Unit,
@@ -206,20 +210,21 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     ) {
         if (it) {
             SearchPage(
-                uiState,
-                toggleSearchBarVisibility,
-                updateSearchQuery,
-                clearSearchQuery,
-                navigateToGenus,
-                outerPadding,
-                prefillSearchSuggestion,
-                removeSearchTerm,
+                uiState = uiState,
+                toggleSearchBarVisibility = toggleSearchBarVisibility,
+                updateSearchQuery = updateSearchQuery,
+                runSearch = runSearch,
+                clearSearchQuery = clearSearchQuery,
+                navigateToGenus = navigateToGenus,
+                outerPadding = outerPadding,
+                prefillSearchSuggestion = prefillSearchSuggestion,
+                removeSearchTerm = removeSearchTerm,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
             HorizontalPagerOfGenera(
                 currentPageIndex = uiState.selectedPageIndex,
-                pageKeys = uiState.keys.map { char -> char.toString() },
+                pageKeys = uiState.letterKeys.map { char -> char.toString() },
                 getPageByIndex = { page -> uiState.getPageByIndex(page) ?: emptyList() },
                 switchToPageByIndex = switchToPageByIndex,
                 outerPadding = outerPadding,
@@ -236,6 +241,7 @@ fun SearchPage(
     uiState: ListGenusUiState,
     toggleSearchBarVisibility: (Boolean) -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
+    runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
     navigateToGenus: (String) -> Unit,
     outerPadding: Dp,
@@ -251,6 +257,9 @@ fun SearchPage(
             is DataState.LoadInProgress -> emptyList()
         }
 
+    val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
     Column (
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -265,7 +274,14 @@ fun SearchPage(
                     prefillSearchSuggestion = prefillSearchSuggestion,
                     modifier = Modifier.padding(horizontal = outerPadding),
                     onSearchTermTap = removeSearchTerm,
-                    uiState = uiState
+                    uiState = uiState,
+                    runSearch = {
+                        runSearch()
+                        // On Search, scroll to the top
+                        coroutineScope.launch {
+                            scrollState.scrollToItem(0,0)
+                        }
+                    }
                 )
                 DividerTextRow(
                     text = stringResource(R.string.text_showing_X_creatures, searchResults.size),
@@ -279,7 +295,8 @@ fun SearchPage(
             contentPadding = PaddingValues(start = outerPadding, end = outerPadding, bottom=outerPadding),
             navigateToGenus = navigateToGenus,
             modifier = Modifier.padding(top=outerPadding),
-            showCreatureCountAtBottom = false
+            showCreatureCountAtBottom = false,
+            scrollState = scrollState
         )
     }
 }
@@ -555,6 +572,9 @@ fun ListGenusScreen(
         },
         removeSearchTerm = { term ->
             listGenusViewModel.onEvent(ListGenusPageUiEvent.RemoveSearchTerm(term))
+        },
+        runSearch = {
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.RunSearch)
         }
     )
 }
@@ -644,7 +664,8 @@ fun PreviewListGenus() {
             clearSearchQuery = {},
             toggleSearchBarVisibility = {},
             prefillSearchSuggestion = {},
-            removeSearchTerm = {}
+            removeSearchTerm = {},
+            runSearch = {}
         )
     }
 }

@@ -8,8 +8,11 @@ sealed class ListGenusPageUiEvent {
 
     data class UpdateSearchQuery(
         val state: TextFieldValue,
-        val capSensitive: Boolean = false
+        val capSensitive: Boolean = false,
+        val alsoRunSearch: Boolean = false
     ) : ListGenusPageUiEvent()
+
+    data object RunSearch: ListGenusPageUiEvent()
 
     data class ToggleSearchBar(val visible: Boolean) : ListGenusPageUiEvent()
     data object ClearSearchQueryOrHideBar : ListGenusPageUiEvent()

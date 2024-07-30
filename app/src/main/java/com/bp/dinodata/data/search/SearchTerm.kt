@@ -54,7 +54,7 @@ class BasicSearchTerm(
     override fun generateSearchSuggestions(): List<String> {
         return DataParsing.getLongestPotentialSuffixes(query, searchKeywords)
     }
-    override fun toString(): String = "Contains: $query"
+    override fun toString(): String = "Contains text: \"$query\""
     override fun toOriginalText(): String = query
     override fun getIconId(): ImageVector? {
         return null
@@ -243,8 +243,11 @@ class FavouriteSearchTerm(
 
     override fun toOriginalText(): String = originalText
     override fun getIconId(): ImageVector = Icons.Filled.Star
-}
 
+    override fun toString(): String {
+        return "IsFavourite: $acceptFavourites"
+    }
+}
 
 
 enum class SearchTermType {

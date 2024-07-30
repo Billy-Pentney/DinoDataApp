@@ -1,8 +1,13 @@
 package com.bp.dinodata.presentation.list_genus
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,10 +23,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -31,15 +38,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,10 +66,56 @@ import com.bp.dinodata.data.search.LocationSearchTerm
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.MyGrey600
 
+
+@Composable
+fun<T> SearchTermInputChip(
+    term: ISearchTerm<T>,
+    onSearchTermTap: () -> Unit
+) {
+    InputChip(
+        selected = false,
+        onClick = onSearchTermTap,
+        label = {
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxHeight().padding(vertical=4.dp)
+            ){
+                Text(
+                    term.toString(),
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    maxLines = 2
+                )
+            }
+        },
+        leadingIcon = {
+            val icon = term.getIconId()
+            icon?.let {
+                Icon(
+                    icon, null,
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier.padding(vertical=8.dp)
+                )
+            }
+        },
+        trailingIcon = {
+            Icon(
+                Icons.Filled.Close,
+                "remove term"
+            )
+        },
+        colors = InputChipDefaults.inputChipColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            labelColor = MaterialTheme.colorScheme.onSecondary
+        )
+    )
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListGenusSearchBar(
     updateSearchQuery: (TextFieldValue) -> Unit,
+    runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
     prefillSearchSuggestion: () -> Unit,
     modifier: Modifier = Modifier,
@@ -85,61 +143,81 @@ fun ListGenusSearchBar(
     )
 
     var searchSuggestion by remember { mutableStateOf("") }
-    var imeAction by remember { mutableStateOf(ImeAction.Search) }
+    var keyboardOptions by remember { mutableStateOf(
+        KeyboardOptions.Default.copy(
+            autoCorrectEnabled = false,
+            capitalization = KeyboardCapitalization.None,
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        )
+    ) }
 
     var acceptSuggestionAsQuery by remember { mutableStateOf(false) }
-    var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
+    var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
-    SideEffect {
-        textFieldValue = textFieldValue.copy(
-            text = uiState.getQuery()
-        )
-        if (uiState.hasSuggestions())
-            imeAction = ImeAction.Next
+    val currQuery = uiState.getQuery()
+    var canAutofill = uiState.hasSuggestions()
+    val searchTerms = uiState.getCompletedSearchTerms()
+
+    if (currQuery.isEmpty() && searchTerms.isEmpty()) {
+        searchSuggestion = "start typing for suggestions..."
+        canAutofill = false
+    }
+
+//    keyboardOptions = keyboardOptions.copy(
+        // This dynamic imeAction causes the keyboard to die
+//        if (uiState.hasSuggestions()) {
+//            ImeAction.Next
+//        }
+//        else {
+//            ImeAction.Search
+//        }
+//    )
+
+    LaunchedEffect(uiState) {
+        textFieldValue = textFieldValue.copy(text = currQuery)
         searchSuggestion = uiState.getAutofillSuggestion()
     }
 
     LaunchedEffect(acceptSuggestionAsQuery) {
         if (acceptSuggestionAsQuery) {
             acceptSuggestionAsQuery = false
-            textFieldValue = textFieldValue.copy(
-                text = searchSuggestion,
-                selection = TextRange(searchSuggestion.length)
-            )
-            prefillSearchSuggestion()
+            if (canAutofill) {
+                textFieldValue = textFieldValue.copy(
+                    text = searchSuggestion,
+                    selection = TextRange(searchSuggestion.length)
+                )
+                prefillSearchSuggestion()
+            }
         }
     }
 
     Column (modifier = Modifier.fillMaxWidth()) {
-        val searchTerms = uiState.getCompletedSearchTerms()
+
+//        Crossfade (searchTerms.isNotEmpty(), label="crossfadeSearchBarLabel") {
+//        AnimatedVisibility (
+//            searchTerms.isNotEmpty(),
+//            modifier = Modifier.padding(horizontal = 16.dp)
+//        ) {
+//            Text("Active Filters",
+//                color = MaterialTheme.colorScheme.onSurface,
+//                fontWeight = FontWeight.SemiBold,
+//                fontStyle = FontStyle.Italic
+//            )
+//        }
+//        }
+
         LazyColumn (
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 16.dp)
+                .animateContentSize()
         ) {
             items(searchTerms) { term ->
-                InputChip(
-                    selected = false,
-                    onClick = { onSearchTermTap(term) },
-                    label = {
-                        Text(
-                            term.toString(),
-                            modifier = Modifier.padding(vertical=4.dp),
-                            maxLines = 2
-                        )
-                    },
-                    leadingIcon = {
-                        val icon = term.getIconId()
-                        icon?.let {
-                            Icon(icon, "null")
-                        }
-                    },
-                    trailingIcon = {
-                       Icon(
-                           Icons.Filled.Close, "remove term"
-                       )
-                    }
+                SearchTermInputChip(
+                    term,
+                    onSearchTermTap = { onSearchTermTap(term) }
                 )
             }
         }
@@ -151,6 +229,7 @@ fun ListGenusSearchBar(
                     onValueChange = {
                         textFieldValue = it
                         updateSearchQuery(it)
+                        runSearch()
                     },
                     decorationBox = { innerTextField ->
                         TextFieldDefaults.DecorationBox(
@@ -204,13 +283,23 @@ fun ListGenusSearchBar(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = true,
                     keyboardActions = KeyboardActions(
-                        onSearch = { focusManager.clearFocus() },
-                        onNext = { acceptSuggestionAsQuery = true }
+                        onSearch = {
+                            updateSearchQuery(textFieldValue)
+                            runSearch()
+                            focusManager.clearFocus()
+                        },
+                        onNext = {
+                            if (uiState.hasSuggestions()) {
+                                acceptSuggestionAsQuery = true
+                            }
+                            else {
+                                updateSearchQuery(textFieldValue)
+                                runSearch()
+                                focusManager.clearFocus()
+                            }
+                        }
                     ),
-                    keyboardOptions = KeyboardOptions(
-                        autoCorrect = false,
-                        imeAction = imeAction
-                    ),
+                    keyboardOptions = keyboardOptions,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
                 )
             },
@@ -235,25 +324,28 @@ fun ListGenusSearchBar(
 @Composable
 fun PreviewSearchBar() {
     DinoDataTheme {
-        ListGenusSearchBar(
-            updateSearchQuery = {},
-            clearSearchQuery = { },
-            prefillSearchSuggestion = { },
-            onSearchTermTap = {},
-            uiState = ListGenusUiState(
-                searchBarVisible = true,
-                search = GenusSearchBuilder(
-                    "xyz",
-                    taxa = listOf("abelisauridae", "brachiosauridae"),
-                    terms = listOf<ISearchTerm<in IGenus>>(
-                        BasicSearchTerm("abc"),
-                        DietSearchTerm("diet:carnivore"),
-                        LocationSearchTerm(
-                            "location:canada+united_kingdom+usa+brazil"
+        Surface {
+            ListGenusSearchBar(
+                updateSearchQuery = {},
+                clearSearchQuery = { },
+                prefillSearchSuggestion = { },
+                onSearchTermTap = {},
+                uiState = ListGenusUiState(
+                    searchBarVisible = true,
+                    search = GenusSearchBuilder(
+                        "xyz",
+                        taxa = listOf("abelisauridae", "brachiosauridae"),
+                        terms = listOf<ISearchTerm<in IGenus>>(
+                            BasicSearchTerm("abc"),
+                            DietSearchTerm("diet:carnivore"),
+                            LocationSearchTerm(
+                                "location:canada+united_kingdom+usa+brazil"
+                            )
                         )
-                    )
-                ).build()
+                    ).build()
+                ),
+                runSearch = {}
             )
-        )
+        }
     }
 }

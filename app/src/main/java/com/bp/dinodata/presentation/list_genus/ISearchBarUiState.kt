@@ -7,9 +7,9 @@ import com.bp.dinodata.data.search.IDataQuery
 import com.bp.dinodata.data.search.ISearchTerm
 
 interface ISearchBarUiState: IDataQuery {
-//    fun getCursorPosition(): TextRange
-//    fun getSearchBarTextFieldValue(): TextFieldValue
     fun hasSuggestions(): Boolean
-    fun removeSearchTerm(term: ISearchTerm<in IGenus>): ListGenusUiState
+    fun removeSearchTerm(term: ISearchTerm<in IGenus>): ISearchBarUiState
     fun getCompletedSearchTerms(): List<ISearchTerm<in IGenus>>
+    fun updateSearchQuery(newQuery: String): ISearchBarUiState
+    fun runSearch(): ISearchBarUiState
 }
