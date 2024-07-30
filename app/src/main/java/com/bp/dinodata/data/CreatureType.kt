@@ -24,5 +24,8 @@ enum class CreatureType {
     Euornithopod,
     Tyrannosaurid,
     Therizinosaurid,
+    Iguanodontid,
+    Crocodilian,
+    Serpent
 }
 

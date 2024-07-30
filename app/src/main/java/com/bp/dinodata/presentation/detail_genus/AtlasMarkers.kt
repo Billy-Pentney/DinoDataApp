@@ -74,7 +74,11 @@ object AtlasMarkers {
         "Mexico" to Marker(0.206f, 0.438f, R.string.location_mexico),
         "Argentina" to Marker(0.313f, 0.685f, R.string.location_argentina),
         "Brazil" to Marker(0.348f, 0.59f, R.string.location_brazil),
-        "Uruguay" to Marker(0.325f, 0.695f, R.string.location_uruguay)
+        "Uruguay" to Marker(0.325f, 0.695f, R.string.location_uruguay),
+        "Venezuela" to Marker(0.29f, 0.507f, R.string.location_venezuela),
+        "Colombia" to Marker(0.279f, 0.525f, R.string.location_colombia),
+        "Chile" to Marker(0.29f, 0.69f, R.string.location_chile),
+        "Peru" to Marker(0.28f, 0.6f, R.string.location_peru)
     )
 
     private val EUROPEAN_MAP = RegionMap(
@@ -96,12 +100,13 @@ object AtlasMarkers {
 
     private val AFRICA_MAP = RegionMap(
         AFRICA,
+        "Cameroon" to Marker(0.505f, 0.52f, R.string.location_cameroon),
         "Egypt" to Marker(0.548f, 0.411f, R.string.location_egypt),
         "Morocco" to Marker(0.454f, 0.382f, R.string.location_morocco),
-        "Algeria" to Marker(0.485f, 0.411f, R.string.location_algeria),
-        "Niger" to Marker(0.507f, 0.452f, R.string.location_niger),
+        "Algeria" to Marker(0.48f, 0.411f, R.string.location_algeria),
+        "Niger" to Marker(0.5f, 0.462f, R.string.location_niger),
         "South Africa" to Marker(0.535f, 0.685f, R.string.location_south_africa),
-        "Madagascar" to Marker(0.597f, 0.63f, R.string.location_madagascar),
+        "Madagascar" to Marker(0.599f, 0.64f, R.string.location_madagascar),
         "Tunisia" to Marker(0.495f, 0.375f, R.string.location_tunisia),
         "Zimbabwe" to Marker(0.555f, 0.625f, R.string.location_zimbabwe),
         "Malawi" to Marker(0.565f, 0.605f, R.string.location_malawi),

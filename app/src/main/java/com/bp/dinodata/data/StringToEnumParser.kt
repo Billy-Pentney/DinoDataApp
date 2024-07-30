@@ -17,6 +17,8 @@ object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
         "carcharodontosaurid" to CreatureType.Carcharodontosaurid,
         "dromaeosaurid" to CreatureType.Dromaeosaurid,
         "euornithopod" to CreatureType.Euornithopod,
+        "crocodilian" to CreatureType.Crocodilian,
+        "iguanodont" to CreatureType.Iguanodontid,
         "hadrosaur" to CreatureType.Hadrosaur,
         "pachycephalosaurid" to CreatureType.Pachycephalosaur,
         "pterosaur" to CreatureType.Pterosaur,
@@ -31,6 +33,7 @@ object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
         "plesiosaur" to CreatureType.Plesiosaur,
         "therizinosaurid" to CreatureType.Therizinosaurid,
         "synapsid" to CreatureType.Synapsid,
+        "serpent" to CreatureType.Serpent,
         "other" to CreatureType.Other
     )
 

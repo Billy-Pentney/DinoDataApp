@@ -3,7 +3,16 @@ package com.bp.dinodata.presentation.utils
 import com.bp.dinodata.R
 import com.bp.dinodata.data.CreatureType
 
-fun convertCreatureTypeToSilhouette(type: CreatureType): Int? {
+enum class SilhouetteQuality {
+    x64, x128, x256
+}
+
+
+
+fun convertCreatureTypeToSilhouette(
+    type: CreatureType,
+//    quality: SilhouetteQuality = SilhouetteQuality.x64
+): Int? {
     return when (type) {
         CreatureType.Ceratopsian        -> R.drawable.type_ceratopsian
         CreatureType.LargeTheropod      -> R.drawable.type_carcharo
@@ -24,6 +33,9 @@ fun convertCreatureTypeToSilhouette(type: CreatureType): Int? {
         CreatureType.Tyrannosaurid      -> R.drawable.type_tyrannosaur
         CreatureType.MediumTheropod     -> R.drawable.type_allosaur
         CreatureType.Plesiosaur         -> R.drawable.type_plesiosaur
+        CreatureType.Iguanodontid       -> R.drawable.type_iguanodontid
+        CreatureType.Crocodilian        -> R.drawable.type_crocodilian
+        CreatureType.Serpent            -> R.drawable.type_serpent
         //        CreatureType.Euornithopod       -> TODO()
         //        CreatureType.Aquatic -> TODO()
         //        CreatureType.Cenezoic -> TODO()

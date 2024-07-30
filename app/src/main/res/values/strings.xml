@@ -349,6 +349,10 @@
     <string name="location_south_africa">South Africa</string>
     <string name="location_zambia">Zambia</string>
     <string name="location_zimbabwe">Zimbabwe</string>
+    <string name="action_pinch_map_to_zoom">pinch map to zoom</string>
+    <string name="type_iguanodontid">Iguanodontid</string>
+    <string name="type_crocodilian">Crocodilian</string>
+    <string name="type_serpent">Serpent</string>
 
 
 </resources>

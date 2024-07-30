@@ -613,12 +613,7 @@ fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
                 )
             }
         )
-        val undisplayedLocations = locationAtlas(locations, modifier = Modifier.shadow(4.dp))
-        if (undisplayedLocations.isNotEmpty()) {
-            Row {
-                Text("+ ${undisplayedLocations.joinToString(", ")}")
-            }
-        }
+        LocationAtlas(locations, modifier = Modifier.shadow(4.dp))
     }
 }
 
