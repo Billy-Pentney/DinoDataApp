@@ -10,6 +10,7 @@ import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.flow.Flow
@@ -188,39 +189,81 @@ class GenusRepository @Inject constructor(
         genusName: String,
         onFailure: () -> Unit = {}
     ): Flow<IGenus?> = flow {
+        // If we already have this genus data in the map, load it
         if (genusName in generaByName.keys) {
             emit(generaByName[genusName])
+            return@flow
         }
 
-        if (hasNetConnectivity) {
-            val snapshot = genusCollection
-                .document(genusName)
-                .get()
-                .await()
-
-            val genusBuilder = snapshot?.data?.let { GenusBuilder.fromDict(it) }
-
-            if (genusBuilder != null) {
-                val genus = genusBuilder.build()
-                emit(genus)
-            } else {
-                Log.d(TAG, "Unable to construct data object for genus $genusName.")
-                onFailure()
-            }
-        }
-        else {
+        // If no device network connection found, instantly fail
+        if (!hasNetConnectivity) {
             Log.d(TAG, "Cannot retrieve genus data. No network connection")
+            onFailure()
+            return@flow
+        }
+
+        val job = genusCollection
+            .document(genusName)
+            .get()
+
+        var snapshot: DocumentSnapshot? = null
+
+        try {
+            snapshot = job.await()
+        }
+        catch(ex: FirebaseFirestoreException) {
+            Log.e(TAG, "Failed to retrieve genera", ex)
+
+        }
+
+        if (snapshot == null) {
+            Log.e(TAG, "Null snapshot received!")
+            onFailure()
+            emit(null)
+            return@flow
+        }
+
+        Log.d(TAG, "Successfully got result from Firebase!")
+        val genusBuilder = snapshot.data?.let { GenusBuilder.fromDict(it) }
+
+        if (genusBuilder != null) {
+            val genus = genusBuilder.build()
+            emit(genus)
+        } else {
+            Log.d(TAG, "Unable to construct data object for genus $genusName.")
+            onFailure()
         }
     }
 
     private fun getGenusImagesFlow(genusName: String): Flow<Map<String, MultiImageUrlData>?> = flow {
-        val snapshot = genusImageCollection
+
+        if (!hasNetConnectivity) {
+            emit(null)
+            return@flow
+        }
+
+        val job = genusImageCollection
             .document(genusName)
             .get()
-            .await()
 
-        val imageDataMap = mapToImageUrlDTOs(snapshot?.data)
-        emit(imageDataMap)
+        var snapshot: DocumentSnapshot? = null
+
+        try {
+            snapshot = job.await()
+        }
+        catch (ex: FirebaseFirestoreException) {
+            Log.e(TAG, "Unable to fetch images flow")
+            emit(null)
+        }
+
+        if (snapshot != null) {
+            val imageDataMap = mapToImageUrlDTOs(snapshot.data)
+            emit(imageDataMap)
+        }
+        else {
+            Log.d(TAG, "Received null snapshot when fetching genus images")
+            emit(null)
+        }
     }
 
     override fun getGenusWithImagesFlow(genusName: String): Flow<IGenusWithImages?> {
