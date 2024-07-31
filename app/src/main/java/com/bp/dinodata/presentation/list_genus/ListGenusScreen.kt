@@ -59,11 +59,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -90,6 +92,7 @@ import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -165,13 +168,12 @@ fun ListGenusScreenContent(
                         outerPadding = outerPadding,
                         navigateToGenus = navigateToGenus,
                         switchToPageByIndex = switchToPageByIndex,
-                        toggleSearchBarVisibility = toggleSearchBarVisibility,
+                        runSearch = runSearch,
                         clearSearchQuery = clearSearchQuery,
                         updateSearchQuery = updateSearchQuery,
-                        prefillSearchSuggestion = prefillSearchSuggestion,
-                        removeSearchTerm = removeSearchTerm,
                         updateScrollState = updateScrollState,
-                        runSearch = runSearch
+                        prefillSearchSuggestion = prefillSearchSuggestion,
+                        removeSearchTerm = removeSearchTerm
                     )
                 }
 
@@ -197,7 +199,6 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     outerPadding: Dp,
     navigateToGenus: (String) -> Unit,
     switchToPageByIndex: (Int) -> Unit,
-    toggleSearchBarVisibility: (Boolean) -> Unit,
     runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
@@ -317,6 +318,128 @@ fun SearchPage(
     }
 }
 
+
+@Composable
+fun PageSelectorRow(
+    pageKeys: List<String>,
+    outerPadding: Dp,
+    selectedPageIndex: Int,
+    switchToPageByIndex: (Int) -> Unit
+) {
+    val rowScrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // When the page index updates, scroll the indicator automatically
+    LaunchedEffect(selectedPageIndex) {
+        coroutineScope.launch {
+            val firstPosition = max(0, selectedPageIndex - 4)
+            rowScrollState.animateScrollToItem(firstPosition)
+        }
+    }
+
+    val keyIndices = remember { pageKeys.indices.toList() }
+
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onBackground = MaterialTheme.colorScheme.onBackground
+
+    val selectedTextStyle = remember {
+        TextStyle.Default.copy(
+            color = onSurface,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+    val unselectedTextStyle = remember {
+        TextStyle.Default.copy(
+            color = onBackground,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal
+        )
+    }
+
+    // Show the keys as a scrollable row.
+    // Each letter can be tapped to jump to that page specifically.
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = outerPadding),
+        horizontalArrangement = Arrangement.spacedBy(
+            4.dp, Alignment.CenterHorizontally
+        ),
+        verticalAlignment = Alignment.CenterVertically,
+        state = rowScrollState
+    ) {
+        items(keyIndices) { index ->
+            val key = pageKeys[index]
+            val isSelected = (selectedPageIndex == index)
+
+            val boxModifier =
+                if (isSelected) {
+                    Modifier
+                        .height(IntrinsicSize.Min)
+                        .aspectRatio(0.8f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(color = MaterialTheme.colorScheme.surface)
+                } else {
+                    Modifier
+                        .height(IntrinsicSize.Min)
+                        .aspectRatio(0.5f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(color = MaterialTheme.colorScheme.background)
+                }
+
+            val textStyle =
+                if (isSelected) selectedTextStyle
+                else unselectedTextStyle
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = boxModifier
+                    .clickable(onClick = { switchToPageByIndex(index) })
+            ) {
+                Text(
+                    key,
+                    style = textStyle,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 10.dp)
+                        .alpha(if (isSelected) 1f else 0.75f),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+
+    // Horizontal Scroll Indicator
+    if (pageKeys.size > 3) {
+        val startPosition = selectedPageIndex.toFloat() / pageKeys.size
+        val endPosition = selectedPageIndex.toFloat() / pageKeys.size
+        Row (
+            modifier= Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            if (startPosition > 0){
+                Spacer(Modifier.weight(startPosition))
+            }
+            Box(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .animateContentSize()
+                    .alpha(0.3f)
+                    .padding(horizontal = outerPadding)
+                    .background(MaterialTheme.colorScheme.onBackground)
+                    .clip(RoundedCornerShape(4.dp))
+                    .weight(0.2f)
+                    .height(2.dp)
+            )
+            if (endPosition < 1){
+                Spacer(Modifier.weight(1-endPosition))
+            }
+        }
+    }
+}
+
 @Composable
 fun HorizontalPagerOfGenera(
     uiState: ListGenusUiState,
@@ -330,7 +453,6 @@ fun HorizontalPagerOfGenera(
     modifier: Modifier
 ) {
     val currentPageIndex = uiState.selectedPageIndex
-
     var selectedPageIndex by remember { mutableIntStateOf(0) }
 
     if (pageKeys.isEmpty()) {
@@ -338,7 +460,6 @@ fun HorizontalPagerOfGenera(
         return
     }
 
-    val keyIndices = remember { pageKeys.indices.toList() }
     val coroutineScope = rememberCoroutineScope()
     val horizontalPagerState = rememberPagerState { pageKeys.size }
 
@@ -377,84 +498,12 @@ fun HorizontalPagerOfGenera(
         modifier = modifier.padding(top=outerPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val rowScrollState = rememberLazyListState()
-
-        // Show the keys as a scrollable row.
-        // Each letter can be tapped to jump to that page specifically.
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = outerPadding),
-            horizontalArrangement = Arrangement.spacedBy(
-                4.dp, Alignment.CenterHorizontally
-            ),
-            verticalAlignment = Alignment.CenterVertically,
-            state = rowScrollState
-        ) {
-            items(keyIndices) { index ->
-                val key = pageKeys[index]
-                val isSelected = (selectedPageIndex == index)
-                val color =
-                    if (isSelected) MaterialTheme.colorScheme.surface
-                    else MaterialTheme.colorScheme.background
-
-                val textColor = 
-                    if (isSelected) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onBackground
-
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .aspectRatio(if (isSelected) 0.8f else 0.5f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(color = color)
-                        .clickable(onClick = { switchToPageByIndex(index) })
-
-                ) {
-                    Text(
-                        key,
-                        fontSize = if (isSelected) 24.sp else 16.sp,
-                        color = textColor,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 10.dp)
-                            .alpha(if (isSelected) 1f else 0.75f),
-                        textAlign = TextAlign.Center,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-
-        // Horizontal Scroll Indicator
-        if (pageKeys.size > 3) {
-            val startPosition = selectedPageIndex.toFloat() / pageKeys.size
-            val endPosition = selectedPageIndex.toFloat() / pageKeys.size
-            Row (
-                modifier= Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                if (startPosition > 0){
-                    Spacer(Modifier.weight(startPosition))
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .animateContentSize()
-                        .alpha(0.3f)
-                        .padding(horizontal = outerPadding)
-                        .background(MaterialTheme.colorScheme.onBackground)
-                        .clip(RoundedCornerShape(4.dp))
-                        .weight(0.2f)
-                        .height(2.dp)
-                )
-                if (endPosition < 1){
-                    Spacer(Modifier.weight(1-endPosition))
-                }
-            }
-        }
+        PageSelectorRow(
+            pageKeys = pageKeys,
+            outerPadding = outerPadding,
+            switchToPageByIndex = switchToPageByIndex,
+            selectedPageIndex = selectedPageIndex
+        )
 
         HorizontalPager(
             state = horizontalPagerState,
@@ -468,9 +517,8 @@ fun HorizontalPagerOfGenera(
             pageNestedScrollConnection = nestedScrollConnection,
             modifier = Modifier.fillMaxHeight()
         ) { pageNum ->
-            val data = remember { getPageByIndex(pageNum) }
             LazyListOfGenera(
-                data,
+                getPageByIndex(pageNum),
                 verticalSpacing = spacing,
 //                outerPadding = outerPadding,
                 navigateToGenus = navigateToGenus,
@@ -518,6 +566,10 @@ fun ListOfGenera(
         Spacer(Modifier.height(40.dp))
     }
 }
+
+
+
+
 
 @Composable
 fun LazyListOfGenera(
