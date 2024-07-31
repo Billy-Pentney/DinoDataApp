@@ -172,8 +172,8 @@ fun PreviewLocationAtlas() {
         ) {
             LocationAtlas(
                 locations = AtlasMarkers.getKeysForRegion(
-                    AtlasMarkers.AMERICA
-                ) + "X" + "Y"
+                    AtlasMarkers.ASIA
+                )
             )
         }
     }

@@ -92,16 +92,22 @@ object AtlasMarkers {
         "Portugal" to Marker(0.452f, 0.339f, R.string.location_portugal),
         "Russia" to Marker(0.6f, 0.24f, R.string.location_russia),
         "Romania" to Marker(0.541f, 0.308f, R.string.location_romania),
+        "Italy" to Marker(0.51f, 0.333f, R.string.location_italy),
+        "Greece" to Marker(0.535f, 0.35f, R.string.location_greece),
+        "Albania" to Marker(0.529f, 0.34f, R.string.location_albania),
         // SCANDINAVIA
         "Norway" to Marker(0.49f, 0.22f, R.string.location_norway),
         "Sweden" to Marker(0.51f, 0.24f, R.string.location_sweden),
         "Greenland" to Marker(0.36f, 0.15f, R.string.location_greenland),
+        "Austria" to Marker(0.512f, 0.307f, R.string.location_austria),
+        "Hungary" to Marker(0.526f, 0.311f, R.string.location_hungary),
     )
 
     private val AFRICA_MAP = RegionMap(
         AFRICA,
         "Cameroon" to Marker(0.505f, 0.52f, R.string.location_cameroon),
-        "Egypt" to Marker(0.548f, 0.411f, R.string.location_egypt),
+        "Egypt" to Marker(0.548f, 0.408f, R.string.location_egypt),
+        "Libya" to Marker(0.515f, 0.407f, R.string.location_libya),
         "Morocco" to Marker(0.454f, 0.382f, R.string.location_morocco),
         "Algeria" to Marker(0.48f, 0.411f, R.string.location_algeria),
         "Niger" to Marker(0.5f, 0.462f, R.string.location_niger),
@@ -111,7 +117,8 @@ object AtlasMarkers {
         "Zimbabwe" to Marker(0.555f, 0.625f, R.string.location_zimbabwe),
         "Malawi" to Marker(0.565f, 0.605f, R.string.location_malawi),
         "Lesotho" to Marker(0.548f, 0.677f, R.string.location_lesotho),
-        "Tanzania" to Marker(0.566f, 0.567f, R.string.location_tanzania)
+        "Tanzania" to Marker(0.566f, 0.567f, R.string.location_tanzania),
+        "Western Sahara" to Marker(0.438f, 0.425f, R.string.location_western_sahara)
     )
 
     private val ASIA_MAP = RegionMap(
@@ -119,11 +126,14 @@ object AtlasMarkers {
         "Mongolia" to Marker(0.75f, 0.3f, R.string.location_mongolia),
         "Kazakhstan" to Marker(0.67f, 0.29f, R.string.location_kazakhstan),
         "Uzbekistan" to Marker(0.64f, 0.33f, R.string.location_uzbekistan),
+        "Pakistan" to Marker(0.665f, 0.4f, R.string.location_pakistan),
         "India" to Marker(0.685f, 0.435f, R.string.location_india),
         "Laos" to Marker(0.745f, 0.44f, R.string.location_laos),
+        "Jordan" to Marker(0.573f, 0.385f, R.string.location_jordan),
         "China" to Marker(0.74f, 0.384f, R.string.location_china),
         "Korea" to Marker(0.81f, 0.36f, R.string.location_korea),
-        "Japan" to Marker(0.835f, 0.365f, R.string.location_japan)
+        "Japan" to Marker(0.835f, 0.365f, R.string.location_japan),
+        "Thailand" to Marker(0.743f, 0.47f, R.string.location_thailand)
     )
 
 
