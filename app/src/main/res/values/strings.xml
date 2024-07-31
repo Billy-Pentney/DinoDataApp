@@ -43,8 +43,19 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+
+    <string name="label_creature_type">Creature Type</string>
+    <string name="label_meaning">Meaning</string>
+    <string name="label_diet">Diet</string>
+    <string name="label_length">Length</string>
+    <string name="label_weight">Weight</string>
+    <string name="label_time_period">Time Period</string>
+    <string name="label_years_lived">Years Lived</string>
+    <string name="label_taxonomy">Taxonomy</string>
+
     <string name="placeholder_unknown_period">Unknown Period</string>
     <string name="title_creature_list">Creature List</string>
+
     <string name="type_large_theropod">Large Theropod</string>
     <string name="type_small_theropod">Small Theropod</string>
     <string name="type_ceratopsian">Ceratopsian</string>
@@ -57,24 +68,11 @@
     <string name="type_cenezoic">Cenezoic</string>
     <string name="type_spinosaur">Spinosaurid</string>
     <string name="type_other">Other</string>
-    <string name="label_creature_type">Creature Type</string>
-    <string name="label_meaning">Meaning</string>
-    <string name="label_diet">Diet</string>
-    <string name="label_length">Length</string>
-    <string name="label_weight">Weight</string>
-    <string name="label_time_period">Time Period</string>
-    <string name="label_years_lived">Years Lived</string>
-    <string name="label_taxonomy">Taxonomy</string>
     <string name="type_ankylosaur">Ankylosaur</string>
     <string name="type_pterosaur">Pterosaur</string>
     <string name="type_synapsid">Synapsid</string>
     <string name="type_ornithomimid">Ornithomimid</string>
     <string name="type_pachycephalosaur">Pachycephalosaur</string>
-    <string name="desc_close_search">Close Search Bar</string>
-    <string name="desc_show_search">show search bar</string>
-    <string name="search_box_hint">e.g. \"Triceratops\"</string>
-    <string name="text_showing_X_creatures">Showing %1$s creature(s)</string>
-    <string name="info_loading_placeholder">loading…</string>
     <string name="type_dromaeosaurid">Dromaeosaurid</string>
     <string name="type_carcharodontosaurid">Carcharodontosaurid</string>
     <string name="type_abelisaurid">Abelisaurid</string>
@@ -83,6 +81,15 @@
     <string name="type_medium_theropod">Medium Theropod</string>
     <string name="type_plesiosaur">Plesiosaur</string>
     <string name="type_therizinosaurid">Therizinosaurid</string>
+    <string name="type_iguanodontian">Iguanodontian</string>
+    <string name="type_crocodilian">Crocodilian</string>
+    <string name="type_serpent">Serpent</string>
+
+    <string name="desc_close_search">Close Search Bar</string>
+    <string name="desc_show_search">show search bar</string>
+    <string name="search_box_hint">e.g. \"Triceratops\"</string>
+    <string name="text_showing_X_creatures">Showing %1$s creature(s)</string>
+    <string name="info_loading_placeholder">loading…</string>
     <string name="label_locations">Locations</string>
     <string name="desc_select_this_color">select this color</string>
     <string name="text_color_none">NONE</string>
@@ -350,9 +357,6 @@
     <string name="location_zambia">Zambia</string>
     <string name="location_zimbabwe">Zimbabwe</string>
     <string name="action_pinch_map_to_zoom">pinch map to zoom</string>
-    <string name="type_iguanodontid">Iguanodontid</string>
-    <string name="type_crocodilian">Crocodilian</string>
-    <string name="type_serpent">Serpent</string>
 
 
 </resources>
