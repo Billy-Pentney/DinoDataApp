@@ -17,6 +17,8 @@ data class ListGenusUiState(
     val pageSelectionVisible: Boolean = true,
     val selectedPageIndex: Int = 0,
     val currentQueryText: String = "",
+    val firstVisibleItem: Int = 0,
+    val firstVisibleItemOffset: Int = 0,
     private val locations: List<String> = emptyList(),
     private val taxa: List<String> = emptyList()
 ): ISearchBarUiState {
@@ -57,7 +59,9 @@ data class ListGenusUiState(
 
     override fun runSearch(): ListGenusUiState {
         return this.copy (
-            searchResults = allPageData.map { search.applyTo(it) }
+            searchResults = allPageData.map { search.applyTo(it) },
+            firstVisibleItem = 0,
+            firstVisibleItemOffset = 0
         )
     }
 

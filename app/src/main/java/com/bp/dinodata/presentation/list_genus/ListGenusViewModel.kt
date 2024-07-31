@@ -93,8 +93,13 @@ class ListGenusViewModel @Inject constructor(
                         locations = _locationsFlow.value,
                         taxa = _taxaFlow.value
                     )
-
                 runSearch()
+            }
+            is ListGenusPageUiEvent.UpdateScrollState -> {
+                _uiState.value = _uiState.value.copy(
+                    firstVisibleItem = event.state.firstVisibleItemIndex,
+                    firstVisibleItemOffset = event.state.firstVisibleItemScrollOffset
+                )
             }
         }
     }

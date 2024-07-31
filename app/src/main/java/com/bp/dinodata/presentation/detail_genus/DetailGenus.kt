@@ -177,10 +177,10 @@ fun LabelContentRow(
 @Composable
 fun GenusTitleCardAndControls(
     genus: IGenusWithImages,
-    visibleImageIndex: Int = 0,
     uiState: ImageIndexControlState,
     onPlayNamePronunciation: () -> Unit,
     modifier: Modifier = Modifier,
+    visibleImageIndex: Int = 0,
     innerPadding: Dp = 8.dp,
     paddingValues: PaddingValues = PaddingValues(),
     canPlayPronunciation: Boolean,

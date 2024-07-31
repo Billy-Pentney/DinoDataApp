@@ -34,7 +34,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +44,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -102,6 +102,7 @@ fun ListGenusScreenContent(
     switchToPageByIndex: (Int) -> Unit = {},
     updateSearchQuery: (TextFieldValue) -> Unit,
     clearSearchQuery: () -> Unit,
+    updateScrollState: (LazyListState) -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
     prefillSearchSuggestion: () -> Unit,
     runSearch: () -> Unit,
@@ -169,6 +170,7 @@ fun ListGenusScreenContent(
                         updateSearchQuery = updateSearchQuery,
                         prefillSearchSuggestion = prefillSearchSuggestion,
                         removeSearchTerm = removeSearchTerm,
+                        updateScrollState = updateScrollState,
                         runSearch = runSearch
                     )
                 }
@@ -199,10 +201,15 @@ fun ShowHorizontalPagerOfGeneraByLetter(
     runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
+    updateScrollState: (LazyListState) -> Unit,
     prefillSearchSuggestion: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
 ) {
     val searchVisible = uiState.searchBarVisible
+
+    // These are the keys which identify the page of elements to show.
+    // Currently, this is the letters A-Z
+    val pagerKeys = uiState.letterKeys.map { char -> char.toString() }
 
     Crossfade(
         targetState = searchVisible,
@@ -211,26 +218,27 @@ fun ShowHorizontalPagerOfGeneraByLetter(
         if (it) {
             SearchPage(
                 uiState = uiState,
-                toggleSearchBarVisibility = toggleSearchBarVisibility,
                 updateSearchQuery = updateSearchQuery,
                 runSearch = runSearch,
                 clearSearchQuery = clearSearchQuery,
                 navigateToGenus = navigateToGenus,
                 outerPadding = outerPadding,
                 prefillSearchSuggestion = prefillSearchSuggestion,
+                updateScrollState = updateScrollState,
                 removeSearchTerm = removeSearchTerm,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
             HorizontalPagerOfGenera(
-                currentPageIndex = uiState.selectedPageIndex,
-                pageKeys = uiState.letterKeys.map { char -> char.toString() },
+                uiState = uiState,
+                pageKeys = pagerKeys,
                 getPageByIndex = { page -> uiState.getPageByIndex(page) ?: emptyList() },
                 switchToPageByIndex = switchToPageByIndex,
                 outerPadding = outerPadding,
                 spacing = spacing,
                 navigateToGenus = navigateToGenus,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                updateScrollState = updateScrollState
             )
         }
     }
@@ -239,13 +247,13 @@ fun ShowHorizontalPagerOfGeneraByLetter(
 @Composable
 fun SearchPage(
     uiState: ListGenusUiState,
-    toggleSearchBarVisibility: (Boolean) -> Unit,
     updateSearchQuery: (TextFieldValue) -> Unit,
     runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
     navigateToGenus: (String) -> Unit,
     outerPadding: Dp,
     prefillSearchSuggestion: () -> Unit,
+    updateScrollState: (LazyListState) -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -257,8 +265,23 @@ fun SearchPage(
             is DataState.LoadInProgress -> emptyList()
         }
 
-    val scrollState = rememberLazyListState()
+    val scrollState = rememberLazyListState(
+        initialFirstVisibleItemIndex = uiState.firstVisibleItem,
+        initialFirstVisibleItemScrollOffset = uiState.firstVisibleItemOffset
+    )
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(uiState) {
+        coroutineScope.launch {
+            scrollState.scrollToItem(uiState.firstVisibleItem, uiState.firstVisibleItemOffset)
+        }
+    }
+
+    DisposableEffect(key1 = null) {
+        onDispose {
+            updateScrollState(scrollState)
+        }
+    }
 
     Column (
         modifier = modifier,
@@ -275,13 +298,7 @@ fun SearchPage(
                     modifier = Modifier.padding(horizontal = outerPadding),
                     onSearchTermTap = removeSearchTerm,
                     uiState = uiState,
-                    runSearch = {
-                        runSearch()
-                        // On Search, scroll to the top
-                        coroutineScope.launch {
-                            scrollState.scrollToItem(0,0)
-                        }
-                    }
+                    runSearch = runSearch
                 )
                 DividerTextRow(
                     text = stringResource(R.string.text_showing_X_creatures, searchResults.size),
@@ -292,9 +309,8 @@ fun SearchPage(
         }
         LazyListOfGenera(
             searchResults,
-            contentPadding = PaddingValues(start = outerPadding, end = outerPadding, bottom=outerPadding),
+            contentPadding = PaddingValues(outerPadding),
             navigateToGenus = navigateToGenus,
-            modifier = Modifier.padding(top=outerPadding),
             showCreatureCountAtBottom = false,
             scrollState = scrollState
         )
@@ -303,15 +319,18 @@ fun SearchPage(
 
 @Composable
 fun HorizontalPagerOfGenera(
-    currentPageIndex: Int = 0,
+    uiState: ListGenusUiState,
     getPageByIndex: (Int) -> List<IGenus>,
     pageKeys: List<String>,
     switchToPageByIndex: (Int) -> Unit,
     outerPadding: Dp,
     spacing: Dp,
     navigateToGenus: (String) -> Unit,
+    updateScrollState: (LazyListState) -> Unit,
     modifier: Modifier
 ) {
+    val currentPageIndex = uiState.selectedPageIndex
+
     var selectedPageIndex by remember { mutableIntStateOf(0) }
 
     if (pageKeys.isEmpty()) {
@@ -455,7 +474,12 @@ fun HorizontalPagerOfGenera(
                 verticalSpacing = spacing,
 //                outerPadding = outerPadding,
                 navigateToGenus = navigateToGenus,
-                modifier = Modifier.nestedScroll(nestedScrollConnection)
+                modifier = Modifier.nestedScroll(nestedScrollConnection),
+                scrollState = rememberLazyListState(
+                    initialFirstVisibleItemIndex = uiState.firstVisibleItem,
+                    initialFirstVisibleItemScrollOffset = uiState.firstVisibleItemOffset
+                ),
+                updateScrollState = updateScrollState
             )
         }
     }
@@ -468,9 +492,10 @@ fun ListOfGenera(
     navigateToGenus: (String) -> Unit,
     modifier: Modifier = Modifier,
     verticalSpacing: Dp = 8.dp,
-    scrollState: ScrollState = rememberScrollState()
+    scrollState: ScrollState = rememberScrollState(),
 ) {
     val numElements = generaList?.size ?: 0
+
     Column(
         verticalArrangement = Arrangement.spacedBy(verticalSpacing),
         modifier = modifier
@@ -502,9 +527,20 @@ fun LazyListOfGenera(
     contentPadding: PaddingValues = PaddingValues(),
     verticalSpacing: Dp = 8.dp,
     scrollState: LazyListState = rememberLazyListState(),
+    updateScrollState: ((LazyListState) -> Unit)? = null,
     showCreatureCountAtBottom: Boolean = true
 ) {
+    if (updateScrollState != null) {
+        DisposableEffect(key1 = null) {
+            onDispose {
+                updateScrollState(scrollState)
+            }
+        }
+    }
+
     val numElements = generaList?.size ?: 0
+
+
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(verticalSpacing),
         state = scrollState,
@@ -575,6 +611,9 @@ fun ListGenusScreen(
         },
         runSearch = {
             listGenusViewModel.onEvent(ListGenusPageUiEvent.RunSearch)
+        },
+        updateScrollState = {
+            listGenusViewModel.onEvent(ListGenusPageUiEvent.UpdateScrollState(it))
         }
     )
 }
@@ -665,7 +704,8 @@ fun PreviewListGenus() {
             toggleSearchBarVisibility = {},
             prefillSearchSuggestion = {},
             removeSearchTerm = {},
-            runSearch = {}
+            runSearch = {},
+            updateScrollState = {}
         )
     }
 }
