@@ -6,13 +6,16 @@ import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 
-interface IDetailedGenus: IGenusWithImages, ILocalPrefs
+interface IDetailedGenus: IGenusWithImages, ILocalPrefs {
+    fun getLocalPrefs(): ILocalPrefs
+}
 
 class DetailedGenus(
     private val genus: IGenusWithImages,
     prefs: ILocalPrefs? = null
 ): IDetailedGenus {
     private val _prefs = prefs ?: LocalPrefs()
+    override fun getLocalPrefs(): ILocalPrefs = _prefs
 
     override fun getTaxonomy(): String = genus.getTaxonomy()
     override fun getListOfTaxonomy(): List<String> = genus.getListOfTaxonomy()

@@ -34,6 +34,8 @@ object CreatureTypeConverter: ISearchTypeConverter<CreatureType> {
         "therizinosaurid" to CreatureType.Therizinosaurid,
         "synapsid" to CreatureType.Synapsid,
         "serpent" to CreatureType.Serpent,
+        "ichthyosaur" to CreatureType.Ichthyosaur,
+        "mosasaur" to CreatureType.Mosasaur,
         "other" to CreatureType.Other
     )
 

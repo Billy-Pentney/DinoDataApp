@@ -1,56 +1,39 @@
 package com.bp.dinodata.presentation.detail_genus
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Interests
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,7 +54,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -79,10 +61,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.presentation.utils.ThemeConverter
@@ -94,9 +74,9 @@ import com.bp.dinodata.data.TaxonTreeBuilder
 import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
+import com.bp.dinodata.data.genus.IDetailedGenus
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
-import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
@@ -106,9 +86,6 @@ import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
 
 
 @Composable
@@ -173,221 +150,47 @@ fun LabelContentRow(
 }
 
 
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun GenusTitleCardAndControls(
-    genus: IGenusWithImages,
-    uiState: ImageIndexControlState,
-    onPlayNamePronunciation: () -> Unit,
-    modifier: Modifier = Modifier,
-    visibleImageIndex: Int = 0,
-    innerPadding: Dp = 8.dp,
-    paddingValues: PaddingValues = PaddingValues(),
-    canPlayPronunciation: Boolean,
-    colorScheme: ColorScheme,
-    setColorPickerDialogVisibility: (Boolean) -> Unit,
-    toggleItemAsFavourite: (Boolean) -> Unit,
-    controlsExpanded: Boolean = false,
-    showControls: (Boolean) -> Unit,
-    updateVisibleImageIndex: (Int) -> Unit,
-) {
-//    val silhouetteId = convertCreatureTypeToSilhouette(genus.type)
-
-    val genusImageUrl = genus.getImageUrl(visibleImageIndex)
-    val totalImages = genus.getNumDistinctImages()
-
-    val isFavourite = if (genus is ILocalPrefs) {
-            genus.isUserFavourite()
-        }
-        else {
-            false
-        }
-
-    Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
-
-    Card (
-        modifier = Modifier.padding(paddingValues),
-        shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp),
-        colors = CardDefaults.cardColors(
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp
-        )
-    ) {
-        MaterialTheme(colorScheme = colorScheme) {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(
-                    topStart = 0f,
-                    topEnd = 0f,
-                    bottomEnd = 50f,
-                    bottomStart = 50f
-                ),
-                modifier = modifier
-                    .fillMaxWidth()
-                    .animateContentSize()
-                    .padding(paddingValues)
-            ) {
-                Box(
-                    modifier = Modifier.height(IntrinsicSize.Min)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.BottomEnd,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 20.dp)
-                            .fillMaxHeight(0.7f)
-                    ) {
-                        GlideImage(
-                            model = genusImageUrl,
-                            alignment = Alignment.CenterEnd,
-                            contentScale = ContentScale.Fit,
-                            failure = placeholder(R.drawable.unkn),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(start = 40.dp, end = 20.dp, bottom = 20.dp)
-                                .offset(x = 10.dp, y = 0.dp)
-                                .fillMaxWidth()
-                                .alpha(0.4f)
-                                .animateContentSize()
-                        )
-                        if (totalImages > 1) {
-                            Row {
-                                IconButton(
-                                    onClick = { updateVisibleImageIndex(-1) },
-                                    enabled = visibleImageIndex > 0
-                                ) {
-                                    Icon(
-                                        Icons.Filled.ChevronLeft,
-                                        contentDescription = "switch to previous image"
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { updateVisibleImageIndex(1) },
-                                    enabled = visibleImageIndex < genus.getNumDistinctImages()-1
-                                ) {
-                                    Icon(
-                                        Icons.Filled.ChevronRight,
-                                        contentDescription = "switch to next image"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .fillMaxWidth()
-                            .padding(start = innerPadding),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        val pronunciation = genus.getNamePronunciation()
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
-                            modifier = Modifier.padding(bottom = innerPadding)
-                        ) {
-                            AnimatedVisibility(
-                                isFavourite,
-                                enter = fadeIn(),
-                                exit = fadeOut()
-                            ) {
-                                Icon(
-                                    Icons.Filled.Star,
-                                    null,
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
-
-                            Text(
-                                genus.getName(),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 26.sp,
-                                fontStyle = FontStyle.Italic,
-                            )
-
-                            pronunciation?.let {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .alpha(0.7f)
-                                        .padding(top = 2.dp)
-                                ) {
-                                    if (canPlayPronunciation) {
-                                        IconButton(
-                                            onClick = onPlayNamePronunciation,
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.AutoMirrored.Filled.VolumeUp,
-                                                contentDescription = "play name pronunciation",
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        pronunciation,
-                                        fontStyle = FontStyle.Italic
-                                    )
-                                }
-                            }
-                        }
-
-                        AnimatedVisibility(
-                            visible = !controlsExpanded,
-                            enter = fadeIn(), exit = fadeOut()
-                        ) {
-                            IconButton(onClick = { showControls(true) }) {
-                                Icon(
-                                    Icons.Filled.KeyboardArrowDown,
-                                    contentDescription = "show edit buttons"
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = controlsExpanded,
-            enter = expandVertically(expandFrom = Alignment.Top) { _ -> 0 },
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) { _ -> 0 }
-        ) {
-            UpdateGenusLocalPreferencesButtons(
-                setColorPickerDialogVisibility,
-                toggleItemAsFavourite,
-                isFavourite,
-                modifier = Modifier.padding(vertical=8.dp),
-                hideButtons = {
-                    showControls(false)
-                }
-            )
-            Spacer(modifier=Modifier.height(4.dp))
-        }
-    }
-}
-
-
 @Composable
 fun GenusDetailScreenContent(
     uiState: DetailScreenUiState,
     modifier: Modifier = Modifier,
     onEvent: (DetailGenusUiEvent) -> Unit
 ) {
-    val outerPadding = 8.dp
-    val innerPadding = 12.dp
+//    val uiStateRemembered by remember { mutableStateOf(uiState) }
+    val genus by remember { derivedStateOf { uiState.getGenusData() } }
+    val colorPickerDialogVisible by remember { mutableStateOf(uiState.colorSelectDialogVisible) }
+
+    Crossfade(genus, label="crossfade_genus_null") {
+        if (it == null) {
+            LoadingItemsPlaceholder()
+        }
+        else {
+            ShowGenusDetail(
+                uiState = uiState,
+                genus = it,
+                onEvent = onEvent,
+                colorDialogVisible = colorPickerDialogVisible,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@Composable
+fun ShowGenusDetail(
+    uiState: DetailScreenUiState,
+    colorDialogVisible: Boolean,
+    genus: IDetailedGenus,
+    onEvent: (DetailGenusUiEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val outerPadding = remember { 8.dp }
+    val innerPadding = remember { 12.dp }
 
     val scrollState = rememberLazyListState()
-    val cardExpansion = remember { derivedStateOf { 0f } }
 
-    val cardHeight = max(150.dp, 240.dp - (cardExpansion.value/2).dp)
-    
+    val cardHeight = remember { 240.dp }
+
     val iconModifier = Modifier
         .height(20.dp)
         .alpha(0.75f)
@@ -400,112 +203,115 @@ fun GenusDetailScreenContent(
         )
     }
 
-    val genus = uiState.getGenusData()
-
-    if (genus == null) {
-        LoadingItemsPlaceholder()
+    val selectedColor by remember { mutableStateOf(genus.getSelectedColorName()) }
+    val colorScheme by remember {
+        derivedStateOf { ThemeConverter.getTheme(selectedColor) }
     }
-    else {
-        val colorName = genus.getSelectedColorName()
-        val colorScheme = ThemeConverter.getTheme(colorName)
+    var colorPickerDialogVisible by remember { mutableStateOf(colorDialogVisible) }
+    var preferencesControlsExpanded by remember { mutableStateOf(uiState.preferencesCardExpanded) }
 
-        if (uiState.colorSelectDialogVisible) {
-            ColorPickerDialog(
-                selectedColor = colorName,
-                onColorPicked = { onEvent(DetailGenusUiEvent.SelectColor(it)) },
-                onClose = {
-                    onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+    AnimatedVisibility (
+        colorPickerDialogVisible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        ColorPickerDialog(
+            initiallySelectedColor = selectedColor,
+            onColorPicked = { onEvent(DetailGenusUiEvent.SelectColor(it)) },
+            onClose = {
+                colorPickerDialogVisible = false
+                onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+            }
+        )
+    }
+
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        state = scrollState,
+        contentPadding = PaddingValues(horizontal = outerPadding / 2),
+        modifier = modifier.background(MaterialTheme.colorScheme.background)
+    ) {
+        item {
+            GenusTitleCardAndControls(
+                genus,
+                onPlayNamePronunciation = { onEvent(DetailGenusUiEvent.PlayNamePronunciation) },
+                modifier = Modifier.height(cardHeight),
+                visibleImageIndex = genus.getPreferredImageIndex(),
+                innerPadding = innerPadding,
+                canPlayPronunciation = uiState.canPlayPronunciationAudio,
+                isFavourite = genus.isUserFavourite(),
+                colorScheme = colorScheme ?: MaterialTheme.colorScheme,
+                setColorPickerDialogVisibility = {
+                    colorPickerDialogVisible = it
+                    onEvent(DetailGenusUiEvent.ShowColorSelectDialog(visible = it))
+                },
+                toggleItemAsFavourite = {
+                    onEvent(DetailGenusUiEvent.ToggleItemFavouriteStatus(it))
+                },
+                controlsExpanded = preferencesControlsExpanded,
+                showControls = {
+                    preferencesControlsExpanded = it
+                    onEvent(DetailGenusUiEvent.SetPreferencesCardExpansion(it))
+                },
+                updateVisibleImageIndex = { increment ->
+                    if (increment != 0) {
+                        onEvent(DetailGenusUiEvent.UpdateVisibleImageIndex(increment))
+                    }
                 }
             )
         }
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            state = scrollState,
-            contentPadding = PaddingValues(horizontal = outerPadding / 2),
-            modifier = modifier.background(MaterialTheme.colorScheme.background)
-        ) {
-            item {
-                GenusTitleCardAndControls(
-                    genus,
-                    visibleImageIndex = genus.getPreferredImageIndex(),
-                    uiState = uiState,
-                    onPlayNamePronunciation = { onEvent(DetailGenusUiEvent.PlayNamePronunciation) },
-                    modifier = Modifier.height(cardHeight),
-                    innerPadding = innerPadding,
-                    canPlayPronunciation = uiState.canPlayPronunciationAudio,
-                    colorScheme = colorScheme ?: MaterialTheme.colorScheme,
-                    setColorPickerDialogVisibility = {
-                        onEvent(DetailGenusUiEvent.ShowColorSelectDialog(true))
-                    },
-                    toggleItemAsFavourite = {
-                        onEvent(DetailGenusUiEvent.ToggleItemFavouriteStatus(it))
-                    },
-                    controlsExpanded = uiState.preferencesCardExpanded,
-                    showControls = {
-                        onEvent(DetailGenusUiEvent.SetPreferencesCardExpansion(it))
-                    },
-                    updateVisibleImageIndex = { increment ->
-                        if (increment != 0) {
-                            onEvent(DetailGenusUiEvent.UpdateVisibleImageIndex(increment))
-                        }
+        item {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .padding(horizontal = innerPadding + outerPadding / 2)
+                    .padding(top = 16.dp)
+            ) {
+                CreatureNameMeaningAndType(genus, iconModifier = iconModifier)
+                sectionDivider()
+                CreatureDietAndMeasurements(
+                    diet = genus.getDiet(),
+                    length = genus.getLength(),
+                    weight = genus.getWeight(),
+                    iconModifier = iconModifier
+                )
+                sectionDivider()
+                CreatureTimePeriod(
+                    timePeriod = genus.getTimePeriod(),
+                    yearsLived = genus.getYearsLived(),
+                    iconModifier = iconModifier
+                )
+                sectionDivider()
+                LabelContentRow(
+                    label = stringResource(R.string.label_taxonomy),
+                    valueContent = {},
+                    leadingIcon = {
+                        Image(
+                            painterResource(id = R.drawable.icon_filled_taxon_tree),
+                            null,
+                            modifier = iconModifier,
+                            colorFilter = ColorFilter.tint(LocalContentColor.current)
+                        )
                     }
                 )
-            }
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .padding(
-                            horizontal = innerPadding + outerPadding / 2
-                        )
-                        .padding(top = 16.dp)
-                ) {
-                    CreatureNameMeaningAndType(genus, iconModifier = iconModifier)
-                    sectionDivider()
-                    CreatureDietAndMeasurements(
-                        diet = genus.getDiet(),
-                        length = genus.getLength(),
-                        weight = genus.getWeight(),
-                        iconModifier = iconModifier
-                    )
-                    sectionDivider()
-                    CreatureTimePeriod(
-                        timePeriod = genus.getTimePeriod(),
-                        yearsLived = genus.getYearsLived(),
-                        iconModifier = iconModifier
-                    )
-                    sectionDivider()
-                    LabelContentRow(
-                        label = stringResource(R.string.label_taxonomy),
-                        valueContent = {},
-                        leadingIcon = {
-                            Image(
-                                painterResource(id = R.drawable.icon_filled_taxon_tree),
-                                null,
-                                modifier = iconModifier,
-                                colorFilter = ColorFilter.tint(LocalContentColor.current)
-                            )
-                        }
-                    )
-                    ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
+                ShowTaxonomicTree(genus = genus, modifier = Modifier.fillMaxWidth())
 
-                    val locations = genus.getLocations()
-                    if (locations.isNotEmpty()) {
-                        sectionDivider()
-                        CreatureLocations(locations, iconModifier)
-                    }
-
-                    if (genus.hasSpeciesInfo()) {
-                        sectionDivider()
-                        ShowCreatureSpeciesCards(genus, iconModifier)
-                    }
+                val locations = genus.getLocations()
+                if (locations.isNotEmpty()) {
+                    sectionDivider()
+                    CreatureLocations(locations, iconModifier)
                 }
-                Spacer(Modifier.height(100.dp))
+
+                if (genus.hasSpeciesInfo()) {
+                    sectionDivider()
+                    ShowCreatureSpeciesCards(genus, iconModifier)
+                }
             }
+            Spacer(Modifier.height(100.dp))
         }
     }
 }
+
 
 @Composable
 fun UpdateGenusLocalPreferencesButtons(

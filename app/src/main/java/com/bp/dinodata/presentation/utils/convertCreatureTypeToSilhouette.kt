@@ -3,11 +3,6 @@ package com.bp.dinodata.presentation.utils
 import com.bp.dinodata.R
 import com.bp.dinodata.data.CreatureType
 
-enum class SilhouetteQuality {
-    x64, x128, x256
-}
-
-
 
 fun convertCreatureTypeToSilhouette(
     type: CreatureType,
@@ -36,6 +31,8 @@ fun convertCreatureTypeToSilhouette(
         CreatureType.Iguanodontid       -> R.drawable.type_iguanodontid
         CreatureType.Crocodilian        -> R.drawable.type_crocodilian
         CreatureType.Serpent            -> R.drawable.type_serpent
+        CreatureType.Mosasaur           -> R.drawable.type_mosasaur
+        CreatureType.Ichthyosaur        -> R.drawable.type_ichthyosaur
         //        CreatureType.Euornithopod       -> TODO()
         //        CreatureType.Aquatic -> TODO()
         //        CreatureType.Cenezoic -> TODO()

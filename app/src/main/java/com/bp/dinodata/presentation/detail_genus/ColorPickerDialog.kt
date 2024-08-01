@@ -15,20 +15,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -44,11 +52,14 @@ import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
 fun ColorPickerDialog(
-    selectedColor: String? = null,
+    initiallySelectedColor: String? = null,
     colorNames: List<String> = ThemeConverter.listOfColors,
     onColorPicked: (String?) -> Unit,
     onClose: () -> Unit
 ) {
+    var currentlySelectedColor by remember { mutableStateOf(initiallySelectedColor) }
+
+    val listOfColors by remember { mutableStateOf(colorNames) }
 
     Dialog(
         onDismissRequest = onClose,
@@ -57,74 +68,75 @@ fun ColorPickerDialog(
             dismissOnBackPress = true
         )
     ) {
-        Column(
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.surface,
-                    RoundedCornerShape(16.dp)
-                )
-                .fillMaxWidth(0.9f)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        val shape = RoundedCornerShape(16.dp)
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            shape = shape,
+            shadowElevation = 4.dp,
+            modifier = Modifier.fillMaxWidth(0.9f)
+
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.Center
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Color-Selection", fontWeight = FontWeight.Bold)
-            }
-
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.onSurface,
-                thickness = 1.dp,
-                modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .alpha(0.5f)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(65.dp),
-                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.background(
-                    MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(12.dp)
+                Icon(
+                    Icons.Filled.ColorLens,
+                    null
                 )
-            ) {
-                items(colorNames) { colorName ->
-                    val isSelected = (selectedColor == colorName)
-                    ColorPickerSingleton(
-                        onColorPicked,
-                        colorName,
-                        isSelected
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("Color-Selection", fontWeight = FontWeight.Bold)
                 }
 
-                // None item is not necessary since "NONE" is in the list of color options
-//                item {
-//                    val isSelected = (selectedColor == null)
-//                    ColorPickerSingleton(
-//                        onColorPicked,
-//                        null,
-//                        isSelected
-//                    )
-//                }
-            }
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    thickness = 1.dp,
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .alpha(0.5f)
+                )
 
-            Row(
-                horizontalArrangement = Arrangement.End
-            ) {
-                Button(onClick = onClose) {
-                    Text(
-                        stringResource(R.string.action_done),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(65.dp),
+                    contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.background(
+                        MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                    state = rememberLazyGridState(initialFirstVisibleItemIndex = 4)
+                ) {
+                    items(listOfColors) { colorName ->
+                        val isSelected = (currentlySelectedColor == colorName)
+                        ColorPickerSingleton(
+                            onSelect = {
+                                currentlySelectedColor = it
+                                onColorPicked(it)
+                            },
+                            colorName = colorName,
+                            isSelected = isSelected
+                        )
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(onClick = onClose) {
+                        Text(
+                            stringResource(R.string.action_done),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
@@ -180,14 +192,14 @@ fun ColorPickerSingleton(
 
 
 
-@Preview
+@Preview(heightDp = 600, widthDp = 400)
 @Composable
 fun PreviewColorPickerDialog() {
     DinoDataTheme (darkTheme = true) {
         ColorPickerDialog(
             onColorPicked = {},
             onClose = {},
-            selectedColor = "PINK"
+            initiallySelectedColor = "PINK"
         )
     }
 }

@@ -357,6 +357,10 @@
     <string name="location_zambia">Zambia</string>
     <string name="location_zimbabwe">Zimbabwe</string>
     <string name="action_pinch_map_to_zoom">pinch map to zoom</string>
+    <string name="text_no_pronunciation">" - not found -"</string>
+    <string name="desc_play_tts_audio">play audio pronunciation of this name</string>
+    <string name="type_ichthyosaur">Ichthyosaur</string>
+    <string name="type_mosasaur">Mosasaur</string>
 
 
 </resources>

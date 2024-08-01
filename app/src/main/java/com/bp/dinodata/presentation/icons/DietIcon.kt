@@ -57,10 +57,10 @@ import com.bp.dinodata.theme.Piscivore700
 
 fun convertDietToImageResId(diet: Diet?): Int {
     return when(diet) {
-        Diet.Carnivore -> R.drawable.diet_carn
-        Diet.Herbivore -> R.drawable.diet_herb
-        Diet.Piscivore -> R.drawable.diet_pisc
-        Diet.Omnivore -> R.drawable.diet_all
+        Diet.Carnivore -> R.drawable.carn
+        Diet.Herbivore -> R.drawable.herb
+        Diet.Piscivore -> R.drawable.pisc
+        Diet.Omnivore -> R.drawable.omni
         else -> R.drawable.unkn
     }
 }

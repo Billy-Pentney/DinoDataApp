@@ -26,6 +26,8 @@ enum class CreatureType {
     Therizinosaurid,
     Iguanodontid,
     Crocodilian,
-    Serpent
+    Serpent,
+    Ichthyosaur,
+    Mosasaur
 }
 
