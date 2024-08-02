@@ -361,6 +361,7 @@
     <string name="desc_play_tts_audio">play audio pronunciation of this name</string>
     <string name="type_ichthyosaur">Ichthyosaur</string>
     <string name="type_mosasaur">Mosasaur</string>
+    <string name="label_also_found_in">Also found in</string>
 
 
 </resources>

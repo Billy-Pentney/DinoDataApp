@@ -155,7 +155,7 @@ fun LocationAtlas(
 
         if (undisplayedLocations.isNotEmpty()) {
             LabelAttributeRow(
-                label = "Not shown",
+                label = stringResource(R.string.label_also_found_in),
                 labelFontWeight = FontWeight.Normal,
                 value = undisplayedLocations.joinToString()
             )

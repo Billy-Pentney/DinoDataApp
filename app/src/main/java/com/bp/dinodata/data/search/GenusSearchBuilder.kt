@@ -1,7 +1,7 @@
 package com.bp.dinodata.data.search
 
-import com.bp.dinodata.data.DietConverter
-import com.bp.dinodata.data.TimePeriodConverter
+import com.bp.dinodata.data.enum_readers.DietConverter
+import com.bp.dinodata.data.enum_readers.TimePeriodConverter
 import com.bp.dinodata.data.genus.IGenus
 
 class GenusSearchBuilder(

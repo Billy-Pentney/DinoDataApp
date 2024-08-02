@@ -10,11 +10,10 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.room.util.query
-import com.bp.dinodata.data.CreatureTypeConverter
+import com.bp.dinodata.data.enum_readers.CreatureTypeConverter
 import com.bp.dinodata.data.DataParsing
-import com.bp.dinodata.data.DietConverter
-import com.bp.dinodata.data.TimePeriodConverter
+import com.bp.dinodata.data.enum_readers.DietConverter
+import com.bp.dinodata.data.enum_readers.TimePeriodConverter
 import com.bp.dinodata.data.filters.CreatureTypeFilter
 import com.bp.dinodata.data.filters.DietFilter
 import com.bp.dinodata.data.filters.FavouriteFilter

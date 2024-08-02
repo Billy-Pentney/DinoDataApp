@@ -2,12 +2,12 @@ package com.bp.dinodata.data.genus
 
 import android.util.Log
 import com.bp.dinodata.data.CreatureType
-import com.bp.dinodata.data.CreatureTypeConverter
+import com.bp.dinodata.data.enum_readers.CreatureTypeConverter
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.DietConverter
+import com.bp.dinodata.data.enum_readers.DietConverter
 import com.bp.dinodata.data.IBuilder
 import com.bp.dinodata.data.TimePeriod
-import com.bp.dinodata.data.TimePeriodConverter
+import com.bp.dinodata.data.enum_readers.TimePeriodConverter
 import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
