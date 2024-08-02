@@ -40,11 +40,10 @@ class ListGenusViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _listOfGeneraByLetter.collect {
-                val searchInitial = it.map { data -> data.toList() }
                 _uiState.value = _uiState.value.copy(
-                    allPageData = it,
-                    searchResults = searchInitial
+                    allPageData = it
                 )
+                runSearch()
             }
         }
 
