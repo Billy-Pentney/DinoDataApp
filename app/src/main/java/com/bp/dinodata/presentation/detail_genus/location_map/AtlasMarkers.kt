@@ -1,4 +1,4 @@
-package com.bp.dinodata.presentation.detail_genus
+package com.bp.dinodata.presentation.detail_genus.location_map
 
 import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
@@ -18,7 +18,7 @@ interface IRegionMap {
 
 class RegionMap(
     private val name: String,
-    private val markers: Map<String,IMarker> = emptyMap()
+    private val markers: Map<String, IMarker> = emptyMap()
 ): IRegionMap {
     constructor(
         name: String,

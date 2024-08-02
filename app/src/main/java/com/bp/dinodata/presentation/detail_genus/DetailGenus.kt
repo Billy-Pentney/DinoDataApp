@@ -82,9 +82,11 @@ import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.convertCreatureTypeToString
+import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
+import com.bp.dinodata.presentation.utils.dialog.ColorPickerDialog
 import com.bp.dinodata.theme.DinoDataTheme
 
 

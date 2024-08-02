@@ -17,6 +17,7 @@ enum class CreatureType {
     Plesiosaur,
     Cenezoic,
     Synapsid,
+    SpinedSynapsid,
     Other,
     Dromaeosaurid,
     Carcharodontosaurid,

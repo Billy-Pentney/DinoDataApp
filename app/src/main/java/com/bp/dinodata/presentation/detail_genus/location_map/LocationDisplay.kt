@@ -1,6 +1,5 @@
-package com.bp.dinodata.presentation.detail_genus
+package com.bp.dinodata.presentation.detail_genus.location_map
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
@@ -44,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
+import com.bp.dinodata.presentation.detail_genus.LabelAttributeRow
 import com.bp.dinodata.presentation.utils.ZoomableBox
 import com.bp.dinodata.theme.DinoDataTheme
 import kotlinx.coroutines.launch
@@ -167,9 +167,7 @@ fun LocationAtlas(
 @Composable
 fun PreviewLocationAtlas() {
     DinoDataTheme (darkTheme = true) {
-        Surface (
-            modifier = Modifier.width(1080.dp)
-        ) {
+        Surface (modifier = Modifier.width(1080.dp)) {
             LocationAtlas(
                 locations = AtlasMarkers.getKeysForRegion(
                     AtlasMarkers.ASIA
