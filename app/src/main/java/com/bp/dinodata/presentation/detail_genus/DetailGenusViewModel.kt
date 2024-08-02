@@ -16,6 +16,7 @@ import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -53,8 +54,9 @@ class DetailGenusViewModel @Inject constructor(
         DetailScreenUiState(currentGenusName)
     )
 
-    init {
+    private var toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
 
+    init {
         _genusDetail = combine(_genusWithImages, _genusPrefs) { genusWithImages, genusPrefs ->
             genusWithImages.map { data ->
                 DetailedGenus(data, genusPrefs)
@@ -67,6 +69,12 @@ class DetailGenusViewModel @Inject constructor(
                     genusData = it
                 )
             }
+        }
+    }
+
+    private fun showToast(message: String) {
+        viewModelScope.launch {
+            toastFlow.emit(message)
         }
     }
 
@@ -115,13 +123,14 @@ class DetailGenusViewModel @Inject constructor(
         Log.i(LOG_TAG, "Play pronunciation for $currentGenusName")
 
         audioPronunciationUseCases.playPrerecordedAudio(
-            name,
+            genusName = name,
             onPlayerCompletion = { success ->
                 if (success) {
                     Log.d(LOG_TAG, "Successfully played \'$name\' pronunciation")
                 }
                 else {
                     Log.d(LOG_TAG, "An error occurred when playing audio for \'$name\'")
+                    showToast("Pronunciation audio not found!")
                     _uiState.value = _uiState.value.copy(
                         canPlayPronunciationAudio = false
                     )
@@ -129,6 +138,8 @@ class DetailGenusViewModel @Inject constructor(
             }
         )
     }
+
+    fun getToastFlow(): Flow<String> = toastFlow
 }
 
 
