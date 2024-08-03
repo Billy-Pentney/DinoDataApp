@@ -158,8 +158,7 @@ fun GenusDetailScreenContent(
     modifier: Modifier = Modifier,
     onEvent: (DetailGenusUiEvent) -> Unit
 ) {
-//    val uiStateRemembered by remember { mutableStateOf(uiState) }
-    val genus by remember { derivedStateOf { uiState.getGenusData() } }
+    val genus = uiState.getGenusData()
     val colorPickerDialogVisible by remember { mutableStateOf(uiState.colorSelectDialogVisible) }
 
     Crossfade(genus, label="crossfade_genus_null") {
@@ -206,9 +205,7 @@ fun ShowGenusDetail(
     }
 
     val selectedColor by remember { mutableStateOf(genus.getSelectedColorName()) }
-    val colorScheme by remember {
-        derivedStateOf { ThemeConverter.getTheme(selectedColor) }
-    }
+    val colorScheme by remember { derivedStateOf { ThemeConverter.getTheme(selectedColor) } }
     var colorPickerDialogVisible by remember { mutableStateOf(colorDialogVisible) }
     var preferencesControlsExpanded by remember { mutableStateOf(uiState.preferencesCardExpanded) }
 

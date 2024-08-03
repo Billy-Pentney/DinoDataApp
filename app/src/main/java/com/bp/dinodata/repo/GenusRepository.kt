@@ -84,17 +84,17 @@ class GenusRepository @Inject constructor(
         onFailure: () -> Unit = {}
     ): Flow<IGenus?> {
 
-        val retrieveFromMap = flow {
-            // If we already have this genus data in the map, load it
-            if (genusName in generaByName.keys) {
-                emit(generaByName[genusName])
-            }
-            // If no device network connection found, instantly fail
-            else if (!hasNetConnectivity) {
-                Log.d(TAG, "Cannot retrieve genus data. No network connection")
-                emit(null)
-            }
-        }
+//        val retrieveFromMap = flow {
+//            // If we already have this genus data in the map, load it
+//            if (genusName in generaByName.keys) {
+//                emit(generaByName[genusName])
+//            }
+//            // If no device network connection found, instantly fail
+//            else if (!hasNetConnectivity) {
+//                Log.d(TAG, "Cannot retrieve genus data. No network connection")
+//                emit(null)
+//            }
+//        }
 
         val firebaseFlow = genusCollection
             .document(genusName)
@@ -111,15 +111,17 @@ class GenusRepository @Inject constructor(
                 }
             }
 
-        return retrieveFromMap.map { localCopy ->
-            // Use the local copy if we have it; otherwise retrieve the firebase copy
-            if (localCopy != null || !hasNetConnectivity) {
-                localCopy
-            }
-            else {
-                firebaseFlow.lastOrNull()
-            }
-        }
+        return firebaseFlow
+
+//        return retrieveFromMap.map { localCopy ->
+//            // Use the local copy if we have it; otherwise retrieve the firebase copy
+//            if (localCopy != null || !hasNetConnectivity) {
+//                localCopy
+//            }
+//            else {
+//                firebaseFlow.lastOrNull()
+//            }
+//        }
     }
 
     /**
