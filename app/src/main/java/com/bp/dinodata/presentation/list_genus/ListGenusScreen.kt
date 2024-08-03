@@ -2,6 +2,7 @@ package com.bp.dinodata.presentation.list_genus
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
@@ -33,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -59,10 +61,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -107,6 +109,7 @@ fun ListGenusScreenContent(
     clearSearchQuery: () -> Unit,
     updateScrollState: (LazyListState) -> Unit,
     toggleSearchBarVisibility: (Boolean) -> Unit,
+    refreshFeed: () -> Unit,
     prefillSearchSuggestion: () -> Unit,
     runSearch: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
@@ -132,6 +135,7 @@ fun ListGenusScreenContent(
                     )
                 },
                 actions = {
+                    // Show Search Bar
                     IconButton(
                         onClick = {
                             toggleSearchBarVisibility(!searchBarVisible)
@@ -154,6 +158,21 @@ fun ListGenusScreenContent(
                                 )
                             }
                         }
+                    }
+
+                    // Refresh feed button
+                    IconButton(
+                        onClick = {
+                            refreshFeed()
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            "refresh the feed"
+                        )
                     }
                 }
             )
@@ -627,45 +646,51 @@ fun ListGenusScreen(
     navigateToGenus: (String) -> Unit,
 ) {
     val uiState by remember { listGenusViewModel.getUiState() }
-    val searchQuery = remember { derivedStateOf { uiState.search.getQuery() } }
     val searchBarVisibility = remember { derivedStateOf { uiState.searchBarVisible } }
+    val toastFlow = remember { listGenusViewModel.getToastFlow() }
 
+    val context = LocalContext.current
+    LaunchedEffect(null) {
+        // Show the toast messages received from the view model
+        toastFlow.collect { message: String ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Intercept back-press events if the search-bar is visible
     BackHandler (searchBarVisibility.value) {
-        if (searchQuery.value.isNotEmpty()) {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
-        }
-        else {
-            // Close the Search Bar when navigating up
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.ToggleSearchBar(false))
-        }
+        listGenusViewModel.onUiEvent(ListGenusPageUiEvent.NavigateUp)
     }
 
     ListGenusScreenContent(
         uiState = uiState,
         navigateToGenus = navigateToGenus,
         switchToPageByIndex = { index ->
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.SwitchToPage(index))
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.SwitchToPage(index))
         },
         updateSearchQuery = {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.UpdateSearchQuery(it))
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.UpdateSearchQuery(it))
         },
         clearSearchQuery = {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
         },
         toggleSearchBarVisibility = {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.ToggleSearchBar(visible=it))
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ToggleSearchBar(visible=it))
         },
         prefillSearchSuggestion = {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.AcceptSearchSuggestion)
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.AcceptSearchSuggestion)
         },
         removeSearchTerm = { term ->
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.RemoveSearchTerm(term))
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RemoveSearchTerm(term))
         },
         runSearch = {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.RunSearch)
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RunSearch)
         },
         updateScrollState = {
-            listGenusViewModel.onEvent(ListGenusPageUiEvent.UpdateScrollState(it))
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.UpdateScrollState(it))
+        },
+        refreshFeed = {
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RefreshFeed)
         }
     )
 }
@@ -757,7 +782,8 @@ fun PreviewListGenus() {
             prefillSearchSuggestion = {},
             removeSearchTerm = {},
             runSearch = {},
-            updateScrollState = {}
+            updateScrollState = {},
+            refreshFeed = {}
         )
     }
 }

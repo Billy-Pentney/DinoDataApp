@@ -6,9 +6,14 @@ import java.io.File
 import java.io.IOException
 
 
+enum class AudioType {
+    mp3
+}
+
 class AudioRepository(
     private val storage: StorageReference,
-    private val cacheDir: File
+    private val cacheDir: File,
+    private val connectionChecker: IConnectionChecker
 ) : IAudioRepository {
     private val genusToAudioFileMap: MutableMap<String, String> = mutableMapOf()
 
@@ -20,26 +25,48 @@ class AudioRepository(
         const val LOG_TAG = "AudioRepo"
     }
 
+    private val hasNetConnectivity
+        get() = connectionChecker.hasNetworkAccess()
+
     init {
         prepopulateFileMap()
     }
 
+    /**
+     * Populates the genusToAudioFileMap property with the names of all existing audio files
+     * in the temporary cache directory. This ensures that audios which have previously
+     * been downloaded when the app was run in the past will continue to be re-used, even
+     * when the app is restarted.
+     */
     private fun prepopulateFileMap() {
         val files = cacheDir.listFiles() ?: emptyArray()
+        var totalSuccessful = 0
         for (file in files) {
             val fName = file.name
             val genusName = extractGenusNameFromFilename(fName)
             if (genusName != null) {
                 storeReferenceToAudio(genusName, file)
+                totalSuccessful++
                 Log.i(LOG_TAG, "Found cached file \'$fName\', with genus: \'$genusName\'")
             }
         }
+        Log.i(LOG_TAG, "Successfully loaded $totalSuccessful audio files from cache")
     }
 
+    /**
+     * Attempts to retrieve the Text-to-speech audio file pronouncing the given genus name.
+     * If the file has previously been played and is cached locally, then it will be retrieved
+     * from the local copy; otherwise, if a network connection is present, this function
+     * attempts to download the file from the firebase storage repository. Otherwise, if no
+     * network is detected, the function will not attempt to retrieve the file.
+     * @param genusName A string representing the name of the genus whose audio should be played.
+     * @param onCompletion A callback which will be invoked with a status object representing the
+     * result of the operation. If successful, this object contains a reference to the local audio
+     * file; otherwise, it will indicate the reason for failure.
+     */
     override fun getAudioForGenus(
         genusName: String,
-        callback: (File) -> Unit,
-        onError: () -> Unit
+        onCompletion: (AudioRetrievalStatus) -> Unit,
     ) {
         val genusLower = genusName.lowercase()
 
@@ -52,12 +79,18 @@ class AudioRepository(
             try {
                 val file = File(tempPath)
                 Log.d(LOG_TAG, "Loaded file from temp storage")
-                callback(file)
+                onCompletion(AudioRetrievalStatus.Success(file))
                 return
             }
             catch (ex: IOException) {
                 Log.e(LOG_TAG, "Error when opening local temp file \'$tempPath\'", ex)
             }
+        }
+
+        if (!hasNetConnectivity) {
+            Log.d(LOG_TAG, "Unable to fetch audio data due to lack of network connection")
+            onCompletion(AudioRetrievalStatus.NoNetwork)
+            return
         }
 
         // Otherwise, we'll have to fetch it and store it in a temp file
@@ -77,27 +110,32 @@ class AudioRepository(
                     // On success, cache the given file, so we can look it up on subsequent requests
                     // Local temp file has been created
                     storeReferenceToAudio(genusLower, localAudioFile)
-                    callback(localAudioFile)
+                    onCompletion(AudioRetrievalStatus.Success(localAudioFile))
                 }.addOnFailureListener { exc ->
                     // Handle any errors
                     Log.d(LOG_TAG, "Error occurred when fetching audio for \'$genusLower\'", exc)
-                    onError()
+                    onCompletion(AudioRetrievalStatus.ErrorFileNotFound)
                 }
         }
         catch (ex: IOException) {
             Log.e(LOG_TAG, "Error when creating new temporary file", ex)
-            onError()
-            return
+            onCompletion(AudioRetrievalStatus.ErrorFileNotFound)
         }
     }
 
-    // Create a reference with an initial file path and name
-    private fun makePathReferenceFor(genusName: String): StorageReference {
-        val fName = "$genusName.mp3".lowercase()
+    /**
+     * Create a firebase storage reference for the TTS audio file for the given genus.
+     * */
+    private fun makePathReferenceFor(
+        genusName: String,
+        fileType: AudioType = AudioType.mp3
+    ): StorageReference {
+        val fName = "$genusName.$fileType".lowercase()
         return storage.child("$REMOTE_DIR/$fName")
     }
 
-    /** Create a new local temporary file to store the given genus audio.
+    /**
+     * Create a new local temporary file to store the given genus audio.
      * This creates and returns a file in the Cache Directory with a name of the form:
      * tts_<GENUS>_<ID>.mp3
      *      e.g. "tts_achelousaurus_3212091030901020.mp3"
@@ -110,8 +148,14 @@ class AudioRepository(
         )
     }
 
-    /** Given the name of a temporary file, attempt to extract the genus name.
-     * If the given filename does not match the expected format, return null. */
+    /**
+     * Given the name of a temporary cached audio file, attempt to extract the genus name to which
+     * that audio corresponds, e.g.
+     *  "tts_acrocanthosaurus_1234asa019q30.mp3" would return "acrocanthosaurus" while
+     *      "abcdjaso_102o01230103.mp3" would return null.
+     * @param fileName The name of the file.
+     * @return If successful, the genus name; otherwise null.
+     * */
     private fun extractGenusNameFromFilename(fileName: String): String? {
         // Expects a string of the form "tts_<GENUS>_<ID>.mp3"
         val match = regex.find(fileName)

@@ -15,9 +15,12 @@ sealed class ListGenusPageUiEvent {
 
     data object RunSearch: ListGenusPageUiEvent()
 
+    data object NavigateUp: ListGenusPageUiEvent()
+
     data class ToggleSearchBar(val visible: Boolean) : ListGenusPageUiEvent()
     data object ClearSearchQueryOrHideBar : ListGenusPageUiEvent()
     data object AcceptSearchSuggestion : ListGenusPageUiEvent()
+    data object RefreshFeed : ListGenusPageUiEvent()
 
     data class SwitchToPage(val pageIndex: Int): ListGenusPageUiEvent()
 

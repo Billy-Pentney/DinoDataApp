@@ -8,13 +8,14 @@ import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.map
 import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.ListGenusScreenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,7 +24,7 @@ import javax.inject.Inject
 class ListGenusViewModel @Inject constructor(
     @set:Inject var genusUseCases: GenusUseCases,
     @set:Inject var listGenusUseCases: ListGenusScreenUseCases
-): ViewModel() {
+): ViewModel(), IListGenusViewModel {
 
     private val _listOfGeneraByLetter: StateFlow<DataState<IResultsByLetter<IGenusWithPrefs>>>
         = genusUseCases.getGenusWithPrefsByLetterFlow()
@@ -36,10 +37,11 @@ class ListGenusViewModel @Inject constructor(
     private val _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
 
     private val eventFlow: MutableSharedFlow<ListGenusPageUiEvent> = MutableSharedFlow()
+    private val toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
 
     init {
         viewModelScope.launch {
-            _listOfGeneraByLetter.collect {
+            _listOfGeneraByLetter.collectLatest {
                 _uiState.value = _uiState.value.copy(
                     allPageData = it
                 )
@@ -54,9 +56,9 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    fun getUiState(): State<ListGenusUiState> = _uiState
+    override fun getUiState(): State<ListGenusUiState> = _uiState
 
-    fun onEvent(event: ListGenusPageUiEvent) {
+    override fun onUiEvent(event: ListGenusPageUiEvent) {
         viewModelScope.launch {
             eventFlow.emit(event)
         }
@@ -75,6 +77,7 @@ class ListGenusViewModel @Inject constructor(
             }
             ListGenusPageUiEvent.RunSearch -> runSearch()
             ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearOrHideSearch()
+            ListGenusPageUiEvent.RefreshFeed -> refreshFeed()
 
             is ListGenusPageUiEvent.ToggleSearchBar -> {
                 _uiState.value = _uiState.value.copy(searchBarVisible = event.visible)
@@ -100,6 +103,17 @@ class ListGenusViewModel @Inject constructor(
                     firstVisibleItemOffset = event.state.firstVisibleItemScrollOffset
                 )
             }
+
+            ListGenusPageUiEvent.NavigateUp -> {
+                if (_uiState.value.getFullQuery().isNotEmpty()) {
+                    // If there's any text
+                    handleEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
+                }
+                else {
+                    // Close the Search Bar when navigating up
+                    handleEvent(ListGenusPageUiEvent.ToggleSearchBar(false))
+                }
+            }
         }
     }
 
@@ -117,6 +131,18 @@ class ListGenusViewModel @Inject constructor(
             _uiState.value = _uiState.value.runSearch()
         }
     }
+
+    private fun refreshFeed() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                allPageData = _listOfGeneraByLetter.value
+            )
+            runSearch()
+            toastFlow.emit("Refreshed feed!")
+        }
+    }
+
+    override fun getToastFlow(): Flow<String> = toastFlow
 
     private fun clearOrHideSearch() {
         if (!_uiState.value.isQueryEmpty()) {

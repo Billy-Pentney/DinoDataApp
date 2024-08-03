@@ -5,6 +5,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
+import com.bp.dinodata.repo.AudioPlayStatus
+import com.bp.dinodata.repo.AudioRetrievalStatus
 import com.bp.dinodata.repo.IAudioRepository
 import java.io.File
 
@@ -21,24 +23,32 @@ class PlayPrerecordedAudioUseCase(
 
     operator fun invoke(
         genusName: String,
-        onPlayerCompletion: (Boolean) -> Unit
+        onCompletion: (AudioPlayStatus) -> Unit
     ) {
         audioRepository.getAudioForGenus(genusName,
-            callback = { ttsFile ->
-                playAudioFromFileAsync(
-                    ttsFile,
-                    onPlay = { onPlayerCompletion(true) },
-                    onFail = { onPlayerCompletion(false) }
-                )
-            },
-            onError = { onPlayerCompletion(false) }
+            onCompletion = { status ->
+
+                when (status) {
+                    is AudioRetrievalStatus.Success ->  {
+                        playAudioFromFileAsync(
+                            status.file,
+                            onCompletion = onCompletion
+                        )
+                    }
+                    AudioRetrievalStatus.ErrorFileNotFound -> {
+                        onCompletion(AudioPlayStatus.FileNotFound)
+                    }
+                    AudioRetrievalStatus.NoNetwork -> {
+                        onCompletion(AudioPlayStatus.MissingNetwork)
+                    }
+                }
+            }
         )
     }
 
     private fun playAudioFromFileAsync(
         file: File,
-        onPlay: () -> Unit,
-        onFail: () -> Unit
+        onCompletion: (AudioPlayStatus) -> Unit,
     ) {
         val uri = file.toUri()
 
@@ -72,11 +82,11 @@ class PlayPrerecordedAudioUseCase(
         mp.setOnCompletionListener {
             // Copy the last successfully played URI
             _lastUriPlayed = uri
-            onPlay()
+            onCompletion(AudioPlayStatus.Success)
         }
         mp.setOnErrorListener { _, type, extra ->
             Log.d("TTSUseCases", "AudioError (type=$type, extra=$extra)")
-            onFail()
+            onCompletion(AudioPlayStatus.MediaPlayerError(type, extra))
             // Indicate that this error was handled, to avoid further exceptions
             true
         }

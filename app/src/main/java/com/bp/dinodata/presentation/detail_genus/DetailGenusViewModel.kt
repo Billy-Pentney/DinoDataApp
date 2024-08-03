@@ -12,6 +12,7 @@ import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
+import com.bp.dinodata.repo.AudioPlayStatus
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -118,22 +119,44 @@ class DetailGenusViewModel @Inject constructor(
 
     fun getUiState(): State<DetailScreenUiState> = _uiState
 
+    /**
+     * Invoke and handle the use-case of playing the Text-to-speech pronunciation
+     * of this genus' name.
+     */
     private fun playPronunciationFile() {
         val name = currentGenusName
         Log.i(LOG_TAG, "Play pronunciation for $currentGenusName")
 
         audioPronunciationUseCases.playPrerecordedAudio(
             genusName = name,
-            onPlayerCompletion = { success ->
-                if (success) {
-                    Log.d(LOG_TAG, "Successfully played \'$name\' pronunciation")
-                }
-                else {
-                    Log.d(LOG_TAG, "An error occurred when playing audio for \'$name\'")
-                    showToast("Pronunciation audio not found!")
-                    _uiState.value = _uiState.value.copy(
-                        canPlayPronunciationAudio = false
-                    )
+            onCompletion = { status ->
+                when (status) {
+                    is AudioPlayStatus.MediaPlayerError -> {
+                        Log.d(LOG_TAG, "A MediaPlayer error (${status.type}, ${status.extra}) occurred during playback for \'$name\'")
+                        _uiState.value = _uiState.value.copy(
+                            canPlayPronunciationAudio = false
+                        )
+                    }
+                    AudioPlayStatus.MissingNetwork -> {
+                        Log.d(LOG_TAG, "Unable to play audio for \'$name\' due to no network!")
+                        showToast("This file is not available offline. Please connect to a network!")
+                        _uiState.value = _uiState.value.copy(
+                            canPlayPronunciationAudio = false
+                        )
+                    }
+                    AudioPlayStatus.FileNotFound -> {
+                        Log.d(LOG_TAG, "TTS Audio for genus \'$name\' was not found!")
+                        showToast("The pronunciation audio is not currently available")
+                        _uiState.value = _uiState.value.copy(
+                            canPlayPronunciationAudio = false
+                        )
+                    }
+                    AudioPlayStatus.Success -> {
+                        Log.d(LOG_TAG, "Successfully played pronunciation audio for '$name'")
+                    }
+                    AudioPlayStatus.UnknownError -> {
+                        Log.d(LOG_TAG, "An unknown error prevented audio retrieval/playback")
+                    }
                 }
             }
         )

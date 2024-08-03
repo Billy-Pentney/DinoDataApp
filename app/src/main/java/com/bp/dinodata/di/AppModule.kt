@@ -5,8 +5,10 @@ import android.net.ConnectivityManager
 import androidx.core.content.ContextCompat.getSystemService
 import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.repo.AudioRepository
+import com.bp.dinodata.repo.ConnectionChecker
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.repo.IAudioRepository
+import com.bp.dinodata.repo.IConnectionChecker
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.LocalPreferencesRepository
 import com.bp.dinodata.use_cases.GenusUseCases
@@ -38,12 +40,20 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesGenusRepository(connectivityManager: ConnectivityManager): GenusRepository {
+    fun providesConnectionChecker(connectivityManager: ConnectivityManager): ConnectionChecker {
+        return ConnectionChecker(
+            connectivityManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesGenusRepository(connectionChecker: IConnectionChecker): GenusRepository {
         val storage = Firebase.firestore
         return GenusRepository(
             genusCollection = storage.collection(GENERA_COLLECTION_NAME),
             genusImageCollection = storage.collection(IMAGES_COLLECTION_NAME),
-            connectivityManager = connectivityManager
+            connectivityChecker = connectionChecker
         )
     }
 
@@ -56,11 +66,12 @@ object AppModule {
     @Singleton
     @Provides
     fun providesAudioRepository(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        connectionChecker: IConnectionChecker
     ): AudioRepository {
         val storageRef = Firebase.storage.reference
         val cacheDir = context.cacheDir
-        return AudioRepository(storageRef, cacheDir)
+        return AudioRepository(storageRef, cacheDir, connectionChecker)
     }
 
     @Singleton
