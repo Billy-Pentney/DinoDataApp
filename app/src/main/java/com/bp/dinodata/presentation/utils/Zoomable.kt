@@ -2,17 +2,11 @@ package com.bp.dinodata.presentation.utils
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ZoomOutMap
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,22 +30,48 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
 
+fun calculateOffset(tapOffset: Offset, winSize: IntSize, zoom: Float): Offset {
+    val windowWidth = winSize.width / zoom
+    val windowHeight = winSize.height / zoom
+
+    val maxX = winSize.width - windowWidth / 2
+    val maxY = winSize.height - windowHeight / 2
+
+    var centX = maxOf(windowWidth / 2, minOf(tapOffset.x, maxX))
+    var centY = maxOf(windowHeight / 2, minOf(tapOffset.y, maxY))
+
+    // get a value in -0.5 to 0.5
+    centX = 1 - centX / windowWidth
+    centY = 1 - centY / windowHeight
+    return Offset(centX * winSize.width, centY * winSize.height)
+}
+
+fun constrainOffset(size: IntSize, offset: Offset, zoom: Float): Offset {
+    val maxX = (size.width * (zoom - 1)) / 2
+    val minX = -maxX
+    val offsetX = maxOf(minX, minOf(maxX, offset.x))
+    val maxY = (size.height * (zoom - 1)) / 2
+    val minY = -maxY
+    val offsetY = maxOf(minY, minOf(maxY, offset.y))
+    return Offset(offsetX, offsetY)
+}
+
 @Composable
 fun ZoomableBox(
     modifier: Modifier = Modifier,
-    initialZoom: Float = 1f,
     minZoom: Float = 1f,
     maxZoom: Float = 3f,
-    amountZoomOnDoubleTap: Float = 2f,
+    amountZoomOnDoubleTap: Float = 1f,
+    initialZoom: Float = minZoom,
+    initialOffset: Offset = Offset.Zero,
     alignment: Alignment? = null,
     showZoomText: Boolean = true,
     content: @Composable ZoomableBoxScope.() -> Unit
 ) {
     var zoom by remember { mutableFloatStateOf(initialZoom.coerceIn(minZoom, maxZoom)) }
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    var offsetY by remember { mutableFloatStateOf(0f) }
     var sizePx by remember { mutableStateOf(IntSize.Zero) }
     var sizeDp by remember { mutableStateOf(Pair(0.dp, 0.dp)) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
 
     with(LocalDensity.current) {
         val xDp = sizePx.width.toDp()
@@ -59,47 +79,39 @@ fun ZoomableBox(
         sizeDp = Pair(xDp, yDp)
     }
 
-    val calculateOffset = { size: IntSize, offset: Offset ->
-        val maxX = (size.width * (zoom - 1)) / 2
-        val minX = -maxX
-        offsetX = maxOf(minX, minOf(maxX, offset.x))
-        val maxY = (size.height * (zoom - 1)) / 2
-        val minY = -maxY
-        offsetY = maxOf(minY, minOf(maxY, offset.y))
-    }
-
     Box (
         modifier = modifier
             .clip(RectangleShape)
             .fillMaxWidth(1f)
     ) {
-        AnimatedVisibility(
-            visible = zoom > 1f,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .zIndex(1f),
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            IconButton(onClick = {
-                zoom = 1f
-                offsetX = 0f
-                offsetY = 0f
-            },
-            ) {
-                Icon(
-                    Icons.Filled.ZoomOutMap, "reset map zoom"
-                )
-            }
-        }
+//        AnimatedVisibility(
+//            visible = zoom > 1f,
+//            modifier = Modifier
+//                .align(Alignment.TopEnd)
+//                .zIndex(1f),
+//            enter = fadeIn(),
+//            exit = fadeOut()
+//        ) {
+//            IconButton(onClick = {
+//                zoom = 1f
+//                offset = Offset.Zero
+//            },
+//            ) {
+//                Icon(
+//                    Icons.Filled.ZoomOutMap, "reset map zoom"
+//                )
+//            }
+//        }
         if (showZoomText) {
             AnimatedVisibility(
                 visible = zoom > minZoom,
-                modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
             ) {
                 Text(
-                    "${zoom.roundToInt()}x zoom",
-                    modifier = Modifier.alpha(0.3f)
+                    "%.1fx zoom".format(zoom),
+                    modifier = Modifier.alpha(0.5f)
                 )
             }
         }
@@ -110,54 +122,41 @@ fun ZoomableBox(
                 .graphicsLayer(
                     scaleX = zoom,
                     scaleY = zoom,
-                    translationX = offsetX,
-                    translationY = offsetY
+                    translationX = offset.x,
+                    translationY = offset.y
                 )
                 .onSizeChanged { sizePx = it }
                 .pointerInput(Unit) {
                     detectTransformGestures { centroidOffset, pan, gestureZoom, _ ->
                         zoom = maxOf(minZoom, minOf(maxZoom, zoom * gestureZoom))
-                        val newOffset = Offset(offsetX+zoom*pan.x, offsetY+zoom*pan.y)
-                        calculateOffset(size, newOffset)
-                        Log.d("Zoomable", "Zoom Pan, offset: ${offsetX}, ${offsetY}")
+                        val newOffset = offset + Offset(zoom * pan.x, zoom * pan.y)
+                        offset = constrainOffset(size, newOffset, zoom)
+                        Log.d("Zoomable", "Zoom Pan, offset: $offset")
                     }
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = { tapOffset ->
-                            if (zoom == minZoom) {
-                                val newZoom = minOf(maxZoom, zoom + 1)
-                                val windowWidth = size.width / newZoom
-                                val windowHeight = size.height / newZoom
+                            if (zoom < maxZoom) {
+                                val newZoom = minOf(maxZoom, zoom + amountZoomOnDoubleTap)
+                                val offsetInWindow = calculateOffset(tapOffset, size, 2f)
 
-                                var centX = maxOf(windowWidth / 2, minOf(tapOffset.x, size.width - windowWidth / 2))
-                                var centY = maxOf(windowHeight / 2, minOf(tapOffset.y, size.height - windowHeight / 2))
+                                Log.d("Zoomable", "Double Tap, window offset $offsetInWindow")
 
-                                // get a value in -0.5 to 0.5
-                                centX = 1 - centX / windowWidth
-                                centY = 1 - centY / windowHeight
+                                val offsetTotal = offsetInWindow
 
-                                offsetX = centX * size.width
-                                offsetY = centY * size.height
-
-                                Log.d("Zoomable",
-                                    "Zoom Double Tap @ ${tapOffset.x}, ${tapOffset.y};" +
-//                                            " relative to center: $tapX, $tapY " +
-                                            " offset @ $offsetX, $offsetY")
-
+                                offset = constrainOffset(size, offsetTotal, newZoom)
                                 zoom = newZoom
                             } else {
-                                offsetX = 0f
-                                offsetY = 0f
+                                offset = Offset.Zero
                                 zoom = minZoom
                             }
-
                         }
                     )
                 },
             contentAlignment = alignment ?: Alignment.TopStart
         ) {
-            val scope = ZoomableBoxScopeImpl(sizePx, sizeDp, zoom, offsetX, offsetY)
+            val scope = ZoomableBoxScopeImpl(sizePx, sizeDp, zoom, offset)
             scope.content()
         }
     }
@@ -167,16 +166,14 @@ interface ZoomableBoxScope {
     val sizePx: IntSize
     val sizeDp: Pair<Dp, Dp>
     val scale: Float
-    val offsetX: Float
-    val offsetY: Float
+    val offset: Offset
 }
 
 private data class ZoomableBoxScopeImpl(
     override val sizePx: IntSize,
     override val sizeDp: Pair<Dp, Dp>,
     override val scale: Float,
-    override val offsetX: Float,
-    override val offsetY: Float
+    override val offset: Offset,
 ) : ZoomableBoxScope
 
 

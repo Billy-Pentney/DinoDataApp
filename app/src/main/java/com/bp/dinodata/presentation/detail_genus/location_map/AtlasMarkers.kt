@@ -101,6 +101,7 @@ object AtlasMarkers {
         "Greenland" to Marker(0.36f, 0.15f, R.string.location_greenland),
         "Austria" to Marker(0.512f, 0.307f, R.string.location_austria),
         "Hungary" to Marker(0.526f, 0.311f, R.string.location_hungary),
+        "Czech Republic" to Marker(0.511f, 0.285f, R.string.location_czech_republic)
     )
 
     private val AFRICA_MAP = RegionMap(
@@ -115,6 +116,7 @@ object AtlasMarkers {
         "Madagascar" to Marker(0.599f, 0.64f, R.string.location_madagascar),
         "Tunisia" to Marker(0.495f, 0.375f, R.string.location_tunisia),
         "Zimbabwe" to Marker(0.555f, 0.625f, R.string.location_zimbabwe),
+        "Angola" to Marker(0.518f, 0.62f, R.string.location_angola),
         "Malawi" to Marker(0.565f, 0.605f, R.string.location_malawi),
         "Lesotho" to Marker(0.548f, 0.677f, R.string.location_lesotho),
         "Tanzania" to Marker(0.566f, 0.567f, R.string.location_tanzania),

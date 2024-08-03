@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.detail_genus.location_map
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
@@ -9,8 +10,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,18 +28,22 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,19 +61,21 @@ import kotlinx.coroutines.launch
 fun LocationAtlas(
     locations: Iterable<String>,
     modifier: Modifier = Modifier,
-    initialZoom: Float = 1f
+    initialZoom: Float = 1f,
+    initialOffset: Offset = Offset.Zero
 ) {
     val onTapIconColor = remember { Color.Red }
     val defaultIconSize = remember { 26.dp }
 
     val shape = RoundedCornerShape(8.dp)
-    val markerIcon = remember { Icons.Filled.LocationOn }
 
     val coroutineScope = rememberCoroutineScope()
 
     // Store a list of all location names which were *not*
     // matched to a marker and displayed.
     val undisplayedLocations = mutableListOf<String>()
+
+    val iconPainter = ImageVector.vectorResource(id = R.drawable.map_marker_thin)
 
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -80,6 +89,7 @@ fun LocationAtlas(
                 .fillMaxWidth()
                 .aspectRatio(1.5f),
             initialZoom = initialZoom,
+            initialOffset = initialOffset
         ) {
             Image(
                 painterResource(id = R.drawable.map_base),
@@ -88,7 +98,7 @@ fun LocationAtlas(
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth(1f)
-//                .border(2.dp, Color.Yellow)
+                    .fillMaxHeight()
             )
 
             val iconSize = defaultIconSize / (1 + (scale - 1) / 2)
@@ -130,7 +140,8 @@ fun LocationAtlas(
                         state = tooltipState,
                     ) {
                         Image(
-                            markerIcon, null,
+                            iconPainter,
+                            null,
                             colorFilter = ColorFilter.tint(iconColor, BlendMode.SrcIn),
                             modifier = Modifier
                                 .size(iconSize)
@@ -163,15 +174,17 @@ fun LocationAtlas(
     }
 }
 
-@Preview(widthDp = 400, heightDp = 500)
+@Preview(widthDp = 800, heightDp = 1000)
 @Composable
 fun PreviewLocationAtlas() {
     DinoDataTheme (darkTheme = true) {
-        Surface (modifier = Modifier.width(1080.dp)) {
+        Surface (modifier = Modifier.fillMaxWidth().padding(32.dp)) {
             LocationAtlas(
                 locations = AtlasMarkers.getKeysForRegion(
-                    AtlasMarkers.ASIA
-                )
+                    AtlasMarkers.AFRICA
+                ),
+                initialZoom = 1f,
+                initialOffset = Offset(0f, 0f)
             )
         }
     }
