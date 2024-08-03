@@ -181,7 +181,7 @@ fun PreviewLocationAtlas() {
         Surface (modifier = Modifier.fillMaxWidth().padding(32.dp)) {
             LocationAtlas(
                 locations = AtlasMarkers.getKeysForRegion(
-                    AtlasMarkers.AFRICA
+                    AtlasMarkers.AMERICA
                 ),
                 initialZoom = 1f,
                 initialOffset = Offset(0f, 0f)

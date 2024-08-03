@@ -72,6 +72,7 @@ object AtlasMarkers {
         "Canada" to Marker(0.192f, 0.247f, R.string.location_canada),
         "USA" to Marker(0.225f, 0.35f, R.string.location_usa_full),
         "Mexico" to Marker(0.206f, 0.438f, R.string.location_mexico),
+        "Cuba" to Marker(0.265f, 0.44f, R.string.location_cuba),
         "Argentina" to Marker(0.313f, 0.685f, R.string.location_argentina),
         "Brazil" to Marker(0.348f, 0.59f, R.string.location_brazil),
         "Uruguay" to Marker(0.325f, 0.695f, R.string.location_uruguay),
@@ -142,6 +143,7 @@ object AtlasMarkers {
     private val OTHER_REGIONS = RegionMap(
         OCEANIA,
         "Australia" to Marker(0.83f, 0.65f, R.string.location_australia),
+        "New Zealand" to Marker(0.923f, 0.745f, R.string.location_new_zealand),
         "Antarctica" to Marker(0.589f, 0.932f, R.string.location_antarctica)
     )
 
