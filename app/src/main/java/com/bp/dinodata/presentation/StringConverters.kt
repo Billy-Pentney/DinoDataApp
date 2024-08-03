@@ -36,6 +36,6 @@ fun convertCreatureTypeToString(type: CreatureType): String? {
         CreatureType.Serpent -> stringResource(R.string.type_serpent)
         CreatureType.Ichthyosaur -> stringResource(R.string.type_ichthyosaur)
         CreatureType.Mosasaur -> stringResource(R.string.type_mosasaur)
-        CreatureType.SpinedSynapsid -> stringResource(R.string.type_synapsid)
+        CreatureType.SpinedSynapsid -> stringResource(R.string.type_synapsid_spined)
     }
 }

@@ -32,8 +32,8 @@ fun convertCreatureTypeToSilhouette(
         CreatureType.Serpent            -> R.drawable.type_serpent
         CreatureType.Mosasaur           -> R.drawable.type_mosasaur
         CreatureType.Ichthyosaur        -> R.drawable.type_ichthyosaur
-        CreatureType.Synapsid           -> R.drawable.type_spined_synapsid
-        CreatureType.SpinedSynapsid     -> R.drawable.type_spined_synapsid
+        CreatureType.Synapsid           -> R.drawable.type_synapsid
+        CreatureType.SpinedSynapsid     -> R.drawable.type_synapsid_spined
         //        CreatureType.Aquatic -> TODO()
         //        CreatureType.Cenezoic -> TODO()
         CreatureType.Other              -> R.drawable.type_unknown
