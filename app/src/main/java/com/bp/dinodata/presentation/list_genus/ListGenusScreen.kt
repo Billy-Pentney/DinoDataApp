@@ -6,6 +6,9 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -622,7 +625,14 @@ fun LazyListOfGenera(
             GenusListItem(
                 genus = genus,
                 onClick = { navigateToGenus(genus.getName()) },
-                modifier = Modifier.animateItem()
+                modifier = Modifier
+                    .animateItem(
+                        fadeInSpec = spring(),
+                        placementSpec = spring(
+                            Spring.DampingRatioMediumBouncy,
+                            Spring.StiffnessLow
+                        )
+                    )
             )
         }
         if (showCreatureCountAtBottom) {

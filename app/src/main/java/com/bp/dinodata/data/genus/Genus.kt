@@ -43,6 +43,8 @@ interface IAdditionalNameInfo {
 interface IHasTimePeriodInfo {
     fun getTimePeriod(): TimePeriod?
     fun getYearsLived(): String?
+    fun getStartMya(): Float?
+    fun getEndMya(): Float?
 }
 
 interface IHasLocationInfo {
@@ -52,7 +54,8 @@ interface IHasLocationInfo {
 interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
 
 interface IGenus: IHasTaxonomy, IHasMeasurements, IAdditionalNameInfo,
-    IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo
+    IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo {
+}
 
 @Immutable
 data class Genus(
@@ -60,6 +63,8 @@ data class Genus(
     private val diet: Diet = Diet.Unknown,
     private val type: CreatureType = CreatureType.Other,
     private val yearsLived: String? = null,
+    private val startMya: Float? = null,
+    private val endMya: Float? = null,
     private val timePeriod: TimePeriod? = null,
     private val nameMeaning: String? = null,
     private val namePronunciation: String? = null,
@@ -94,6 +99,9 @@ data class Genus(
     override fun getWeight(): IDescribesWeight? = weight
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
+
+    override fun getStartMya(): Float? = startMya
+    override fun getEndMya(): Float? = endMya
 
     override fun getLocations(): List<String> = locations
     override fun getSpeciesList(): List<ISpecies> = species

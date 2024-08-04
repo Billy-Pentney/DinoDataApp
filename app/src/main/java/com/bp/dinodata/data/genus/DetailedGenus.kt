@@ -27,11 +27,15 @@ class DetailedGenus(
     override fun getName(): String = genus.getName()
     override fun getDiet(): Diet = genus.getDiet()
     override fun getCreatureType(): CreatureType = genus.getCreatureType()
-    override fun getTimePeriod(): TimePeriod? = genus.getTimePeriod()
-    override fun getYearsLived(): String? = genus.getYearsLived()
+
     override fun getLocations(): List<String> = genus.getLocations()
     override fun getSpeciesList(): List<ISpecies> = genus.getSpeciesList()
     override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()
+
+    override fun getTimePeriod(): TimePeriod? = genus.getTimePeriod()
+    override fun getYearsLived(): String? = genus.getYearsLived()
+    override fun getStartMya(): Float? = genus.getStartMya()
+    override fun getEndMya(): Float? = genus.getEndMya()
 
     override fun getImageUrl(index: Int): String? = genus.getImageUrl(index)
     override fun getThumbnailUrl(index: Int): String? = genus.getThumbnailUrl(index)

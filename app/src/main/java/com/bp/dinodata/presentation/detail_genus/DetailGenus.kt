@@ -84,6 +84,8 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
+import com.bp.dinodata.presentation.icons.MesozoicChronologyBar
+import com.bp.dinodata.presentation.icons.TimeMarkerRange
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.dialog.ColorPickerDialog
@@ -278,6 +280,8 @@ fun ShowGenusDetail(
                 CreatureTimePeriod(
                     timePeriod = genus.getTimePeriod(),
                     yearsLived = genus.getYearsLived(),
+                    startMya = genus.getStartMya(),
+                    endMya = genus.getEndMya(),
                     iconModifier = iconModifier
                 )
                 sectionDivider()
@@ -426,6 +430,8 @@ fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
 fun CreatureTimePeriod(
     timePeriod: TimePeriod?,
     yearsLived: String?,
+    startMya: Float? = null,
+    endMya: Float? = null,
     iconModifier: Modifier
 ) {
     Column(
@@ -446,6 +452,14 @@ fun CreatureTimePeriod(
                 Icon(Icons.Filled.AccessTimeFilled, null, modifier = iconModifier)
             }
         )
+
+        startMya?.let {
+            val timeMarker = TimeMarkerRange(startMya, endMya?:startMya)
+            MesozoicChronologyBar(
+                listOf(timeMarker),
+                modifier = Modifier.padding(4.dp)
+            )
+        }
     }
 }
 
@@ -657,6 +671,8 @@ fun PreviewGenusDetailDark() {
         .setLength("5 metres")
         .setWeight("1 tonnes")
         .setCreatureType("ceratopsian")
+        .setStartMya("75.5")
+        .setEndMya("74.5")
         .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
         .setLocations(listOf("Canada", "USA"))
         .setSpecies(

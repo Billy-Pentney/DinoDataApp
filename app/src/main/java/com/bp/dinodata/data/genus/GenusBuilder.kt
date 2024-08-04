@@ -26,8 +26,8 @@ class GenusBuilder(
     private var type: CreatureType = CreatureType.Other,
     private var taxonomy: List<String> = emptyList(),
     private var locations: List<String> = emptyList(),
-    private var startMya: Int? = null,
-    private var endMya: Int? = null,
+    private var startMya: Float? = null,
+    private var endMya: Float? = null,
     private var species: List<ISpecies> = emptyList()
 ): IGenusBuilder {
 
@@ -46,6 +46,8 @@ class GenusBuilder(
         private const val LOCATIONS_KEY = "location"
         private const val TIME_EPOCHS_KEY = "time_period_epoch"
         private const val SPECIES_KEY = "species"
+        private const val START_MYA_KEY = "start_mya"
+        private const val END_MYA_KEY = "end_mya"
         const val TIME_AGES_KEY = "time_period_ages"
 
         fun fromDict(dataMap: Map<*, *>): IBuilder<IGenus>? {
@@ -88,6 +90,9 @@ class GenusBuilder(
 
         dataMap[DIET_KEY]?.let { builder.setDiet(it.toString()) }
         dataMap[YEARS_LIVED_KEY]?.let { builder.setYearsLived(it.toString()) }
+        dataMap[START_MYA_KEY]?.let { builder.setStartMya(it.toString()) }
+        dataMap[END_MYA_KEY]?.let { builder.setEndMya(it.toString()) }
+
         dataMap[WEIGHT_KEY]?.let { builder.setWeight(it.toString()) }
         dataMap[LENGTH_KEY]?.let { builder.setLength(it.toString()) }
         dataMap[CREATURE_TYPE_KEY]?.let { builder.setCreatureType(it.toString()) }
@@ -103,8 +108,11 @@ class GenusBuilder(
     }
 
     override fun setStartMya(startMya: String?): IGenusBuilder {
+        if (startMya == null || startMya == "Unknown") {
+            return this
+        }
         try {
-            this.startMya = startMya?.toInt()
+            this.startMya = startMya.toFloat()
         }
         catch (ex: NumberFormatException) {
             Log.d(TAG, "Unable to convert \'$startMya\' to integer")
@@ -113,19 +121,17 @@ class GenusBuilder(
     }
 
     override fun setEndMya(endMya: String?): IGenusBuilder {
+        if (endMya == null || endMya == "Unknown") {
+            return this
+        }
         try {
-            this.endMya = endMya?.toInt()
+            this.endMya = endMya.toFloat()
         }
         catch (ex: NumberFormatException) {
             Log.d(TAG, "Unable to convert \'$endMya\' to integer")
         }
         return this
     }
-
-//    override fun addImageUrlMap(imageData: Map<String, MultiImageUrlData>): GenusBuilder {
-//        this.multiImageUrlMap = imageData
-//        return this
-//    }
 
     override fun setLocations(locations: Any): IGenusBuilder {
         if (locations is List<*>) {
@@ -284,6 +290,8 @@ class GenusBuilder(
             length = length,
             weight = weight,
             yearsLived = yearsLived,
+            startMya = startMya,
+            endMya = endMya,
             timePeriod = timePeriod,
             nameMeaning = nameMeaning,
             namePronunciation = namePronunciation,

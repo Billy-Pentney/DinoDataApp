@@ -363,6 +363,9 @@
     <string name="type_mosasaur">Mosasaur</string>
     <string name="label_also_found_in">Also found in</string>
     <string name="type_synapsid_spined">Synapsid with Sail</string>
+    <string name="time_period_cretaceous">Cretaceous</string>
+    <string name="time_period_jurassic">Jurassic</string>
+    <string name="time_period_triassic">Triassic</string>
 
 
 </resources>
