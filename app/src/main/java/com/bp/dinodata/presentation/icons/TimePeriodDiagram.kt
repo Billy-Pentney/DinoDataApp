@@ -1,7 +1,6 @@
 package com.bp.dinodata.presentation.icons
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -130,6 +128,11 @@ fun TimePeriodMarker(
     )
 }
 
+/**
+ * Displays a horizontal bar, consisting of the given labelled
+ * time-periods, drawn to scale. Markers can optionally be provided
+ * to highlight specific points on the bar
+ */
 @Composable
 fun GenericChronologyBar(
     barPeriods: List<ITimePeriodBar>,
@@ -137,7 +140,8 @@ fun GenericChronologyBar(
     modifier: Modifier = Modifier,
     barHeight: Dp = 14.dp,
     fontSize: TextUnit = 12.sp,
-    markerWidth: Dp = 4.dp,
+    markerWidth: Dp = 3.dp,
+    barCornerRadius: Dp = 4.dp
 ) {
 
     // The time-range this bar covers
@@ -168,7 +172,22 @@ fun GenericChronologyBar(
         Box (Modifier.fillMaxWidth()) {
             // Time Period Bars
             Row(Modifier.fillMaxWidth().padding(top=barHeight/2)) {
-                barPeriods.forEach { period ->
+                barPeriods.forEachIndexed { i, period ->
+
+                    val leftCorners =
+                        if (i == 0) barCornerRadius else 0.dp
+
+                    val rightCorners = 
+                        if (i == barPeriods.size-1) barCornerRadius
+                        else 0.dp
+
+                    val shape = RoundedCornerShape(
+                        topStart = leftCorners,
+                        topEnd = rightCorners,
+                        bottomStart = leftCorners,
+                        bottomEnd = rightCorners
+                    )
+
                     val duration = period.getDurationInMYA()
                     val proportion = duration / totalBarDuration
                     Box(
@@ -176,44 +195,51 @@ fun GenericChronologyBar(
                             .weight(proportion)
                             .height(barHeight)
                             .fillMaxWidth()
-                            .background(period.getBrush())
+                            .background(period.getBrush(), shape)
                     )
                 }
             }
 
             // Marker over periods
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .zIndex(1f),
-            ) {
-                markers.forEach() { timeMarker ->
+            markers.forEach { timeMarker ->
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .zIndex(1f),
+                ) {
                     val startMarker = timeMarker.getStartTimeInMYA()
-                    val startProportion = (earliest - timeMarker.getStartTimeInMYA()) / totalBarDuration
-                    Spacer(modifier= Modifier
-                        .fillMaxWidth(startProportion)
-                        .padding(end = markerWidth)
-                    )
+                    val weightToStart = (earliest - startMarker) / totalBarDuration
+
+                    var weightToEnd = weightToStart
+                    if (weightToStart > 0) {
+                        Spacer(
+                            modifier = Modifier.weight(weightToStart)
+                        )
+                    }
                     Column {
-                        TimePeriodMarker(markerWidth, barHeight*2)
-    //                    Text("$startMarker MYA")
+                        TimePeriodMarker(markerWidth, barHeight * 2)
+                        //                    Text("$startMarker MYA")
                     }
                     val endMarker = timeMarker.getEndTimeInMYA()
                     if (endMarker != startMarker) {
-                        val endMyaProportion = (earliest - endMarker) / totalBarDuration
-                        // Shaded region between markers
+                        // Draw a shaded region between the two markers
+                        weightToEnd = (earliest - endMarker) / totalBarDuration
+                        // The interval as a fraction of the total bar
+                        val intervalWeight = weightToEnd - weightToStart
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(endMyaProportion - startProportion)
+                                .weight(intervalWeight)
                                 .height(barHeight / 2)
                                 .offset(y = barHeight * 0.75f)
                                 .background(Color(0x88FFFFFF))
                         )
-                        TimePeriodMarker(markerWidth, barHeight*2)
+                        TimePeriodMarker(markerWidth, barHeight * 2)
+                    }
+
+                    if (weightToEnd < 1f) {
+                        Spacer(Modifier.weight(1f-weightToEnd))
                     }
                 }
-
-                Spacer(Modifier.fillMaxWidth())
             }
         }
     }
@@ -241,8 +267,10 @@ fun TimePeriodBarPreview() {
         ) {
             MesozoicChronologyBar(
                 markers = listOf(
-                    TimeMarkerRange(90f, 144f),
-                    TimeMarker(81f)
+//                    TimeMarkerRange(201.5f, 145f),
+                    TimeMarker(177f),
+//                    TimeMarkerRange(240f,189f),
+                    Cretaceous,Triassic
                 ),
                 modifier = Modifier.padding(16.dp)
             )

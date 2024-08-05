@@ -454,6 +454,7 @@ fun CreatureTimePeriod(
         )
 
         startMya?.let {
+            Spacer(modifier=Modifier.height(4.dp))
             val timeMarker = TimeMarkerRange(startMya, endMya?:startMya)
             MesozoicChronologyBar(
                 listOf(timeMarker),
