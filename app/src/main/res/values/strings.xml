@@ -366,6 +366,18 @@
     <string name="time_period_cretaceous">Cretaceous</string>
     <string name="time_period_jurassic">Jurassic</string>
     <string name="time_period_triassic">Triassic</string>
+    <string name="time_period_permian">Permian</string>
+    <string name="time_period_carboniferous">Carboniferous</string>
+    <string name="time_period_devonian">Devonian</string>
+    <string name="time_period_silurian">Silurian</string>
+    <string name="time_period_ordovician">Ordovician</string>
+    <string name="time_period_cambrian">Cambrian</string>
+    <string name="time_era_mesozoic">Mesozoic</string>
+    <string name="time_era_paleozoic">Paleozoic</string>
+    <string name="time_period_paleogene">Paleogene</string>
+    <string name="time_era_cenozoic">Cenozoic</string>
+    <string name="time_period_neogene">Neogene</string>
+    <string name="time_period_quaternary">Quaternary</string>
 
 
 </resources>

@@ -84,9 +84,11 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
-import com.bp.dinodata.presentation.icons.MesozoicChronologyBar
-import com.bp.dinodata.presentation.icons.TimeMarkerRange
+import com.bp.dinodata.presentation.icons.chronology.MesozoicChronologyBar
+import com.bp.dinodata.presentation.icons.chronology.TimeInterval
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
+import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.dialog.ColorPickerDialog
 import com.bp.dinodata.theme.DinoDataTheme
@@ -280,8 +282,7 @@ fun ShowGenusDetail(
                 CreatureTimePeriod(
                     timePeriod = genus.getTimePeriod(),
                     yearsLived = genus.getYearsLived(),
-                    startMya = genus.getStartMya(),
-                    endMya = genus.getEndMya(),
+                    timeInterval = genus.getTimeIntervalLived(),
                     iconModifier = iconModifier
                 )
                 sectionDivider()
@@ -430,8 +431,7 @@ fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
 fun CreatureTimePeriod(
     timePeriod: TimePeriod?,
     yearsLived: String?,
-    startMya: Float? = null,
-    endMya: Float? = null,
+    timeInterval: ITimeInterval?,
     iconModifier: Modifier
 ) {
     Column(
@@ -453,11 +453,10 @@ fun CreatureTimePeriod(
             }
         )
 
-        startMya?.let {
-            Spacer(modifier=Modifier.height(4.dp))
-            val timeMarker = TimeMarkerRange(startMya, endMya?:startMya)
-            MesozoicChronologyBar(
-                listOf(timeMarker),
+        timeInterval?.let {
+            Spacer(modifier = Modifier.height(4.dp))
+            TimeChronologyBar(
+                timeInterval,
                 modifier = Modifier.padding(4.dp)
             )
         }

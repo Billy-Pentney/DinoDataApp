@@ -5,6 +5,7 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
 
 interface IDetailedGenus: IGenusWithImages, ILocalPrefs {
     fun getLocalPrefs(): ILocalPrefs
@@ -36,6 +37,7 @@ class DetailedGenus(
     override fun getYearsLived(): String? = genus.getYearsLived()
     override fun getStartMya(): Float? = genus.getStartMya()
     override fun getEndMya(): Float? = genus.getEndMya()
+    override fun getTimeIntervalLived(): ITimeInterval? = genus.getTimeIntervalLived()
 
     override fun getImageUrl(index: Int): String? = genus.getImageUrl(index)
     override fun getThumbnailUrl(index: Int): String? = genus.getThumbnailUrl(index)

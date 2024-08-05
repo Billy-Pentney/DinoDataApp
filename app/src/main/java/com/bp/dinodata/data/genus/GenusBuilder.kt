@@ -13,6 +13,7 @@ import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
 import com.bp.dinodata.data.quantities.Weight
+import com.bp.dinodata.presentation.icons.chronology.TimeInterval
 
 class GenusBuilder(
     private val name: String,
@@ -273,15 +274,15 @@ class GenusBuilder(
 
     override fun build(): Genus {
 
+        val timeInterval = startMya?.let { start ->
+            endMya?.let { end ->
+                TimeInterval(start, end)
+            }
+        }
+
         // If years lived has not been provided but at least one year was given...
-        if (yearsLived == null && (startMya ?: endMya) != null) {
-            // Construct a string from the years
-            yearsLived =
-                if (startMya != null && endMya != null) {
-                    "$startMya-$endMya MYA"
-                } else {
-                    (startMya?.toString() ?: "") + (endMya?.toString() ?: "") + " MYA"
-                }
+        if (yearsLived == null) {
+            yearsLived = timeInterval?.toString()
         }
 
         return Genus(
@@ -290,8 +291,7 @@ class GenusBuilder(
             length = length,
             weight = weight,
             yearsLived = yearsLived,
-            startMya = startMya,
-            endMya = endMya,
+            timeInterval = timeInterval,
             timePeriod = timePeriod,
             nameMeaning = nameMeaning,
             namePronunciation = namePronunciation,

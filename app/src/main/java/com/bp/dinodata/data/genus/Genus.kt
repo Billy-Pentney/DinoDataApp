@@ -6,6 +6,8 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.presentation.icons.chronology.TimeInterval
 
 interface IHasTaxonomy {
     fun getTaxonomy(): String
@@ -43,6 +45,7 @@ interface IAdditionalNameInfo {
 interface IHasTimePeriodInfo {
     fun getTimePeriod(): TimePeriod?
     fun getYearsLived(): String?
+    fun getTimeIntervalLived(): ITimeInterval?
     fun getStartMya(): Float?
     fun getEndMya(): Float?
 }
@@ -63,8 +66,7 @@ data class Genus(
     private val diet: Diet = Diet.Unknown,
     private val type: CreatureType = CreatureType.Other,
     private val yearsLived: String? = null,
-    private val startMya: Float? = null,
-    private val endMya: Float? = null,
+    private val timeInterval: TimeInterval? = null,
     private val timePeriod: TimePeriod? = null,
     private val nameMeaning: String? = null,
     private val namePronunciation: String? = null,
@@ -100,8 +102,9 @@ data class Genus(
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 
-    override fun getStartMya(): Float? = startMya
-    override fun getEndMya(): Float? = endMya
+    override fun getStartMya(): Float? = timeInterval?.getStartTimeInMYA()
+    override fun getEndMya(): Float? = timeInterval?.getEndTimeInMYA()
+    override fun getTimeIntervalLived(): ITimeInterval? = timeInterval
 
     override fun getLocations(): List<String> = locations
     override fun getSpeciesList(): List<ISpecies> = species
