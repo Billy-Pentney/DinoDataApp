@@ -91,9 +91,24 @@ class DetailGenusViewModel @Inject constructor(
                 }
             }
             is DetailGenusUiEvent.ShowColorSelectDialog -> {
-                _uiState.value = _uiState.value.copy(
-                    colorSelectDialogVisible = event.visible
-                )
+                if (event.visible) {
+                    _uiState.value = _uiState.value.copy(
+                        dialogState = DetailScreenDialogState.ColorPickerDialog
+                    )
+                }
+                else {
+                    hideDialog()
+                }
+            }
+            is DetailGenusUiEvent.ShowLargeImageDialog -> {
+                if (event.visible) {
+                    _uiState.value = _uiState.value.copy(
+                        dialogState = DetailScreenDialogState.ImageView
+                    )
+                }
+                else {
+                    hideDialog()
+                }
             }
             is DetailGenusUiEvent.ToggleItemFavouriteStatus -> {
                 viewModelScope.launch {
@@ -118,6 +133,12 @@ class DetailGenusViewModel @Inject constructor(
     }
 
     fun getUiState(): State<DetailScreenUiState> = _uiState
+
+    private fun hideDialog() {
+        _uiState.value = _uiState.value.copy(
+            dialogState = DetailScreenDialogState.NoDialog
+        )
+    }
 
     /**
      * Invoke and handle the use-case of playing the Text-to-speech pronunciation
@@ -169,6 +190,7 @@ class DetailGenusViewModel @Inject constructor(
 sealed class DetailGenusUiEvent {
     data object PlayNamePronunciation: DetailGenusUiEvent()
     data class ShowColorSelectDialog(val visible: Boolean): DetailGenusUiEvent()
+    data class ShowLargeImageDialog(val visible: Boolean): DetailGenusUiEvent()
     data class SelectColor(val colorName: String?): DetailGenusUiEvent()
     data class ToggleItemFavouriteStatus(val isFavourite: Boolean): DetailGenusUiEvent()
     data class SetPreferencesCardExpansion(val expanded: Boolean): DetailGenusUiEvent()

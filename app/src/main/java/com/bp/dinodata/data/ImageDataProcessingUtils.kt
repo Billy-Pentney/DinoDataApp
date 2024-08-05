@@ -2,11 +2,20 @@ package com.bp.dinodata.data
 
 import android.util.Log
 
+interface ImageUrlData {
+    fun getUrlOfLargestImage(): String?
+    fun getSmallestImageUrl(index: Int): String?
+    fun getUrlOfLargestThumbnail(): String?
+    fun getSmallestThumbnailUrl(index: Int): String?
+    fun getImageName(): String
+}
+
 class SingleImageUrlData(
+    private val name: String,
     private val id: String,
     imageSizes: List<String>,
     thumbSizes: List<String>
-) {
+): ImageUrlData {
     private val imageSizesAsc = imageSizes.sortedBy { extractFirstDimension(it) }
     private val thumbSizesAsc = thumbSizes.sortedBy { extractFirstDimension(it) }
 
@@ -15,19 +24,23 @@ class SingleImageUrlData(
     val numThumbnails: Int
         get() = thumbSizesAsc.size
 
-    fun getImageUrl(index: Int): String? {
+    override fun getSmallestImageUrl(index: Int): String? {
         if (index >= numImages) {
             return null
         }
         return ImageUrlBuilder.buildUrl(id, imageSizesAsc[index], type=PhylopicImageType.Raster)
     }
 
-    fun getThumbnailUrl(index: Int): String? {
+    override fun getSmallestThumbnailUrl(index: Int): String? {
         if (index >= numThumbnails) {
             return null
         }
         return ImageUrlBuilder.buildUrl(id, thumbSizesAsc[index], type=PhylopicImageType.Thumbnail)
     }
+
+    override fun getImageName(): String = name
+    override fun getUrlOfLargestImage(): String? = getSmallestImageUrl(imageSizesAsc.size-1)
+    override fun getUrlOfLargestThumbnail(): String? = getSmallestThumbnailUrl(thumbSizesAsc.size-1)
 
     companion object {
         fun extractFirstDimension(size: String): Int {
@@ -43,6 +56,7 @@ class SingleImageUrlData(
             }
         }
     }
+
 }
 
 class MultiImageUrlData(
@@ -64,9 +78,9 @@ class MultiImageUrlData(
     val distinctImages: Int = urlData.size
 }
 
-object ImageUrlData {
+object ImageDataProcessingUtils {
 
-    fun fromMap(imageData: Map<String, Any>): SingleImageUrlData? {
+    fun fromMap(name: String, imageData: Map<String, Any>): SingleImageUrlData? {
         // Extract the data for each image
 
         val id = imageData["id"] as String?
@@ -74,7 +88,7 @@ object ImageUrlData {
         val thumbSizes = imageData["thumb_sizes"] as List<String>?
 
         if (id != null && imageSizes != null && thumbSizes != null) {
-            return SingleImageUrlData(id, imageSizes, thumbSizes)
+            return SingleImageUrlData(name, id, imageSizes, thumbSizes)
         }
         return null
     }
@@ -85,17 +99,17 @@ object ImageUrlData {
 
         val imageDataBySpecies = mutableMapOf<String, MultiImageUrlData>()
 
-        for (species in map.keys) {
-            val listOfImageDatas = map[species] as List<Map<String, Any>>?
+        for (speciesName in map.keys) {
+            val listOfImageDatas = map[speciesName] as List<Map<String, Any>>?
             if (listOfImageDatas != null) {
                 // Store the data for all images belonging to this species
                 val imageUrlData = listOfImageDatas.mapNotNull {
-                    fromMap(it)
+                    fromMap(speciesName, it)
                 }
 
                 // Only make a DTO if there was at least one image found
                 if (imageUrlData.isNotEmpty()) {
-                    imageDataBySpecies[species] = MultiImageUrlData(species, imageUrlData)
+                    imageDataBySpecies[speciesName] = MultiImageUrlData(speciesName, imageUrlData)
                 }
             }
         }

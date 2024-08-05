@@ -7,6 +7,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,6 +66,7 @@ fun GenusTitleCardAndControls(
     onPlayNamePronunciation: () -> Unit,
     canPlayPronunciation: Boolean,
     isFavourite: Boolean,
+    showLargeImageDialog: () -> Unit,
     colorScheme: ColorScheme,
     setColorPickerDialogVisibility: (Boolean) -> Unit,
     toggleItemAsFavourite: (Boolean) -> Unit,
@@ -107,9 +110,7 @@ fun GenusTitleCardAndControls(
                     .animateContentSize()
                     .padding(paddingValues)
             ) {
-                Box(
-                    modifier = Modifier.height(IntrinsicSize.Min)
-                ) {
+                Box(modifier = Modifier.height(IntrinsicSize.Min)) {
                     Box(
                         contentAlignment = Alignment.BottomEnd,
                         modifier = Modifier
@@ -124,6 +125,15 @@ fun GenusTitleCardAndControls(
                             failure = placeholder(R.drawable.unkn),
                             contentDescription = null,
                             modifier = Modifier
+                                .clickable {
+                                    if (genusImageUrl != null) {
+                                        Log.i("GenusTitleCard", "User clicked image; opening dialog...")
+                                        showLargeImageDialog()
+                                    }
+                                    else {
+                                        Log.i("GenusTitleCard", "User clicked image but no image to show!")
+                                    }
+                                }
                                 .fillMaxHeight()
                                 .padding(start = 40.dp, end = 20.dp, bottom = 20.dp)
                                 .offset(x = 10.dp, y = 0.dp)

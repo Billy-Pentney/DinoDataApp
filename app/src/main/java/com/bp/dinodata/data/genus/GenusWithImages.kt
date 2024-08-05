@@ -2,6 +2,7 @@ package com.bp.dinodata.data.genus
 
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
+import com.bp.dinodata.data.ImageUrlData
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TimePeriod
@@ -13,13 +14,18 @@ interface IHasImageData {
     fun getImageUrl(index: Int = 0): String?
     fun getThumbnailUrl(index: Int = 0): String?
     fun getNumDistinctImages(): Int
+    fun getImageData(index: Int): ImageUrlData?
+}
+
+interface IHasCurrentSelectedImage {
+    fun getCurrentImageData(): ImageUrlData?
 }
 
 interface IGenusWithImages: IGenus, IHasImageData
 
 class GenusWithImages(
     private val genus: IGenus,
-    private val imageUrlDataMap: Map<String, MultiImageUrlData>? = null
+    imageUrlDataMap: Map<String, MultiImageUrlData>? = null
 ): IGenusWithImages {
     private val allImagesUrlData: List<SingleImageUrlData>?
             = imageUrlDataMap?.flatMap { it.value.getAllImageData() }
@@ -48,12 +54,16 @@ class GenusWithImages(
 
     override fun getImageUrl(index: Int): String? {
         val imageGroup = allImagesUrlData?.elementAtOrNull(index)
-        return imageGroup?.getImageUrl(0)
+        return imageGroup?.getSmallestImageUrl(0)
     }
 
     override fun getThumbnailUrl(index: Int): String? {
         val imageGroup = allImagesUrlData?.elementAtOrNull(index)
-        return imageGroup?.getThumbnailUrl(0)
+        return imageGroup?.getSmallestThumbnailUrl(0)
+    }
+
+    override fun getImageData(index: Int): ImageUrlData? {
+        return allImagesUrlData?.elementAtOrNull(index)
     }
 
     override fun getNumDistinctImages(): Int = allImagesUrlData?.size ?: 0

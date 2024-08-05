@@ -84,8 +84,6 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
-import com.bp.dinodata.presentation.icons.chronology.MesozoicChronologyBar
-import com.bp.dinodata.presentation.icons.chronology.TimeInterval
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
 import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
@@ -163,7 +161,7 @@ fun GenusDetailScreenContent(
     onEvent: (DetailGenusUiEvent) -> Unit
 ) {
     val genus = uiState.getGenusData()
-    val colorPickerDialogVisible by remember { mutableStateOf(uiState.colorSelectDialogVisible) }
+    val visibleDialogState by remember { mutableStateOf(uiState.dialogState) }
 
     Crossfade(genus, label="crossfade_genus_null") {
         if (it == null) {
@@ -174,7 +172,7 @@ fun GenusDetailScreenContent(
                 uiState = uiState,
                 genus = it,
                 onEvent = onEvent,
-                colorDialogVisible = colorPickerDialogVisible,
+                visibleDialogState = visibleDialogState,
                 modifier = modifier
             )
         }
@@ -184,7 +182,7 @@ fun GenusDetailScreenContent(
 @Composable
 fun ShowGenusDetail(
     uiState: DetailScreenUiState,
-    colorDialogVisible: Boolean,
+    visibleDialogState: DetailScreenDialogState,
     genus: IDetailedGenus,
     onEvent: (DetailGenusUiEvent) -> Unit,
     modifier: Modifier = Modifier
@@ -210,11 +208,12 @@ fun ShowGenusDetail(
 
     val selectedColor by remember { mutableStateOf(genus.getSelectedColorName()) }
     val colorScheme by remember { derivedStateOf { ThemeConverter.getTheme(selectedColor) } }
-    var colorPickerDialogVisible by remember { mutableStateOf(colorDialogVisible) }
+    var visibleDialog by remember { mutableStateOf(visibleDialogState) }
     var preferencesControlsExpanded by remember { mutableStateOf(uiState.preferencesCardExpanded) }
 
+    // Color-Picker Dialog Pop-up
     AnimatedVisibility (
-        colorPickerDialogVisible,
+        visibleDialog == DetailScreenDialogState.ColorPickerDialog,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
@@ -222,11 +221,28 @@ fun ShowGenusDetail(
             initiallySelectedColor = selectedColor,
             onColorPicked = { onEvent(DetailGenusUiEvent.SelectColor(it)) },
             onClose = {
-                colorPickerDialogVisible = false
+                visibleDialog = DetailScreenDialogState.NoDialog
                 onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
             }
         )
     }
+
+    // Image-View Dialog Pop-up
+    AnimatedVisibility (
+        visibleDialog == DetailScreenDialogState.ImageView,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        EnlargedImageDialog(
+            genus,
+            onHide = {
+                visibleDialog = DetailScreenDialogState.NoDialog
+                onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+            }
+        )
+    }
+
+
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -240,12 +256,20 @@ fun ShowGenusDetail(
                 onPlayNamePronunciation = { onEvent(DetailGenusUiEvent.PlayNamePronunciation) },
                 modifier = Modifier.height(cardHeight),
                 visibleImageIndex = genus.getPreferredImageIndex(),
+                showLargeImageDialog = {
+                    visibleDialog = DetailScreenDialogState.ImageView
+                    onEvent(DetailGenusUiEvent.ShowLargeImageDialog(true))
+                },
                 innerPadding = innerPadding,
                 canPlayPronunciation = uiState.canPlayPronunciationAudio,
                 isFavourite = genus.isUserFavourite(),
                 colorScheme = colorScheme ?: MaterialTheme.colorScheme,
                 setColorPickerDialogVisibility = {
-                    colorPickerDialogVisible = it
+                    visibleDialog = if (it) {
+                        DetailScreenDialogState.ColorPickerDialog
+                    } else {
+                        DetailScreenDialogState.NoDialog
+                    }
                     onEvent(DetailGenusUiEvent.ShowColorSelectDialog(visible = it))
                 },
                 toggleItemAsFavourite = {
@@ -625,40 +649,40 @@ fun ShowCreatureSpeciesCards(
 }
 
 
-@Preview(
-    widthDp = 300,
-    heightDp = 500,
-    name = "Light"
-)
-@Composable
-fun PreviewGenusDetail() {
-    val acro = GenusBuilder("Acrocanthosaurus")
-        .setDiet("Carnivorous")
-        .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")
-//        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
-        .setNameMeaning("high-spined lizard")
-        .setLength("11-11.5 metres")
-        .setWeight("4.4 tonnes")
-        .setCreatureType("large theropod")
-        .setTaxonomy(listOf("Dinosauria", "Saurischia", "Theropoda", "Carcharodontosauridae"))
-        .build()
-
-    val acroWithImages = GenusWithImages(acro)
-
-    val uiState = DetailScreenUiState(
-        genusName = acro.getName(),
-        genusData = DataState.Success(DetailedGenus(acroWithImages))
-    )
-
-    DinoDataTheme(darkTheme = false) {
-        Surface (color = MaterialTheme.colorScheme.background) {
-            GenusDetailScreenContent(
-                uiState = uiState,
-                onEvent = {}
-            )
-        }
-    }
-}
+//@Preview(
+//    widthDp = 300,
+//    heightDp = 500,
+//    name = "Light"
+//)
+//@Composable
+//fun PreviewGenusDetail() {
+//    val acro = GenusBuilder("Acrocanthosaurus")
+//        .setDiet("Carnivorous")
+//        .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")
+////        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
+//        .setNameMeaning("high-spined lizard")
+//        .setLength("11-11.5 metres")
+//        .setWeight("4.4 tonnes")
+//        .setCreatureType("large theropod")
+//        .setTaxonomy(listOf("Dinosauria", "Saurischia", "Theropoda", "Carcharodontosauridae"))
+//        .build()
+//
+//    val acroWithImages = GenusWithImages(acro)
+//
+//    val uiState = DetailScreenUiState(
+//        genusName = acro.getName(),
+//        genusData = DataState.Success(DetailedGenus(acroWithImages))
+//    )
+//
+//    DinoDataTheme(darkTheme = false) {
+//        Surface (color = MaterialTheme.colorScheme.background) {
+//            GenusDetailScreenContent(
+//                uiState = uiState,
+//                onEvent = {}
+//            )
+//        }
+//    }
+//}
 
 @Preview(widthDp = 300, heightDp = 1200, name = "Dark")
 @Composable
@@ -691,7 +715,9 @@ fun PreviewGenusDetailDark() {
         "sty" to MultiImageUrlData(
             "styracosaurus",
             listOf(
-                SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
+                SingleImageUrlData(
+                    "Styracosaurus-right",
+                    "5fcab3ba-54b9-484c-9458-5f559f05c240",
                     imageSizes = listOf("4895x1877", "512x196"),
                     thumbSizes = listOf("192x192", "64x64")
                 )
@@ -700,7 +726,9 @@ fun PreviewGenusDetailDark() {
         "sty2" to MultiImageUrlData(
             "styracosaurus",
             listOf(
-                SingleImageUrlData("5fcab3ba-54b9-484c-9458-5f559f05c240",
+                SingleImageUrlData(
+                    "Styracosaurus-left",
+                    "5fcab3ba-54b9-484c-9458-5f559f05c240",
                     imageSizes = listOf("4895x1877", "512x196"),
                     thumbSizes = listOf("192x192", "64x64")
                 )
@@ -717,7 +745,7 @@ fun PreviewGenusDetailDark() {
             )
         ),
         listOfColors = ThemeConverter.listOfColors,
-        colorSelectDialogVisible = false,
+        dialogState = DetailScreenDialogState.ImageView,
         preferencesCardExpanded = true
     )
 

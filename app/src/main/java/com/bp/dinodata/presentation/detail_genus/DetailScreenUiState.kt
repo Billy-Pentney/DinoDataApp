@@ -20,10 +20,18 @@ interface IDetailScreenUiState: IMutableImageIndexControlState {
     fun getGenusData(): IDetailedGenus?
 }
 
+enum class DetailScreenDialogState {
+    NoDialog,
+    ColorPickerDialog,
+    ImageView
+}
+
+
 data class DetailScreenUiState(
     val genusName: String,
     val genusData: DataState<out IDetailedGenus> = DataState.Idle(),
-    val colorSelectDialogVisible: Boolean = false,
+//    val colorSelectDialogVisible: Boolean = false,
+    val dialogState: DetailScreenDialogState = DetailScreenDialogState.NoDialog,
     val canPlayPronunciationAudio: Boolean = true,
     val preferencesCardExpanded: Boolean = false,
     val listOfColors: List<String> = emptyList(),

@@ -1,7 +1,7 @@
 package com.bp.dinodata.repo
 
 import android.util.Log
-import com.bp.dinodata.data.ImageUrlData.mapToImageUrlDTOs
+import com.bp.dinodata.data.ImageDataProcessingUtils.mapToImageUrlDTOs
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.GenusWithImages
@@ -11,8 +11,6 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
