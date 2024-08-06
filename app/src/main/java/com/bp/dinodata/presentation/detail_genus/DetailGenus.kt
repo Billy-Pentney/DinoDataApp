@@ -479,10 +479,7 @@ fun CreatureTimePeriod(
 
         timeInterval?.let {
             Spacer(modifier = Modifier.height(4.dp))
-            TimeChronologyBar(
-                timeInterval,
-                modifier = Modifier.padding(4.dp)
-            )
+            TimeChronologyBar(timeInterval)
         }
     }
 }

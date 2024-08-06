@@ -15,10 +15,6 @@ data class TimeInterval(
 
     override fun getStartTimeInMYA(): Float = from
     override fun getEndTimeInMYA(): Float = to
-    override fun overlapsWith(other: ITimeInterval): Boolean {
-        return other.getStartTimeInMYA() >= from
-                && to <= other.getEndTimeInMYA()
-    }
 
     override fun toString(): String {
         return "$from-$to mya"
