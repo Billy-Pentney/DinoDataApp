@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,6 +54,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -88,6 +91,7 @@ import com.bp.dinodata.presentation.icons.TimePeriodIcon
 import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
 import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
+import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.presentation.utils.dialog.ColorPickerDialog
 import com.bp.dinodata.theme.DinoDataTheme
 
@@ -554,9 +558,30 @@ fun CreatureNameMeaningAndType(
                 Icon(Icons.Filled.Book, null, modifier = iconModifier)
             }
         )
-        LabelAttributeRow(
-            label = stringResource(R.string.label_creature_type),
-            value = convertCreatureTypeToString(genus.getCreatureType()),
+        LabelContentRow(
+            label = "Type", //stringResource(R.string.label_creature_type),
+            valueContent = {
+                val creatureType = genus.getCreatureType()
+                val typeName = convertCreatureTypeToString(creatureType)
+                val drawableId = convertCreatureTypeToSilhouette(creatureType)
+                typeName?.let {
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        drawableId?.let {
+                            Image(
+                                painterResource(id = drawableId),
+                                null,
+                                modifier = Modifier
+                                    .height(18.dp)
+                                    .alpha(0.5f),
+                                colorFilter = ColorFilter.tint(Color.White, BlendMode.SrcIn)
+                            )
+                        }
+                        Text(typeName)
+                    }
+                }
+            },
             leadingIcon = {
                 Icon(
                     Icons.AutoMirrored.Filled.Label,
@@ -681,7 +706,7 @@ fun ShowCreatureSpeciesCards(
 //    }
 //}
 
-@Preview(widthDp = 300, heightDp = 1200, name = "Dark")
+@Preview(widthDp = 400, heightDp = 1200, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
     val styraco = GenusBuilder("Styracosaurus")
@@ -742,7 +767,7 @@ fun PreviewGenusDetailDark() {
             )
         ),
         listOfColors = ThemeConverter.listOfColors,
-        dialogState = DetailScreenDialogState.ImageView,
+        dialogState = DetailScreenDialogState.NoDialog,
         preferencesCardExpanded = true
     )
 
