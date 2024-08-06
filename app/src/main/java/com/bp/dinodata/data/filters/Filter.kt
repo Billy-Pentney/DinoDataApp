@@ -2,7 +2,7 @@ package com.bp.dinodata.data.filters
 
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.TimePeriod
+import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IHasCreatureType

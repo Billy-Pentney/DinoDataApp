@@ -3,7 +3,7 @@ package com.bp.dinodata.data.genus
 import androidx.compose.runtime.Immutable
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.TimePeriod
+import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
@@ -65,7 +65,6 @@ data class Genus(
     private val name: String,
     private val diet: Diet = Diet.Unknown,
     private val type: CreatureType = CreatureType.Other,
-    private val yearsLived: String? = null,
     private val timeInterval: TimeInterval? = null,
     private val timePeriod: TimePeriod? = null,
     private val nameMeaning: String? = null,
@@ -80,7 +79,7 @@ data class Genus(
     override fun getListOfTaxonomy(): List<String> = taxonomy
 
     override fun getTimePeriod(): TimePeriod? = timePeriod
-    override fun getYearsLived(): String? = yearsLived
+    override fun getYearsLived(): String? = timeInterval?.toString()
 
     override fun getTaxonomyAsPrintableTree(): String {
         var tree = taxonomy[0]

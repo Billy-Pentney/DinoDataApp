@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +37,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.bp.dinodata.data.time_period.Eras
+import com.bp.dinodata.data.time_period.ITimeEra
 import com.bp.dinodata.theme.DinoDataTheme
 
 
@@ -188,7 +189,7 @@ fun GenericChronologyBar(
                                 .width(proportion)
                                 .offset(x = elapsedWidth)
                                 .height(barHeight)
-                                .background(period.getBrush(), shape)
+                                .background(period.getBrushDarkToBright(), shape)
                         )
                     }
                 }

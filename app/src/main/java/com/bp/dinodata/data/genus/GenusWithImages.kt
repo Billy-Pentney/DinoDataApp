@@ -5,7 +5,7 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.ImageUrlData
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
-import com.bp.dinodata.data.TimePeriod
+import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.icons.chronology.ITimeInterval

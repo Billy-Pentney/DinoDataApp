@@ -1,24 +1,26 @@
-package com.bp.dinodata.presentation.icons.chronology
+package com.bp.dinodata.data.time_period
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
 
 interface ITimeEra: ITimeInterval {
     @Composable
     fun getName(): String
-    fun getTimePeriods(): List<TimePeriodBar>
+    fun getTimePeriods(): List<IAtomicDisplayableTimePeriod>
 }
 
 class TimeEra(
     private val nameResId: Int,
-    periods: List<TimePeriodBar>
+    periods: List<IAtomicDisplayableTimePeriod>
 ): ITimeEra {
     // Order from oldest (earliest) to youngest (latest)
     private val _periods = periods.sortedByDescending { it.getStartTimeInMYA() }
 
     @Composable
     override fun getName(): String = stringResource(nameResId)
-    override fun getTimePeriods(): List<TimePeriodBar> = _periods
+    override fun getTimePeriods(): List<IAtomicDisplayableTimePeriod> = _periods
     override fun getStartTimeInMYA(): Float {
         return _periods.firstOrNull()?.getStartTimeInMYA() ?: 0f
     }

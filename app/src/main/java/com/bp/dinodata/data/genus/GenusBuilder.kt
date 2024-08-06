@@ -6,7 +6,7 @@ import com.bp.dinodata.data.enum_readers.CreatureTypeConverter
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.enum_readers.DietConverter
 import com.bp.dinodata.data.IBuilder
-import com.bp.dinodata.data.TimePeriod
+import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.enum_readers.TimePeriodConverter
 import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.data.quantities.IDescribesLength
@@ -20,7 +20,6 @@ class GenusBuilder(
     private var nameMeaning: String? = null,
     private var namePronunciation: String? = null,
     private var diet: Diet = Diet.Unknown,
-    private var yearsLived: String? = null,
     private var timePeriod: TimePeriod? = null,
     private var length: IDescribesLength? = null,
     private var weight: IDescribesWeight? = null,
@@ -63,7 +62,6 @@ class GenusBuilder(
         nameMeaning = null
         namePronunciation = null
         diet = Diet.Unknown
-        yearsLived = null
         timePeriod = null
         weight = null
         length = null
@@ -90,7 +88,7 @@ class GenusBuilder(
         }
 
         dataMap[DIET_KEY]?.let { builder.setDiet(it.toString()) }
-        dataMap[YEARS_LIVED_KEY]?.let { builder.setYearsLived(it.toString()) }
+//        dataMap[YEARS_LIVED_KEY]?.let { builder.setYearsLived(it.toString()) }
         dataMap[START_MYA_KEY]?.let { builder.setStartMya(it.toString()) }
         dataMap[END_MYA_KEY]?.let { builder.setEndMya(it.toString()) }
 
@@ -177,7 +175,8 @@ class GenusBuilder(
     }
 
     override fun setYearsLived(timeRange: String?): IGenusBuilder {
-        yearsLived = timeRange
+        Log.i("GenusBuilder", "Setting years-lived to \'$timeRange\'")
+//        yearsLived = timeRange
         return this
     }
 
@@ -280,17 +279,11 @@ class GenusBuilder(
             }
         }
 
-        // If years lived has not been provided but at least one year was given...
-        if (yearsLived == null) {
-            yearsLived = timeInterval?.toString()
-        }
-
         return Genus(
             name = name,
             diet = diet,
             length = length,
             weight = weight,
-            yearsLived = yearsLived,
             timeInterval = timeInterval,
             timePeriod = timePeriod,
             nameMeaning = nameMeaning,
