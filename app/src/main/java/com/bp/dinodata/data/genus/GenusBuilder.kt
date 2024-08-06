@@ -13,6 +13,7 @@ import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
 import com.bp.dinodata.data.quantities.Weight
+import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
 import com.bp.dinodata.presentation.icons.chronology.TimeInterval
 
 class GenusBuilder(
@@ -20,7 +21,7 @@ class GenusBuilder(
     private var nameMeaning: String? = null,
     private var namePronunciation: String? = null,
     private var diet: Diet = Diet.Unknown,
-    private var timePeriod: TimePeriod? = null,
+    private var timePeriod: IDisplayableTimePeriod? = null,
     private var length: IDescribesLength? = null,
     private var weight: IDescribesWeight? = null,
     private var type: CreatureType = CreatureType.Other,
@@ -277,6 +278,10 @@ class GenusBuilder(
             endMya?.let { end ->
                 TimeInterval(start, end)
             }
+        }
+
+        if (timePeriod == null && timeInterval != null) {
+            timePeriod = TimePeriodConverter.getTimePeriod(timeInterval)
         }
 
         return Genus(

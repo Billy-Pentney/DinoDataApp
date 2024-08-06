@@ -6,6 +6,7 @@ import com.bp.dinodata.data.ImageUrlData
 import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
 import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
 
 interface IDetailedGenus: IGenusWithImages, ILocalPrefs, IHasCurrentSelectedImage {
@@ -34,7 +35,7 @@ class DetailedGenus(
     override fun getSpeciesList(): List<ISpecies> = genus.getSpeciesList()
     override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()
 
-    override fun getTimePeriod(): TimePeriod? = genus.getTimePeriod()
+    override fun getTimePeriod(): IDisplayableTimePeriod? = genus.getTimePeriod()
     override fun getYearsLived(): String? = genus.getYearsLived()
     override fun getStartMya(): Float? = genus.getStartMya()
     override fun getEndMya(): Float? = genus.getEndMya()

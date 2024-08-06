@@ -94,10 +94,16 @@ class TimePeriodFilter(
 ): IFilter<IHasTimePeriodInfo> {
     override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
         val itemTimePeriod = item.getTimePeriod()
+
         if (itemTimePeriod != null) {
-            val baseTimePeriod = TimePeriod(itemTimePeriod.epoch)
-            return itemTimePeriod in acceptedTimePeriods || baseTimePeriod in acceptedTimePeriods
+            return acceptedTimePeriods.any {
+                it.overlapsWith(itemTimePeriod)
+            }
         }
+//        if (itemTimePeriod != null) {
+//            val baseTimePeriod = TimePeriod(itemTimePeriod.epoch)
+//            return itemTimePeriod in acceptedTimePeriods || baseTimePeriod in acceptedTimePeriods
+//        }
         return false
     }
 }

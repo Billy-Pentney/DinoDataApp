@@ -88,6 +88,7 @@ import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
+import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
 import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
 import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
@@ -457,7 +458,7 @@ fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
 
 @Composable
 fun CreatureTimePeriod(
-    timePeriod: TimePeriod?,
+    timePeriod: IDisplayableTimePeriod?,
     yearsLived: String?,
     timeInterval: ITimeInterval?,
     iconModifier: Modifier

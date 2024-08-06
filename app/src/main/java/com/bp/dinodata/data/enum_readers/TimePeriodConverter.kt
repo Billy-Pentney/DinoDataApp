@@ -8,6 +8,10 @@ import com.bp.dinodata.data.time_period.PaleozoicEpoch
 import com.bp.dinodata.data.time_period.Subepoch
 import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.search.ISearchTypeConverter
+import com.bp.dinodata.data.time_period.Eras
+import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
+import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.presentation.icons.chronology.TimeInterval
 
 object TimePeriodConverter: ISearchTypeConverter<TimePeriod> {
     private val TimePeriodMap = mapOf(
@@ -56,5 +60,19 @@ object TimePeriodConverter: ISearchTypeConverter<TimePeriod> {
 
     override fun getListOfOptions(): List<String> {
         return TimePeriodMap.keys.toList()
+    }
+
+    fun getTimePeriod(timeInterval: ITimeInterval): IDisplayableTimePeriod? {
+        val eras = Eras.getList().filter {
+            it.overlapsWith(timeInterval)
+        }
+
+        if (eras.isEmpty()) {
+            return null
+        }
+
+        return eras.first().getTimePeriods().firstOrNull {
+            it.overlapsWith(timeInterval)
+        }
     }
 }
