@@ -93,11 +93,13 @@ class TimePeriodFilter(
     private val acceptedTimePeriods: List<TimePeriod>
 ): IFilter<IHasTimePeriodInfo> {
     override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
-        val itemTimePeriod = item.getTimePeriod()
+        // Use the specific years the creature lived, to avoid false-positives
+        // due to adjacent epochs
+        val itemInterval = item.getTimeIntervalLived()
 
-        if (itemTimePeriod != null) {
+        if (itemInterval != null) {
             return acceptedTimePeriods.any {
-                it.overlapsWith(itemTimePeriod)
+                it.overlapsWith(itemInterval)
             }
         }
 //        if (itemTimePeriod != null) {
