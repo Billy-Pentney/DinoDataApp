@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.data.time_period.modifiers.IModifiableTimePeriod
 import com.bp.dinodata.data.time_period.modifiers.ITimeModifier
 
-interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IEpochId, IModifiableTimePeriod {
+interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IEpochId {
     fun getEraId(): EraId
     fun getEpochId(): IEpochId
     fun getSubepochs(): List<IEpoch>
@@ -12,6 +12,8 @@ interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IEpochId, IMod
 
 interface IEpochId
 
+
+interface IModifiableEpoch: IEpoch, IModifiableTimePeriod<IEpoch>
 
 abstract class Epoch(
     private val era: EraId,
@@ -22,7 +24,7 @@ abstract class Epoch(
     colorDark: Color = colorLight,
     private val subIntervalMap: Map<ITimeModifierKey, ITimeModifier> = emptyMap(),
     private val stages: List<TimeStage> = emptyList()
-): DisplayableTimePeriod(epochKey.toString(), nameResId, colorLight, colorDark), IEpoch {
+): DisplayableTimePeriod(epochKey.toString(), nameResId, colorLight, colorDark), IModifiableEpoch {
 
     override fun getSubepochs(): List<IEpoch> {
         return subIntervalMap.values.map { it.applyTo(this) }

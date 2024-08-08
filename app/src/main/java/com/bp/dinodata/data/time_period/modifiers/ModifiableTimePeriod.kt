@@ -7,6 +7,6 @@ import com.bp.dinodata.data.time_period.ITimeModifierKey
  * Represents a time-period which can be modified, e.g.
  * the Cretaceous epoch can become "Early Cretaceous"
  * */
-interface IModifiableTimePeriod: IDisplayableTimePeriod {
-    fun with(modifierKey: ITimeModifierKey): IModifiableTimePeriod?
+interface IModifiableTimePeriod<T: IDisplayableTimePeriod>: IDisplayableTimePeriod {
+    fun with(modifierKey: ITimeModifierKey): T?
 }

@@ -6,6 +6,7 @@ import com.bp.dinodata.data.time_period.Epoch
 import com.bp.dinodata.data.time_period.EraId
 import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
+import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.TimeInterval
 import com.bp.dinodata.theme.cambrianDark
@@ -33,7 +34,7 @@ object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
         Cambrian, Ordovician, Carboniferous, Devonian, Permian, Silurian
     }
 
-    override fun getAll(): List<IEpoch> {
+    override fun getAll(): List<IModifiableEpoch> {
         return PaleozoicEpochId.entries.map { enumToEpoch(it) }
     }
 
@@ -59,7 +60,7 @@ object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
         colorDark = colorDark
     )
 
-    override fun enumToEpoch(key: PaleozoicEpochId): IEpoch {
+    override fun enumToEpoch(key: PaleozoicEpochId): PaleozoicEpoch {
         return when (key) {
             PaleozoicEpochId.Cambrian -> Cambrian
             PaleozoicEpochId.Ordovician -> Ordovician

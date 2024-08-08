@@ -6,17 +6,17 @@ import com.bp.dinodata.data.time_period.EraId
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
+import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.ITimeModifierKey
 
-interface IModifiedEpoch: IEpoch, IModifiedTimePeriod<IEpoch> {
-    override fun getBase(): IEpoch
+interface IModifiedEpoch: IEpoch, IModifiedTimePeriod<IModifiableEpoch> {
+    override fun getBase(): IModifiableEpoch
 
     override fun getEndTimeInMYA(): Float = getBase().getEndTimeInMYA()
     override fun getStartTimeInMYA(): Float = getBase().getStartTimeInMYA()
     override fun getBrushBrightToDark(): Brush = getBase().getBrushBrightToDark()
     override fun getBrushDarkToBright(): Brush = getBase().getBrushDarkToBright()
-    override fun with(modifierKey: ITimeModifierKey): IEpoch? = null
     override fun getEpochId(): IEpochId = getBase().getEpochId()
     override fun getEraId(): EraId = getBase().getEraId()
     override fun getNameResId(): Int = getBase().getNameResId()
@@ -25,12 +25,17 @@ interface IModifiedEpoch: IEpoch, IModifiedTimePeriod<IEpoch> {
     override fun getName(): String = getBase().getName()
 }
 
+/**
+ * Represents an Epoch with a modifier applied.
+ * This modifier modifies the values returned by the epoch to be of a smaller range, without
+ * replacing the original values.
+ * "Early Cretaceous" is 140-110 mya, while "Cretaceous" is 140-65 mya. */
 class ModifiedEpoch(
     private val namePrefix: String,
     private val timeInterval: ITimeInterval,
-    private val epoch: IEpoch
+    private val epoch: IModifiableEpoch
 ): IModifiedEpoch {
-    override fun getBase(): IEpoch = epoch
+    override fun getBase(): IModifiableEpoch = epoch
     override fun getStartTimeInMYA(): Float = timeInterval.getStartTimeInMYA()
     override fun getEndTimeInMYA(): Float = timeInterval.getEndTimeInMYA()
 

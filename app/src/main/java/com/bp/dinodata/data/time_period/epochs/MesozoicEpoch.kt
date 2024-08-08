@@ -6,6 +6,7 @@ import com.bp.dinodata.data.time_period.Epoch
 import com.bp.dinodata.data.time_period.EraId
 import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
+import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.ITimeModifierKey
 import com.bp.dinodata.data.time_period.SubEpochModifier
@@ -24,7 +25,7 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
         Cretaceous, Jurassic, Triassic
     }
 
-    override fun getAll(): List<IEpoch> {
+    override fun getAll(): List<IModifiableEpoch> {
         return MesozoicEpochId.entries.map { MesozoicEpochs.enumToEpoch(it) }
     }
 

@@ -2,6 +2,7 @@ package com.bp.dinodata.data.enum_readers
 
 import com.bp.dinodata.data.time_period.Eras
 import com.bp.dinodata.data.time_period.IEpoch
+import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeEra
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.ITimeModifierKey
@@ -11,7 +12,7 @@ import com.bp.dinodata.data.time_period.epochs.MesozoicEpochs
 import com.bp.dinodata.data.time_period.epochs.PaleozoicEpochs
 
 object TimePeriods {
-    val EpochMap: Map<String, IEpoch> =
+    val EpochMap: Map<String, IModifiableEpoch> =
             MesozoicEpochs.stringToEpochMap +
             CenozoicEpochs.stringToEpochMap +
             PaleozoicEpochs.stringToEpochMap
@@ -24,7 +25,10 @@ object TimePeriods {
 
 object EraConverter: TypeConverter<ITimeEra>(TimePeriods.EraMap, "EraConverter")
 
-object EpochConverter: TypeConverter<IEpoch>(TimePeriods.EpochMap, "EpochConverter") {
+object EpochConverter: TypeConverter<IEpoch>(
+    TimePeriods.EpochMap,
+    "EpochConverter"
+) {
 
     override fun matchType(text: String): IEpoch? {
         val splits = text.split(" ", "_")
@@ -52,7 +56,11 @@ object EpochConverter: TypeConverter<IEpoch>(TimePeriods.EpochMap, "EpochConvert
             return null
         }
 
-        return modifier?.let { epoch.with(modifier) } ?: epoch
+        if (epoch is IModifiableEpoch) {
+            return modifier?.let { epoch.with(modifier) } ?: epoch
+        }
+
+        return epoch
     }
 
     /**

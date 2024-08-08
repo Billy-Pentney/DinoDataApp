@@ -6,6 +6,7 @@ import com.bp.dinodata.data.time_period.Epoch
 import com.bp.dinodata.data.time_period.EraId
 import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
+import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.TimeInterval
 import com.bp.dinodata.theme.neogeneDark
@@ -22,7 +23,7 @@ object CenozoicEpochs: IEpochManager<CenozoicEpochs.CenozoicEpochId> {
         Paleogene, Neogene, Quaternary
     }
 
-    override fun getAll(): List<IEpoch> {
+    override fun getAll(): List<IModifiableEpoch> {
         return CenozoicEpochId.entries.map { enumToEpoch(it) }
     }
 
