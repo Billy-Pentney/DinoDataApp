@@ -1,4 +1,4 @@
-package com.bp.dinodata.presentation.icons.chronology
+package com.bp.dinodata.data.time_period
 
 data class TimeMarker(
     private val mya: Float
