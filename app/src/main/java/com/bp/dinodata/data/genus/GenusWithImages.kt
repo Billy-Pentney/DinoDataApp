@@ -5,11 +5,10 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.ImageUrlData
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
-import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
-import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
-import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.ITimeInterval
 
 interface IHasImageData {
     fun getImageUrl(index: Int = 0): String?

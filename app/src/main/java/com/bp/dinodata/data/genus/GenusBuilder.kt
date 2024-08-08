@@ -6,15 +6,15 @@ import com.bp.dinodata.data.enum_readers.CreatureTypeConverter
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.enum_readers.DietConverter
 import com.bp.dinodata.data.IBuilder
-import com.bp.dinodata.data.time_period.TimePeriod
-import com.bp.dinodata.data.enum_readers.TimePeriodConverter
+import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
 import com.bp.dinodata.data.quantities.Weight
-import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
-import com.bp.dinodata.presentation.icons.chronology.TimeInterval
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.TimeInterval
+import com.bp.dinodata.data.time_period.TimeMarker
 
 class GenusBuilder(
     private val name: String,
@@ -182,7 +182,7 @@ class GenusBuilder(
     }
 
     override fun setTimePeriod(period: String?): IGenusBuilder {
-        timePeriod = period?.let { TimePeriodConverter.matchType(it) }
+        timePeriod = period?.let { EpochConverter.matchType(it) }
         return this
     }
 
@@ -276,12 +276,20 @@ class GenusBuilder(
 
         val timeInterval = startMya?.let { start ->
             endMya?.let { end ->
-                TimeInterval(start, end)
+                if (start == end) {
+                    // A single point, rather than an interval
+                    TimeMarker(start)
+                }
+                else {
+                    // A closed (inclusive) interval from start to end
+                    TimeInterval(start, end)
+                }
             }
         }
 
+        // Attempt to deduce the Time-Period from the Years Lived
         if (timePeriod == null && timeInterval != null) {
-            timePeriod = TimePeriodConverter.getTimePeriod(timeInterval)
+            timePeriod = EpochConverter.getEpochFor(timeInterval)
         }
 
         return Genus(

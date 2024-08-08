@@ -1,7 +1,7 @@
 package com.bp.dinodata.data.search
 
 import com.bp.dinodata.data.enum_readers.DietConverter
-import com.bp.dinodata.data.enum_readers.TimePeriodConverter
+import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.filters.FilterBuilderImpl
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
@@ -20,7 +20,7 @@ data class GenusSearch(
     private val locations: List<String> = emptyList(),
     private val taxa: List<String> = emptyList(),
     private val possibleDiets: List<String> = DietConverter.getListOfOptions(),
-    private val possibleTimePeriods: List<String> = TimePeriodConverter.getListOfOptions()
+    private val possibleTimePeriods: List<String> = EpochConverter.getListOfOptions()
 ): IMutableSearch<IGenus> {
     override fun getFullQuery(): String {
         return getCompletedTerms().joinToString(" ") {
