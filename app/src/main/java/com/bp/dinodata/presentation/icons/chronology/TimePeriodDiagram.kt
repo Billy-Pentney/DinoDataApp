@@ -38,7 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.bp.dinodata.data.time_period.Eras
-import com.bp.dinodata.data.time_period.ITimeEra
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.IPartitionedTimePeriod
+import com.bp.dinodata.data.time_period.ITimeInterval
+import com.bp.dinodata.data.time_period.TimeInterval
+import com.bp.dinodata.data.time_period.epochs.MesozoicEpochs
 import com.bp.dinodata.theme.DinoDataTheme
 
 
@@ -61,8 +65,8 @@ fun TimePeriodMarker(
  * to highlight specific points on the bar
  */
 @Composable
-fun GenericChronologyBar(
-    era: ITimeEra,
+fun HorizontalChronologyBar(
+    period: IDisplayableTimePeriod,
     markers: List<ITimeInterval>,
     modifier: Modifier = Modifier,
     barHeight: Dp = 14.dp,
@@ -70,9 +74,14 @@ fun GenericChronologyBar(
     markerWidth: Dp = 3.dp,
     barCornerRadius: Dp = 4.dp
 ) {
-
-    val eraName = era.getName()
-    val barPeriods = era.getTimePeriods()
+    val eraName = period.getName()
+    val barPeriods =
+        if (period is IPartitionedTimePeriod) {
+            period.getSubdivisions()
+        }
+        else {
+            listOf(period)
+        }
 
     // The time-range this bar covers
     val earliest = barPeriods.maxOf { it.getStartTimeInMYA() }
@@ -81,7 +90,7 @@ fun GenericChronologyBar(
 
     // These are the points which will have their year displayed beneath the bar
     // Don't add the "latest" finish time, since it will be added by the last period.
-    val myaLabelPoints = mutableListOf<Float>(
+    val yearLabelPoints = mutableListOf(
         earliest
     )
 
@@ -107,7 +116,9 @@ fun GenericChronologyBar(
         shadowElevation = 4.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -115,47 +126,49 @@ fun GenericChronologyBar(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.alpha(0.7f)
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Time Period labels
             Box(Modifier.fillMaxWidth()) {
-                barPeriods.forEach { period ->
-                    val elapsedTime = earliest - period.getStartTimeInMYA()
-                    val proportion = elapsedTime / totalBarDuration
-                    val xOffset = barSizeDp.first * minOf(proportion, 0.85f)
+                barPeriods.forEach { subPeriod ->
+                    val elapsedTime = earliest - subPeriod.getStartTimeInMYA()
+                    val widthProportion = subPeriod.getDurationInMYA() / totalBarDuration
+                    val width = barSizeDp.first * widthProportion
 
-                    val showVertical = proportion > 0.87f
+                    val offsetProportion = elapsedTime / totalBarDuration
+                    val xOffset = barSizeDp.first * minOf(offsetProportion, 0.85f)
 
-                    val rotation = if (showVertical) -90f else -45f
+                    val angle =
+                        if (widthProportion < 0.15f)
+                            1f
+                        else
+                            minOf(1f, maxOf(0f,widthProportion-0.15f) / 0.8f)
 
-                    val labelWidth =
-                        if (!showVertical) {
-                            computeWidth(period.getDurationInMYA() / totalBarDuration)
-                        } else {
-                            0.dp
-                        }
+                    val rotation = angle * -90f
 
                     Column(
                         modifier = Modifier
                             .offset(x = xOffset)
-                            .widthIn(min = labelWidth),
+                            .rotate(rotation)
+                            .width(width),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom
                     ) {
                         Text(
-                            period.getName().uppercase(),
-                            modifier = Modifier.rotate(rotation),
-                            overflow = TextOverflow.Visible,
+                            subPeriod.getName().uppercase(),
+                            modifier = Modifier.widthIn(max=width),
+                            overflow = TextOverflow.Ellipsis,
                             fontSize = fontSize,
+                            lineHeight = 14.sp,
                             textAlign = TextAlign.Center,
 //                        maxLines = 1,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
-                    myaLabelPoints.add(period.getEndTimeInMYA())
+                    yearLabelPoints.add(subPeriod.getEndTimeInMYA())
                 }
             }
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth()) {
                 // Time Period Bars
                 Box(
@@ -164,7 +177,7 @@ fun GenericChronologyBar(
                         .padding(vertical = barHeight / 2)
                         .onSizeChanged { barSize = it }
                 ) {
-                    barPeriods.forEachIndexed { i, period ->
+                    barPeriods.forEachIndexed { i, subPeriod ->
 
                         val leftCorners =
                             if (i == 0) barCornerRadius else 0.dp
@@ -180,23 +193,23 @@ fun GenericChronologyBar(
                             bottomEnd = rightCorners
                         )
 
-                        val elapsed = earliest - period.getStartTimeInMYA()
+                        val elapsed = earliest - subPeriod.getStartTimeInMYA()
                         val elapsedWidth = barSizeDp.first * elapsed / totalBarDuration
-                        val duration = period.getDurationInMYA()
+                        val duration = subPeriod.getDurationInMYA()
                         val proportion = barSizeDp.first * duration / totalBarDuration
                         Box(
                             Modifier
                                 .width(proportion)
                                 .offset(x = elapsedWidth)
                                 .height(barHeight)
-                                .background(period.getBrushDarkToBright(), shape)
+                                .background(subPeriod.getBrushDarkToBright(), shape)
                         )
                     }
                 }
 
                 // Display only the markers which appear in this era
                 markers
-                    .filter { era.overlapsWith(it) }
+                    .filter { period.contains(it) }
                     .forEach { timeMarker ->
                         Row(
                             modifier = Modifier
@@ -234,13 +247,13 @@ fun GenericChronologyBar(
                     }
             }
 
-            // MYA labels
+            // Display labels indicating year-number of each transition point
             Box(modifier = Modifier.fillMaxWidth()) {
                 var lastTime: Float? = null
-                myaLabelPoints.forEachIndexed { i, time ->
+                yearLabelPoints.forEachIndexed { i, time ->
                     val alignment = when (i) {
                         0 -> Alignment.Start
-                        myaLabelPoints.size - 1 -> Alignment.End
+                        yearLabelPoints.size - 1 -> Alignment.End
                         else -> Alignment.CenterHorizontally
                     }
 
@@ -255,7 +268,7 @@ fun GenericChronologyBar(
                     if (i > 0) {
                         xOffset -= labelWidth / 2
                     }
-                    if (i == myaLabelPoints.size-1) {
+                    if (i == yearLabelPoints.size-1) {
                         xOffset -= labelWidth / 2
                     }
 
@@ -271,7 +284,7 @@ fun GenericChronologyBar(
                         // The height of the marker line pointing at the time-bar
                         // This is doubled if this marker is close to the previous one
                         val vBarHeight =
-                            if (deltaWeight < 0.1f) 26.dp else 12.dp
+                            if (deltaWeight < 0.1f) 32.dp else 12.dp
 
                         Box(
                             modifier = Modifier
@@ -301,42 +314,20 @@ fun GenericChronologyBar(
 }
 
 
-@Composable
-fun MesozoicChronologyBar(
-    markers: List<ITimeInterval>,
-    modifier: Modifier = Modifier
-) {
-    GenericChronologyBar(
-        era = Eras.Mesozoic,
-        markers = markers,
-        modifier = modifier
-    )
-}
-
-@Composable
-fun PaleozoicChronologyBar(
-    markers: List<ITimeInterval>,
-    modifier: Modifier = Modifier
-) {
-    GenericChronologyBar(
-        era = Eras.Paleozoic,
-        markers = markers,
-        modifier = modifier
-    )
-}
 
 @Composable
 fun TimeChronologyBar(
     marker: ITimeInterval,
     modifier: Modifier = Modifier
 ) {
+    // Get the first era which includes this marker
     val era = Eras.getList().firstOrNull {
         it.overlapsWith(marker)
     }
 
     era?.let {
-        GenericChronologyBar(
-            era = era,
+        HorizontalChronologyBar(
+            period = era,
             markers = listOf(marker),
             modifier = modifier
         )
@@ -349,10 +340,10 @@ fun TimeChronologyBar(
 @Composable
 fun TimePeriodBarPreview() {
 
-    val eras = listOf(
-        Eras.Paleozoic,
+    val periods: List<IDisplayableTimePeriod> = listOf(
         Eras.Mesozoic,
-        Eras.Cenozoic
+        Eras.Paleozoic,
+        MesozoicEpochs.Cretaceous
     )
 
     DinoDataTheme (darkTheme=true) {
@@ -360,14 +351,18 @@ fun TimePeriodBarPreview() {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            eras.forEach {
-                GenericChronologyBar(
-                    era = it,
+            periods.forEach {
+                HorizontalChronologyBar(
+                    period = it,
                     markers = listOf(
                         TimeInterval(175f, 101f)
                     )
                 )
             }
+//            GenericChronologyBar(
+//                period = ModifiedEpoch(MesozoicEpoch.Jurassic, Subepoch.Late),
+//                markers = emptyList()
+//            )
         }
     }
 }

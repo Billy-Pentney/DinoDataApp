@@ -379,6 +379,7 @@
     <string name="time_period_neogene">Neogene</string>
     <string name="time_period_quaternary">Quaternary</string>
     <string name="credit_powered_by_phylopic">powered by Phylopic.org</string>
+    <string name="label_mya">million years ago (mya)</string>
 
 
 </resources>
