@@ -5,7 +5,7 @@ import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.ITimeEra
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.ITimeModifierKey
-import com.bp.dinodata.data.time_period.Subepoch
+import com.bp.dinodata.data.time_period.SubEpochModifier
 import com.bp.dinodata.data.time_period.epochs.CenozoicEpochs
 import com.bp.dinodata.data.time_period.epochs.MesozoicEpochs
 import com.bp.dinodata.data.time_period.epochs.PaleozoicEpochs
@@ -17,7 +17,7 @@ object TimePeriods {
             PaleozoicEpochs.stringToEpochMap
 
     val EpochModifierMap: Map<String, ITimeModifierKey>
-        = Subepoch.entries.associateBy { it.name.lowercase() }
+        = SubEpochModifier.entries.associateBy { it.name.lowercase() }
 
     val EraMap = Eras.getList().associateBy { it.getEnumId().toString().lowercase() }
 }

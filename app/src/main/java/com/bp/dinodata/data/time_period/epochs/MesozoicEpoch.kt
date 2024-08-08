@@ -8,9 +8,9 @@ import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
 import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.data.time_period.ITimeModifierKey
-import com.bp.dinodata.data.time_period.Subepoch
+import com.bp.dinodata.data.time_period.SubEpochModifier
 import com.bp.dinodata.data.time_period.TimeInterval
-import com.bp.dinodata.data.time_period.TimeModifier
+import com.bp.dinodata.data.time_period.modifiers.TimeModifier
 import com.bp.dinodata.theme.Cretaceous300
 import com.bp.dinodata.theme.Cretaceous600
 import com.bp.dinodata.theme.Jurassic300
@@ -74,9 +74,9 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
         colorLight = Triassic200,
         colorDark = Triassic800,
         subIntervals = mapOf(
-            Subepoch.Early to TimeInterval(START_TRIASSIC, 247.2f),
-            Subepoch.Middle to TimeInterval(247.2f, 237f),
-            Subepoch.Late to TimeInterval(237f, END_TRIASSIC)
+            SubEpochModifier.Early to TimeInterval(START_TRIASSIC, 247.2f),
+            SubEpochModifier.Middle to TimeInterval(247.2f, 237f),
+            SubEpochModifier.Late to TimeInterval(237f, END_TRIASSIC)
         )
     )
 
@@ -87,9 +87,9 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
         colorLight = Jurassic300,
         colorDark = Jurassic700,
         subIntervals = mapOf(
-            Subepoch.Early to TimeInterval(START_JURASSIC, 174.7f),
-            Subepoch.Middle to TimeInterval(174.7f, 161.5f),
-            Subepoch.Late to TimeInterval(161.5f, END_JURASSIC)
+            SubEpochModifier.Early to TimeInterval(START_JURASSIC, 174.7f),
+            SubEpochModifier.Middle to TimeInterval(174.7f, 161.5f),
+            SubEpochModifier.Late to TimeInterval(161.5f, END_JURASSIC)
         )
     )
 
@@ -100,9 +100,9 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
         colorLight = Cretaceous300,
         colorDark = Cretaceous600,
         subIntervals = mapOf(
-            Subepoch.Early to TimeInterval(START_CRETACEOUS, 100.5f),
+            SubEpochModifier.Early to TimeInterval(START_CRETACEOUS, 100.5f),
             // No middle for Cretaceous
-            Subepoch.Late to TimeInterval(100.5f, END_CRETACEOUS)
+            SubEpochModifier.Late to TimeInterval(100.5f, END_CRETACEOUS)
         )
     )
 

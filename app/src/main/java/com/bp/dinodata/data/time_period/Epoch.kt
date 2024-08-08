@@ -1,12 +1,12 @@
 package com.bp.dinodata.data.time_period
 
 import androidx.compose.ui.graphics.Color
+import com.bp.dinodata.data.time_period.modifiers.IModifiableTimePeriod
+import com.bp.dinodata.data.time_period.modifiers.ITimeModifier
 
-interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IEpochId {
+interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IEpochId, IModifiableTimePeriod {
     fun getEraId(): EraId
     fun getEpochId(): IEpochId
-    fun with(modifierKey: ITimeModifierKey): IEpoch?
-
     fun getSubepochs(): List<IEpoch>
 }
 
@@ -31,6 +31,7 @@ abstract class Epoch(
         return stages.ifEmpty {
             subIntervalMap.values.map { it.applyTo(this) }
         }.ifEmpty {
+            // If no stages, then we have an atomic period
             listOf(this)
         }
     }

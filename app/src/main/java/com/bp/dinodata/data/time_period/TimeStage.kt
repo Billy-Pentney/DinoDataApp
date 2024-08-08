@@ -2,9 +2,14 @@ package com.bp.dinodata.data.time_period
 
 import androidx.compose.ui.graphics.Color
 
-interface ITimeStage: IDisplayableTimePeriod
+interface ITimeStage: IAtomicDisplayableTimePeriod
 
 
+/**
+ * An implementation of the geological time-period known as a 'Stage'.
+ * This is the sub-unit of an Epoch and for this implementation is assumed
+ * to be atomic (i.e. cannot be divided further).
+ * */
 class TimeStage(
     name: String,
     nameResId: Int,

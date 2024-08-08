@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.time_period.Eras
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.Subepoch
+import com.bp.dinodata.data.time_period.SubEpochModifier
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
@@ -65,7 +65,7 @@ fun TimePeriodIcon(timePeriod: IDisplayableTimePeriod?) {
 @Composable
 fun PreviewTimePeriodIcon() {
     val eras = Eras.getList()
-    val subepochs = Subepoch.entries
+    val subepochs = SubEpochModifier.entries
 
     DinoDataTheme(darkTheme = true) {
         Surface {

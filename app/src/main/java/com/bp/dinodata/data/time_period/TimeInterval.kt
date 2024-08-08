@@ -1,11 +1,19 @@
 package com.bp.dinodata.data.time_period
 
+/**
+ * Represents an interval of time in the units of Millions-of-Years-Ago (MYA).
+ * Note: this class enforces that from must be no smaller than to; if arguments are
+ * provided in ascending order, then they will be flipped.
+ * @property from The beginning of the interval, in MYA.
+ * @property to The end of the interval, in MYA; must be no greater than from, otherwise
+ * arguments will be swapped.
+ */
 data class TimeInterval(
     private var from: Float,
     private var to: Float
 ): ITimeInterval {
     init {
-        // Swap to enforce that start <= end
+        // Swap to enforce that start >= end
         if (from < to) {
             val temp = from
             from = to
@@ -48,6 +56,10 @@ data class TimeInterval(
         }
     }
 
+    /**
+     * Add these two intervals together, returning the smallest possible interval
+     * which contains both this and other.
+     */
     fun joinWith(other: ITimeInterval): ITimeInterval {
         return TimeInterval(
             maxOf(this.from, other.getStartTimeInMYA()),
@@ -56,14 +68,18 @@ data class TimeInterval(
     }
 }
 
+
+
+
 interface ITimeInterval {
     fun getStartTimeInMYA(): Float
     fun getEndTimeInMYA(): Float
     fun getDurationInMYA(): Float = getStartTimeInMYA() - getEndTimeInMYA()
 
     /**
-     * Returns true if at least one point is contained in both this interval and
-     * the other interval.
+     * Check if this interval has a non-zero overlap with the given time interval.
+     * @returns true if at least one point is common to both this and the given Time Interval;
+     * false otherwise.
      */
     fun overlapsWith(other: ITimeInterval): Boolean {
         val start = this.getStartTimeInMYA()

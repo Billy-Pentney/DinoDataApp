@@ -2,12 +2,20 @@ package com.bp.dinodata.data.time_period
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Represents a geological time-period known as an 'Era'.
+ * An Era is a sub-unit of an Eon, and an Epoch is a sub-unit of an Era.
+ * */
 interface ITimeEra: IDisplayableTimePeriod, IPartitionedTimePeriod {
     override fun getSubdivisions(): List<IEpoch>
     fun getEnumId(): EraId
 }
 
 
+/**
+ *
+ * @property key A unique Id which identifies this era.
+ */
 class TimeEra(
     private val key: EraId,
     nameResId: Int,
