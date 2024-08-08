@@ -4,7 +4,6 @@ import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
 import com.bp.dinodata.data.time_period.Epoch
 import com.bp.dinodata.data.time_period.EraId
-import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
 import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
@@ -26,30 +25,25 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
     }
 
     override fun getAll(): List<IModifiableEpoch> {
-        return MesozoicEpochId.entries.map { MesozoicEpochs.enumToEpoch(it) }
+        return MesozoicEpochId.entries.map { getEpoch(it) }
     }
 
     override fun getEnumFromString(text: String): IEpochId? {
         return stringToEnumMap[text]
     }
 
-    val stringToEnumMap = mapOf(
-        "cretaceous" to MesozoicEpochId.Cretaceous,
-        "jurassic" to MesozoicEpochId.Jurassic,
-        "triassic" to MesozoicEpochId.Triassic,
-    )
+    val stringToEnumMap = MesozoicEpochId.entries.associateBy { it.name.lowercase() }
+    val stringToEpochMap = stringToEnumMap.mapValues { getEpoch(it.value) }
 
-    val stringToEpochMap = stringToEnumMap.mapValues { enumToEpoch(it.value) }
+    private const val TRIASSIC_JURASSIC_SPLIT = 201.4f
+    private const val JURASSIC_CRETACEOUS_SPLIT = 145f
 
-    private val TRIASSIC_JURASSIC_SPLIT = 201.4f
-    private val JURASSIC_CRETACEOUS_SPLIT = 145f
-
-    private val START_TRIASSIC = 251.9f
-    private val END_TRIASSIC = TRIASSIC_JURASSIC_SPLIT
-    private val START_JURASSIC = TRIASSIC_JURASSIC_SPLIT
-    private val END_JURASSIC = JURASSIC_CRETACEOUS_SPLIT
-    private val START_CRETACEOUS = JURASSIC_CRETACEOUS_SPLIT
-    private val END_CRETACEOUS = 65.5f
+    private const val START_TRIASSIC = 251.9f
+    private const val END_TRIASSIC = TRIASSIC_JURASSIC_SPLIT
+    private const val START_JURASSIC = TRIASSIC_JURASSIC_SPLIT
+    private const val END_JURASSIC = JURASSIC_CRETACEOUS_SPLIT
+    private const val START_CRETACEOUS = JURASSIC_CRETACEOUS_SPLIT
+    private const val END_CRETACEOUS = 65.5f
 
     sealed class MesozoicEpoch(
         key: MesozoicEpochId,
@@ -66,7 +60,11 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
         colorLight = colorLight,
         colorDark = colorDark,
         subIntervalMap = subIntervals.mapValues { TimeModifier(it.key, it.value) }
-    )
+    ), IEpochRetriever<MesozoicEpochId> {
+        override fun getEpoch(id: MesozoicEpochId): Epoch {
+            return MesozoicEpochs.getEpoch(id)
+        }
+    }
 
     data object Triassic: MesozoicEpoch(
         key = MesozoicEpochId.Triassic,
@@ -107,8 +105,8 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
         )
     )
 
-    override fun enumToEpoch(key: MesozoicEpochId): MesozoicEpoch {
-        return when(key) {
+    override fun getEpoch(id: MesozoicEpochId): MesozoicEpoch {
+        return when (id) {
             MesozoicEpochId.Cretaceous -> Cretaceous
             MesozoicEpochId.Jurassic -> Jurassic
             MesozoicEpochId.Triassic -> Triassic

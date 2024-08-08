@@ -9,7 +9,7 @@ interface IProvidesEpoch: IProvidesEra {
     fun getEpochId(): IEpochId
 }
 
-interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IProvidesEpoch {
+interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IProvidesEpoch, ITimePeriodProvidesParent {
     fun getSubepochs(): List<IEpoch>
 }
 
@@ -29,16 +29,18 @@ abstract class Epoch(
 ): DisplayableTimePeriod(epochKey.toString(), nameResId, colorLight, colorDark),
     IModifiableEpoch {
 
+    override fun getParentPeriod(): IDisplayableTimePeriod = Eras.getEra(era)
+
     override fun getSubepochs(): List<IEpoch> {
         return subIntervalMap.values.map { it.applyTo(this) }
     }
     override fun getSubdivisions(): List<IDisplayableTimePeriod> {
-        return stages.ifEmpty {
-            subIntervalMap.values.map { it.applyTo(this) }
-        }.ifEmpty {
-            // If no stages, then we have an atomic period
-            listOf(this)
-        }
+        return stages
+//            .ifEmpty { getSubepochs() }
+            .ifEmpty {
+                // If no stages, then we have an atomic period
+                listOf(this)
+            }
     }
 
     override fun getTimeInterval(): ITimeInterval = timePeriodRange
@@ -64,7 +66,7 @@ abstract class Epoch(
         val modifier = subIntervalMap[modifierKey]
         return modifier?.let { modifier.applyTo(this) }
     }
-    }
+}
 
 
 

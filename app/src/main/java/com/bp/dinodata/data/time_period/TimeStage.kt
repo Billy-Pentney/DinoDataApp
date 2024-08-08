@@ -1,10 +1,11 @@
 package com.bp.dinodata.data.time_period
 
 import androidx.compose.ui.graphics.Color
+import com.bp.dinodata.data.enum_readers.EpochConverter
+import com.bp.dinodata.data.time_period.epochs.EpochRetriever
 
 
-
-interface ITimeStage: IAtomicDisplayableTimePeriod, IProvidesEpoch
+interface ITimeStage: IAtomicDisplayableTimePeriod, IProvidesEpoch, ITimePeriodProvidesParent
 
 
 /**
@@ -27,4 +28,6 @@ class TimeStage(
 
     override fun getEraId(): EraId = eraId
     override fun getEpochId(): IEpochId = epochId
+
+    override fun getParentPeriod(): IDisplayableTimePeriod = EpochRetriever.getEpoch(epochId)
 }

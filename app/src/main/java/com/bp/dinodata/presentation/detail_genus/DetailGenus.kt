@@ -78,6 +78,7 @@ import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IDetailedGenus
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
+import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
@@ -307,9 +308,7 @@ fun ShowGenusDetail(
                 )
                 sectionDivider()
                 CreatureTimePeriod(
-                    timePeriod = genus.getTimePeriod(),
-                    yearsLived = genus.getYearsLived(),
-                    timeInterval = genus.getTimeIntervalLived(),
+                    item = genus,
                     iconModifier = iconModifier
                 )
                 sectionDivider()
@@ -456,11 +455,13 @@ fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
 
 @Composable
 fun CreatureTimePeriod(
-    timePeriod: IDisplayableTimePeriod?,
-    yearsLived: String?,
-    timeInterval: ITimeInterval?,
+    item: IHasTimePeriodInfo,
     iconModifier: Modifier
 ) {
+    val timePeriod = item.getTimePeriod()
+    val yearsLived = item.getYearsLived()
+    val timeInterval = item.getTimeIntervalLived()
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier=Modifier.fillMaxWidth()
@@ -480,9 +481,9 @@ fun CreatureTimePeriod(
             }
         )
 
-        timeInterval?.let {
+        timePeriod?.let {
             Spacer(modifier = Modifier.height(4.dp))
-            TimeChronologyBar(timeInterval)
+            TimeChronologyBar(timePeriod, timeInterval)
         }
     }
 }

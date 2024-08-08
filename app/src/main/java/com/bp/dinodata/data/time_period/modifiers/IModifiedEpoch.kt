@@ -35,6 +35,10 @@ class ModifiedEpoch(
     private val timeInterval: ITimeInterval,
     private val epoch: IModifiableEpoch
 ): IModifiedEpoch {
+    private val subdivisions = epoch.getSubdivisions().filter {
+        timeInterval.contains(it)
+    }
+
     override fun getBase(): IModifiableEpoch = epoch
     override fun getStartTimeInMYA(): Float = timeInterval.getStartTimeInMYA()
     override fun getEndTimeInMYA(): Float = timeInterval.getEndTimeInMYA()
@@ -42,12 +46,15 @@ class ModifiedEpoch(
     @Composable
     override fun getName(): String = namePrefix + " " + epoch.getName()
     override fun getSubdivisions(): List<IDisplayableTimePeriod> {
-        return epoch.getSubdivisions().filter {
-            timeInterval.contains(it)
+        return subdivisions.ifEmpty {
+            listOf(this)
         }
     }
 
     override fun getSubepochs(): List<IEpoch> {
         return listOf(this)
     }
+
+    // The modified epoch returns the standard epoch as its parent
+    override fun getParentPeriod(): IDisplayableTimePeriod = epoch
 }

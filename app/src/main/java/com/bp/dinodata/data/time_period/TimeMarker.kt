@@ -14,4 +14,12 @@ data class TimeMarker(
         return other.getStartTimeInMYA() <= mya
                 && mya <= other.getEndTimeInMYA()
     }
+
+    override fun toString(): String {
+        return "~$mya $MYA_UNITS"
+    }
+
+    companion object {
+        const val MYA_UNITS = "mya"
+    }
 }

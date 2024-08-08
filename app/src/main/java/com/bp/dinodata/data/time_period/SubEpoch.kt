@@ -8,5 +8,3 @@ package com.bp.dinodata.data.time_period
 interface ITimeModifierKey
 
 enum class SubEpochModifier: ITimeModifierKey { Early, Middle, Late }
-
-

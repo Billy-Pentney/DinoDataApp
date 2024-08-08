@@ -4,14 +4,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,12 +43,18 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 import com.bp.dinodata.data.time_period.Eras
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.IPartitionedTimePeriod
 import com.bp.dinodata.data.time_period.ITimeInterval
+import com.bp.dinodata.data.time_period.ITimePeriodProvidesParent
+import com.bp.dinodata.data.time_period.SubEpochModifier
 import com.bp.dinodata.data.time_period.TimeInterval
 import com.bp.dinodata.data.time_period.epochs.MesozoicEpochs
+import com.bp.dinodata.data.time_period.epochs.PaleozoicEpochs
+import com.bp.dinodata.data.time_period.modifiers.ModifiedEpoch
+import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
 
 
@@ -77,7 +89,7 @@ fun HorizontalChronologyBar(
     val eraName = period.getName()
     val barPeriods =
         if (period is IPartitionedTimePeriod) {
-            period.getSubdivisions()
+            period.getSubdivisions().ifEmpty { listOf(period) }
         }
         else {
             listOf(period)
@@ -93,6 +105,10 @@ fun HorizontalChronologyBar(
     val yearLabelPoints = mutableListOf(
         earliest
     )
+
+    barPeriods.forEach {
+        yearLabelPoints.add(it.getEndTimeInMYA())
+    }
 
     var barSize by remember { mutableStateOf(IntSize.Zero) }
     var barSizeDp by remember { mutableStateOf(Pair(0.dp,0.dp)) }
@@ -128,47 +144,50 @@ fun HorizontalChronologyBar(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Time Period labels
-            Box(Modifier.fillMaxWidth()) {
-                barPeriods.forEach { subPeriod ->
-                    val elapsedTime = earliest - subPeriod.getStartTimeInMYA()
-                    val widthProportion = subPeriod.getDurationInMYA() / totalBarDuration
-                    val width = barSizeDp.first * widthProportion
+            if (barPeriods.size > 1) {
+                // Time Period labels
+                Box(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+                    barPeriods.forEach { subPeriod ->
+                        val elapsedTime = earliest - subPeriod.getStartTimeInMYA()
+                        val widthProportion = subPeriod.getDurationInMYA() / totalBarDuration
+                        val width = barSizeDp.first * widthProportion
 
-                    val offsetProportion = elapsedTime / totalBarDuration
-                    val xOffset = barSizeDp.first * minOf(offsetProportion, 0.85f)
+                        val offsetProportion = elapsedTime / totalBarDuration
+                        val xOffset = barSizeDp.first * minOf(offsetProportion, 0.85f)
 
-                    val angle =
-                        if (widthProportion < 0.15f)
-                            1f
-                        else
-                            minOf(1f, maxOf(0f,widthProportion-0.15f) / 0.8f)
+                        val angle = 0.5f
+//                            if (widthProportion < 0.15f)
+//                                1f
+//                            else
+//                                minOf(1f, maxOf(0f, widthProportion - 0.15f) / 0.8f)
 
-                    val rotation = angle * -90f
+                        val rotation = angle * -90f
 
-                    Column(
-                        modifier = Modifier
-                            .offset(x = xOffset)
-                            .rotate(rotation)
-                            .width(width),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        Text(
-                            subPeriod.getName().uppercase(),
-                            modifier = Modifier.widthIn(max=width),
-                            overflow = TextOverflow.Ellipsis,
-                            fontSize = fontSize,
-                            lineHeight = 14.sp,
-                            textAlign = TextAlign.Center,
+                        Column(
+                            modifier = Modifier
+                                .offset(x = xOffset)
+                                .width(width)
+                                .padding(vertical=16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            Text(
+                                subPeriod.getName().uppercase(),
+                                modifier = Modifier
+                                    .sizeIn(maxWidth = width, maxHeight = width)
+                                    .rotate(rotation),
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = fontSize,
+                                lineHeight = 14.sp,
+                                textAlign = TextAlign.Start,
 //                        maxLines = 1,
-                            fontWeight = FontWeight.SemiBold,
-                        )
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
                     }
-                    yearLabelPoints.add(subPeriod.getEndTimeInMYA())
                 }
+                Spacer(Modifier.height(16.dp))
             }
-            Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth()) {
                 // Time Period Bars
                 Box(
@@ -293,7 +312,7 @@ fun HorizontalChronologyBar(
                                 .height(vBarHeight)
                         )
                         Text(
-                            "%.1f".format(time),
+                            time.toString(),
                             fontSize = 12.sp
                         )
                     }
@@ -334,35 +353,82 @@ fun TimeChronologyBar(
     }
 }
 
+enum class ChronologyOrientation {
+    Horizontal, Vertical
+}
+
+@Composable
+fun TimeChronologyBar(
+    period: IDisplayableTimePeriod,
+    timeInterval: ITimeInterval?,
+    orientation: ChronologyOrientation = ChronologyOrientation.Horizontal,
+    modifier: Modifier = Modifier
+) {
+    if (period == null) {
+        NoDataPlaceholder()
+        return
+    }
+
+    val parent = when (period) {
+        is ITimePeriodProvidesParent -> {
+            // Attempt to get the period directly one-level above this one.
+            // e.g. if period is an epoch, then we get its era.
+            period.getParentPeriod()
+        }
+
+        else -> {
+            // Otherwise, fall back to the period itself
+            period
+        }
+    }
+
+    val markers = timeInterval?.let { listOf(it) } ?: emptyList()
+
+    when (orientation) {
+        ChronologyOrientation.Horizontal -> {
+            HorizontalChronologyBar(
+                period = parent,
+                markers = markers,
+                modifier = modifier
+            )
+        }
+        ChronologyOrientation.Vertical -> {
+            VerticalChronologyBar(
+                period = parent,
+                markers = markers,
+                modifier = modifier
+            )
+        }
+    }
+}
 
 
-@Preview
+
+@Preview (widthDp=800, heightDp=1000)
 @Composable
 fun TimePeriodBarPreview() {
 
     val periods: List<IDisplayableTimePeriod> = listOf(
         Eras.Mesozoic,
         Eras.Paleozoic,
-        MesozoicEpochs.Cretaceous
+        MesozoicEpochs.Cretaceous,
+        ModifiedEpoch("Early", TimeInterval(120f, 100f), MesozoicEpochs.Cretaceous)
     )
 
     DinoDataTheme (darkTheme=true) {
-        Column (
+        LazyVerticalGrid (
+            columns = GridCells.Fixed(2),
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            periods.forEach {
-                HorizontalChronologyBar(
+            items(periods) {
+                TimeChronologyBar(
                     period = it,
-                    markers = listOf(
-                        TimeInterval(175f, 101f)
-                    )
+                    timeInterval = TimeInterval(175f, 101f),
+                    orientation = ChronologyOrientation.Horizontal
                 )
             }
-//            GenericChronologyBar(
-//                period = ModifiedEpoch(MesozoicEpoch.Jurassic, Subepoch.Late),
-//                markers = emptyList()
-//            )
         }
     }
 }

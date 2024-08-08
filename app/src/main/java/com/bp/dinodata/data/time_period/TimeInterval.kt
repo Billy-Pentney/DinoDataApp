@@ -1,5 +1,7 @@
 package com.bp.dinodata.data.time_period
 
+import com.bp.dinodata.data.time_period.TimeMarker.Companion.MYA_UNITS
+
 /**
  * Represents an interval of time in the units of Millions-of-Years-Ago (MYA).
  * Note: this class enforces that from must be no smaller than to; if arguments are
@@ -25,7 +27,7 @@ data class TimeInterval(
     override fun getEndTimeInMYA(): Float = to
 
     override fun toString(): String {
-        return "$from-$to mya"
+        return "$from-$to $MYA_UNITS"
     }
 
     override fun equals(other: Any?): Boolean {

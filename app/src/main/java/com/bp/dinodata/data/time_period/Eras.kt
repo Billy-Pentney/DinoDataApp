@@ -14,7 +14,7 @@ import com.bp.dinodata.theme.neogeneLight
 
 object Eras {
 
-    val Mesozoic = TimeEra(
+    data object Mesozoic: TimeEra(
         EraId.Mesozoic,
         R.string.time_era_mesozoic,
         epochs = MesozoicEpochs.getAll(),
@@ -22,7 +22,7 @@ object Eras {
         colorDark = Jurassic700
     )
 
-    val Paleozoic = TimeEra(
+    data object Paleozoic: TimeEra(
         EraId.Paleozoic,
         nameResId = R.string.time_era_paleozoic,
         epochs = PaleozoicEpochs.getAll(),
@@ -30,7 +30,7 @@ object Eras {
         colorDark = cambrianDark
     )
 
-    val Cenozoic = TimeEra(
+    data object Cenozoic: TimeEra(
         EraId.Cenozoic,
         nameResId = R.string.time_era_cenozoic,
         epochs = CenozoicEpochs.getAll(),

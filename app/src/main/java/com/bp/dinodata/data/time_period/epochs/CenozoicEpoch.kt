@@ -4,7 +4,6 @@ import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
 import com.bp.dinodata.data.time_period.Epoch
 import com.bp.dinodata.data.time_period.EraId
-import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
 import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
@@ -24,7 +23,7 @@ object CenozoicEpochs: IEpochManager<CenozoicEpochs.CenozoicEpochId> {
     }
 
     override fun getAll(): List<IModifiableEpoch> {
-        return CenozoicEpochId.entries.map { enumToEpoch(it) }
+        return CenozoicEpochId.entries.map { getEpoch(it) }
     }
 
     override fun getEnumFromString(text: String): CenozoicEpochId? {
@@ -32,7 +31,7 @@ object CenozoicEpochs: IEpochManager<CenozoicEpochs.CenozoicEpochId> {
     }
 
     val stringToEnumMap = CenozoicEpochId.entries.associateBy { it.name.lowercase() }
-    val stringToEpochMap = stringToEnumMap.mapValues { enumToEpoch(it.value) }
+    val stringToEpochMap = stringToEnumMap.mapValues { getEpoch(it.value) }
 
     sealed class CenozoicEpoch(
         key: CenozoicEpochId,
@@ -47,7 +46,14 @@ object CenozoicEpochs: IEpochManager<CenozoicEpochs.CenozoicEpochId> {
         timePeriodRange = timePeriodRange,
         colorLight = colorLight,
         colorDark = colorDark
-    )
+    ), IEpochRetriever<CenozoicEpochId> {
+        override fun getEpoch(id: CenozoicEpochId): Epoch {
+            return CenozoicEpochs.getEpoch(id)
+        }
+    }
+
+
+
 
     data object Paleogene: CenozoicEpoch(
         CenozoicEpochId.Paleogene,
@@ -71,8 +77,8 @@ object CenozoicEpochs: IEpochManager<CenozoicEpochs.CenozoicEpochId> {
         colorDark = quaternaryDark
     )
 
-    override fun enumToEpoch(key: CenozoicEpochId): CenozoicEpoch {
-        return when(key) {
+    override fun getEpoch(id: CenozoicEpochId): CenozoicEpoch {
+        return when(id) {
             CenozoicEpochId.Paleogene -> Paleogene
             CenozoicEpochId.Neogene -> Neogene
             CenozoicEpochId.Quaternary -> Quaternary

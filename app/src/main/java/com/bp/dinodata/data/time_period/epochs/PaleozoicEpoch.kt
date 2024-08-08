@@ -4,7 +4,6 @@ import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
 import com.bp.dinodata.data.time_period.Epoch
 import com.bp.dinodata.data.time_period.EraId
-import com.bp.dinodata.data.time_period.IEpoch
 import com.bp.dinodata.data.time_period.IEpochId
 import com.bp.dinodata.data.time_period.IModifiableEpoch
 import com.bp.dinodata.data.time_period.ITimeInterval
@@ -22,12 +21,6 @@ import com.bp.dinodata.theme.permianLight
 import com.bp.dinodata.theme.silurianDark
 import com.bp.dinodata.theme.silurianLight
 
-interface IEpochManager<T: IEpochId> {
-    fun enumToEpoch(key: T): IEpoch
-    fun getAll(): List<IEpoch>
-    fun getEnumFromString(text: String): IEpochId?
-}
-
 
 object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
     enum class PaleozoicEpochId: IEpochId {
@@ -35,7 +28,7 @@ object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
     }
 
     override fun getAll(): List<IModifiableEpoch> {
-        return PaleozoicEpochId.entries.map { enumToEpoch(it) }
+        return PaleozoicEpochId.entries.map { getEpoch(it) }
     }
 
     override fun getEnumFromString(text: String): PaleozoicEpochId? {
@@ -43,7 +36,7 @@ object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
     }
 
     val stringToEnumMap = PaleozoicEpochId.entries.associateBy { it.toString().lowercase() }
-    val stringToEpochMap = stringToEnumMap.mapValues { enumToEpoch(it.value) }
+    val stringToEpochMap = stringToEnumMap.mapValues { getEpoch(it.value) }
 
     sealed class PaleozoicEpoch(
         key: PaleozoicEpochId,
@@ -58,10 +51,14 @@ object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
         timePeriodRange = timePeriodRange,
         colorLight = colorLight,
         colorDark = colorDark
-    )
+    ), IEpochRetriever<PaleozoicEpochId> {
+        override fun getEpoch(id: PaleozoicEpochId): Epoch {
+            return PaleozoicEpochs.getEpoch(id)
+        }
+    }
 
-    override fun enumToEpoch(key: PaleozoicEpochId): PaleozoicEpoch {
-        return when (key) {
+    override fun getEpoch(id: PaleozoicEpochId): PaleozoicEpoch {
+        return when (id) {
             PaleozoicEpochId.Cambrian -> Cambrian
             PaleozoicEpochId.Ordovician -> Ordovician
             PaleozoicEpochId.Carboniferous -> Carboniferous

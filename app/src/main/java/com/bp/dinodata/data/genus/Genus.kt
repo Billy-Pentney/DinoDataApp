@@ -41,14 +41,6 @@ interface IAdditionalNameInfo {
     fun getNamePronunciation(): String?
 }
 
-interface IHasTimePeriodInfo {
-    fun getTimePeriod(): IDisplayableTimePeriod?
-    fun getYearsLived(): String?
-    fun getTimeIntervalLived(): ITimeInterval?
-    fun getStartMya(): Float?
-    fun getEndMya(): Float?
-}
-
 interface IHasLocationInfo {
     fun getLocations(): List<String>
 }
