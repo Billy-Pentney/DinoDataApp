@@ -8,7 +8,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -88,7 +87,7 @@ import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.search.GenusSearchBuilder
-import com.bp.dinodata.data.search.ISearchTerm
+import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder

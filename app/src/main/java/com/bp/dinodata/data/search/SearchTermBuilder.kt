@@ -2,6 +2,16 @@ package com.bp.dinodata.data.search
 
 import android.util.Log
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.search.terms.BasicSearchTerm
+import com.bp.dinodata.data.search.terms.CreatureTypeSearchTerm
+import com.bp.dinodata.data.search.terms.DietSearchTerm
+import com.bp.dinodata.data.search.terms.FavouriteSearchTerm
+import com.bp.dinodata.data.search.terms.ISearchTerm
+import com.bp.dinodata.data.search.terms.LocationSearchTerm
+import com.bp.dinodata.data.search.terms.SelectedColorSearchTerm
+import com.bp.dinodata.data.search.terms.TaxonNameSearchTerm
+import com.bp.dinodata.data.search.terms.TimeEraSearchTerm
+import com.bp.dinodata.data.search.terms.TimePeriodSearchTerm
 
 class SearchTermBuilder(
     private val taxaList: List<String>,

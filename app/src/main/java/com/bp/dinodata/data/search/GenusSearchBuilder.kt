@@ -3,6 +3,8 @@ package com.bp.dinodata.data.search
 import com.bp.dinodata.data.enum_readers.DietConverter
 import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.search.terms.BasicSearchTerm
+import com.bp.dinodata.data.search.terms.ISearchTerm
 
 class GenusSearchBuilder(
     query: String,

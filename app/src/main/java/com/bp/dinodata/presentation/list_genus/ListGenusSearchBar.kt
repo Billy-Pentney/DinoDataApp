@@ -1,7 +1,5 @@
 package com.bp.dinodata.presentation.list_genus
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -33,21 +31,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -58,11 +52,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.data.genus.IGenus
-import com.bp.dinodata.data.search.DietSearchTerm
-import com.bp.dinodata.data.search.BasicSearchTerm
+import com.bp.dinodata.data.search.terms.DietSearchTerm
+import com.bp.dinodata.data.search.terms.BasicSearchTerm
 import com.bp.dinodata.data.search.GenusSearchBuilder
-import com.bp.dinodata.data.search.ISearchTerm
-import com.bp.dinodata.data.search.LocationSearchTerm
+import com.bp.dinodata.data.search.terms.ISearchTerm
+import com.bp.dinodata.data.search.terms.LocationSearchTerm
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.MyGrey600
 

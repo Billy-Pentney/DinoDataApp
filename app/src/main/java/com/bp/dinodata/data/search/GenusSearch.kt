@@ -5,6 +5,8 @@ import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.filters.FilterBuilderImpl
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.search.terms.BasicSearchTerm
+import com.bp.dinodata.data.search.terms.ISearchTerm
 
 /**
  *

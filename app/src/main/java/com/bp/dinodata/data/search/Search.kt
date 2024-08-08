@@ -1,6 +1,7 @@
 package com.bp.dinodata.data.search
 
 import com.bp.dinodata.data.filters.IFilter
+import com.bp.dinodata.data.search.terms.ISearchTerm
 
 interface IConvertToFilter<T> {
     fun toFilter(): IFilter<T>

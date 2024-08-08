@@ -5,7 +5,7 @@ import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.search.GenusSearchBuilder
-import com.bp.dinodata.data.search.ISearchTerm
+import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
 
