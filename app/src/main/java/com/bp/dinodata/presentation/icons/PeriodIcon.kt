@@ -23,14 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bp.dinodata.R
-import com.bp.dinodata.data.time_period.CenozoicEpoch
 import com.bp.dinodata.data.time_period.Eras
-import com.bp.dinodata.data.time_period.MesozoicEpoch
-import com.bp.dinodata.data.time_period.PaleozoicEpoch
-import com.bp.dinodata.data.time_period.SubTimePeriod
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.Subepoch
-import com.bp.dinodata.data.time_period.TimePeriod
-import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
@@ -79,14 +74,8 @@ fun PreviewTimePeriodIcon() {
                 modifier=Modifier.padding(16.dp)
             ) {
                 eras.forEach { era ->
-                    val epochs = era.getTimePeriods()
-
-                    val timePeriods = epochs.map {
-                        SubTimePeriod(
-                            it,
-                            subepochs.random()
-                        )
-                    }
+                    val epochs = era.getSubdivisions()
+                    val timePeriods = epochs.map{ it.with(subepochs.random()) }
 
                     Column(
                         verticalArrangement = Arrangement.spacedBy(4.dp)

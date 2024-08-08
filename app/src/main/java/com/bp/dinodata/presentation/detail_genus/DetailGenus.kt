@@ -9,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -74,7 +73,6 @@ import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.TaxonTreeBuilder
-import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IDetailedGenus
@@ -88,8 +86,8 @@ import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
-import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
-import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette

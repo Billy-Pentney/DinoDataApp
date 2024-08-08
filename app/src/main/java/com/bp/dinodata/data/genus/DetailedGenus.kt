@@ -3,11 +3,10 @@ package com.bp.dinodata.data.genus
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.ImageUrlData
-import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
-import com.bp.dinodata.presentation.icons.chronology.IDisplayableTimePeriod
-import com.bp.dinodata.presentation.icons.chronology.ITimeInterval
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.ITimeInterval
 
 interface IDetailedGenus: IGenusWithImages, ILocalPrefs, IHasCurrentSelectedImage {
     fun getLocalPrefs(): ILocalPrefs
