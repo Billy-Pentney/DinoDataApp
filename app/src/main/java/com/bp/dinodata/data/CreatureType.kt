@@ -32,3 +32,38 @@ enum class CreatureType {
     Mosasaur
 }
 
+object CreatureTypes {
+    val CreatureTypeMap = mapOf(
+        "abelisaurid" to CreatureType.Abelisaurid,
+        "ankylosaur" to CreatureType.Ankylosaur,
+        "ankylosaurid" to CreatureType.Ankylosaur,
+        "aquatic" to CreatureType.Aquatic,
+        "ceratopsian" to CreatureType.Ceratopsian,
+        "cenezoic" to CreatureType.Cenezoic,
+        "carcharodontosaurid" to CreatureType.Carcharodontosaurid,
+        "dromaeosaurid" to CreatureType.Dromaeosaurid,
+        "euornithopod" to CreatureType.Euornithopod,
+        "crocodilian" to CreatureType.Crocodilian,
+        "iguanodont" to CreatureType.Iguanodontid,
+        "hadrosaur" to CreatureType.Hadrosaur,
+        "pachycephalosaurid" to CreatureType.Pachycephalosaur,
+        "pterosaur" to CreatureType.Pterosaur,
+        "sauropod" to CreatureType.Sauropod,
+        "spinosaurid" to CreatureType.Spinosaur,
+        "stegosaurid" to CreatureType.Stegosaur,
+        "tyrannosaurid" to CreatureType.Tyrannosaurid,
+        "small_theropod" to CreatureType.SmallTheropod,
+        "medium_theropod" to CreatureType.MediumTheropod,
+        "large_theropod" to CreatureType.LargeTheropod,
+        "ornithomimid" to CreatureType.Ornithomimid,
+        "plesiosaur" to CreatureType.Plesiosaur,
+        "therizinosaurid" to CreatureType.Therizinosaurid,
+        "synapsid" to CreatureType.Synapsid,
+        "spined_synapsid" to CreatureType.SpinedSynapsid,
+        "serpent" to CreatureType.Serpent,
+        "ichthyosaur" to CreatureType.Ichthyosaur,
+        "mosasaur" to CreatureType.Mosasaur,
+        "other" to CreatureType.Other
+    )
+}
+
