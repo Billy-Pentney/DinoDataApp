@@ -17,10 +17,11 @@ class SearchTermBuilder(
         private const val LOCATION_PREFIX = "location"
         private const val DIET_PREFIX = "diet"
         private const val FAVOURITE_PREFIX = "fave"
+        private const val ERA_PREFIX = "era"
 
         private val PREFIX_LIST = listOf(
             TAXON_PREFIX, TYPE_PREFIX, PERIOD_PREFIX, COLOR_PREFIX,
-            LOCATION_PREFIX, DIET_PREFIX, FAVOURITE_PREFIX
+            LOCATION_PREFIX, DIET_PREFIX, FAVOURITE_PREFIX, ERA_PREFIX
         )
 
         private val PREFIX_COLON_LIST = PREFIX_LIST.map { "$it:" }
@@ -40,11 +41,12 @@ class SearchTermBuilder(
         return when (key) {
             TAXON_PREFIX     -> TaxonNameSearchTerm(termText, taxaList)
             TYPE_PREFIX      -> CreatureTypeSearchTerm(termText)
-            DIET_PREFIX      -> DietSearchTerm(termText, possibleDiets)
-            PERIOD_PREFIX    -> TimePeriodSearchTerm(termText, possibleTimePeriods)
+            DIET_PREFIX      -> DietSearchTerm(termText)
+            PERIOD_PREFIX    -> TimePeriodSearchTerm(termText)
             COLOR_PREFIX     -> SelectedColorSearchTerm(termText)
             LOCATION_PREFIX  -> LocationSearchTerm(termText, locations)
             FAVOURITE_PREFIX -> FavouriteSearchTerm(termText)
+            ERA_PREFIX       -> TimeEraSearchTerm(termText)
             else -> {
                 Log.d("SearchConstructor", "Unknown query filter \'$termText\'")
                 BasicSearchTerm(termText)

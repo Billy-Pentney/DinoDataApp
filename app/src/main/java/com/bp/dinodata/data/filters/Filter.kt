@@ -2,7 +2,6 @@ package com.bp.dinodata.data.filters
 
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.time_period.TimePeriod
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.IHasCreatureType
@@ -11,6 +10,9 @@ import com.bp.dinodata.data.genus.IHasLocationInfo
 import com.bp.dinodata.data.genus.IHasName
 import com.bp.dinodata.data.genus.IHasTaxonomy
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.IModified
+import com.bp.dinodata.data.time_period.INamedTimePeriod
 
 /**
  * A filter defines one or more restrictions on items of type T.
@@ -90,22 +92,38 @@ class DietFilter(
 }
 
 class TimePeriodFilter(
-    private val acceptedTimePeriods: List<TimePeriod>
+    private val acceptedTimePeriods: List<IDisplayableTimePeriod>
 ): IFilter<IHasTimePeriodInfo> {
-    override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
-        // Use the specific years the creature lived, to avoid false-positives
-        // due to adjacent epochs
-        val itemInterval = item.getTimeIntervalLived()
+//    override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
+//        val itemPeriod = item.getTimePeriod()
+//
+//        if (itemPeriod != null) {
+//            // If this period has a prefix (e.g. "Early"), ignore it and use
+//            // the period without the modifier
+//            val baseTimePeriod =
+//                if (itemPeriod is IModified<*>) {
+//                    itemPeriod.getUnmodifiedTimePeriod()
+//                }
+//                else {
+//                    itemPeriod
+//                }
+//
+//            return baseTimePeriod in acceptedTimePeriods
+//        }
+//
+//        return false
+//    }
 
-        if (itemInterval != null) {
+    override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
+        val itemPeriod = item.getTimePeriod()
+//        val itemInterval = item.getTimeIntervalLived()
+
+        if (itemPeriod != null) {
             return acceptedTimePeriods.any {
-                it.overlapsWith(itemInterval)
+                it.overlapsWith(itemPeriod)
             }
         }
-//        if (itemTimePeriod != null) {
-//            val baseTimePeriod = TimePeriod(itemTimePeriod.epoch)
-//            return itemTimePeriod in acceptedTimePeriods || baseTimePeriod in acceptedTimePeriods
-//        }
+
         return false
     }
 }

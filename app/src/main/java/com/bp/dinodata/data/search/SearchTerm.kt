@@ -13,7 +13,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.bp.dinodata.data.enum_readers.CreatureTypeConverter
 import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.enum_readers.DietConverter
-import com.bp.dinodata.data.enum_readers.TimePeriodConverter
+import com.bp.dinodata.data.enum_readers.EraConverter
+import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.filters.CreatureTypeFilter
 import com.bp.dinodata.data.filters.DietFilter
 import com.bp.dinodata.data.filters.FavouriteFilter
@@ -145,15 +146,30 @@ class DietSearchTerm(
 
 class TimePeriodSearchTerm(
     originalText: String,
-    allPossibleValues: List<String> = TimePeriodConverter.getListOfOptions()
+    validOptions: List<String> = EpochConverter.getListOfOptions()
 ): ListBasedSearchTerm(
     originalText,
-    allPossibleValues = allPossibleValues,
+    allPossibleValues = validOptions,
     termType = SearchTermType.TimePeriod,
     imageIconVector = Icons.Filled.AccessTime
 ) {
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
-        val periods = queryArguments.mapNotNull { TimePeriodConverter.matchType(it) }
+        val periods = queryArguments.mapNotNull { EpochConverter.matchType(it) }
+        return TimePeriodFilter(periods)
+    }
+}
+
+class TimeEraSearchTerm(
+    originalText: String,
+    validOptions: List<String> = EraConverter.getListOfOptions()
+): ListBasedSearchTerm(
+    originalText = originalText,
+    allPossibleValues = validOptions,
+    termType = SearchTermType.TimePeriod,
+    imageIconVector = Icons.Filled.AccessTime
+) {
+    override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
+        val periods = queryArguments.mapNotNull { EraConverter.matchType(it) }
         return TimePeriodFilter(periods)
     }
 }
