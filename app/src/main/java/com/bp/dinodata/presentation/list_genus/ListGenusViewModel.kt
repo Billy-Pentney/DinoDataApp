@@ -39,6 +39,8 @@ class ListGenusViewModel @Inject constructor(
     private val eventFlow: MutableSharedFlow<ListGenusPageUiEvent> = MutableSharedFlow()
     private val toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
 
+    private var searchQuery: MutableSharedFlow<String> = MutableSharedFlow()
+
     init {
         viewModelScope.launch {
             _listOfGeneraByLetter.collectLatest {
@@ -52,6 +54,12 @@ class ListGenusViewModel @Inject constructor(
         viewModelScope.launch {
             eventFlow.collect {
                 handleEvent(it)
+            }
+        }
+
+        viewModelScope.launch {
+            searchQuery.collectLatest {
+                _uiState.value = _uiState.value.runSearch()
             }
         }
     }
@@ -128,7 +136,7 @@ class ListGenusViewModel @Inject constructor(
 
     private fun runSearch() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.runSearch()
+            searchQuery.emit(_uiState.value.search.getQuery())
         }
     }
 
