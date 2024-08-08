@@ -4,10 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.filters.IFilter
-import com.bp.dinodata.data.filters.TimePeriodFilter
+import com.bp.dinodata.data.filters.EpochFilter
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 
-class TimePeriodSearchTerm(
+class EpochSearchTerm(
     originalText: String,
     validOptions: List<String> = EpochConverter.getListOfOptions()
 ): ListBasedSearchTerm(
@@ -18,6 +18,6 @@ class TimePeriodSearchTerm(
 ) {
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
         val periods = queryArguments.mapNotNull { EpochConverter.matchType(it) }
-        return TimePeriodFilter(periods)
+        return EpochFilter(periods.map { it.getEpochId() })
     }
 }

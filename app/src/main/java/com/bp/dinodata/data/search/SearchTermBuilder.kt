@@ -11,7 +11,7 @@ import com.bp.dinodata.data.search.terms.LocationSearchTerm
 import com.bp.dinodata.data.search.terms.SelectedColorSearchTerm
 import com.bp.dinodata.data.search.terms.TaxonNameSearchTerm
 import com.bp.dinodata.data.search.terms.TimeEraSearchTerm
-import com.bp.dinodata.data.search.terms.TimePeriodSearchTerm
+import com.bp.dinodata.data.search.terms.EpochSearchTerm
 
 class SearchTermBuilder(
     private val taxaList: List<String>,
@@ -52,7 +52,7 @@ class SearchTermBuilder(
             TAXON_PREFIX     -> TaxonNameSearchTerm(termText, taxaList)
             TYPE_PREFIX      -> CreatureTypeSearchTerm(termText)
             DIET_PREFIX      -> DietSearchTerm(termText)
-            PERIOD_PREFIX    -> TimePeriodSearchTerm(termText)
+            PERIOD_PREFIX    -> EpochSearchTerm(termText)
             COLOR_PREFIX     -> SelectedColorSearchTerm(termText)
             LOCATION_PREFIX  -> LocationSearchTerm(termText, locations)
             FAVOURITE_PREFIX -> FavouriteSearchTerm(termText)

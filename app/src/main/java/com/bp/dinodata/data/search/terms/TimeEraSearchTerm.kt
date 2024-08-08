@@ -4,7 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import com.bp.dinodata.data.enum_readers.EraConverter
 import com.bp.dinodata.data.filters.IFilter
-import com.bp.dinodata.data.filters.TimePeriodFilter
+import com.bp.dinodata.data.filters.EraFilter
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 
 class TimeEraSearchTerm(
@@ -17,7 +17,7 @@ class TimeEraSearchTerm(
     imageIconVector = Icons.Filled.AccessTime
 ) {
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
-        val periods = queryArguments.mapNotNull { EraConverter.matchType(it) }
-        return TimePeriodFilter(periods)
+        val eras = queryArguments.mapNotNull { EraConverter.matchType(it) }
+        return EraFilter(eras.map { it.getEraId() })
     }
 }

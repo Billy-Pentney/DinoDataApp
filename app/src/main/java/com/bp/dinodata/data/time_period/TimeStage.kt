@@ -2,7 +2,9 @@ package com.bp.dinodata.data.time_period
 
 import androidx.compose.ui.graphics.Color
 
-interface ITimeStage: IAtomicDisplayableTimePeriod
+
+
+interface ITimeStage: IAtomicDisplayableTimePeriod, IProvidesEpoch
 
 
 /**
@@ -11,6 +13,8 @@ interface ITimeStage: IAtomicDisplayableTimePeriod
  * to be atomic (i.e. cannot be divided further).
  * */
 class TimeStage(
+    private val eraId: EraId,
+    private val epochId: IEpochId,
     name: String,
     nameResId: Int,
     private val interval: ITimeInterval,
@@ -20,4 +24,7 @@ class TimeStage(
     name, nameResId, colorLight, colorDark
 ), ITimeStage {
     override fun getTimeInterval(): ITimeInterval = interval
+
+    override fun getEraId(): EraId = eraId
+    override fun getEpochId(): IEpochId = epochId
 }

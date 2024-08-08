@@ -31,11 +31,7 @@ object CenozoicEpochs: IEpochManager<CenozoicEpochs.CenozoicEpochId> {
         return stringToEnumMap[text]
     }
 
-    val stringToEnumMap = mapOf(
-        "neogene" to CenozoicEpochId.Neogene,
-        "paleogene" to CenozoicEpochId.Paleogene,
-        "quaternary" to CenozoicEpochId.Quaternary
-    )
+    val stringToEnumMap = CenozoicEpochId.entries.associateBy { it.name.lowercase() }
     val stringToEpochMap = stringToEnumMap.mapValues { enumToEpoch(it.value) }
 
     sealed class CenozoicEpoch(

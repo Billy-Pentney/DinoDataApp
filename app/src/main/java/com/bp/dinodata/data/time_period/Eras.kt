@@ -14,18 +14,6 @@ import com.bp.dinodata.theme.neogeneLight
 
 object Eras {
 
-    fun getList(): List<ITimeEra> {
-        return EraId.entries.map { enumToEra(it) }
-    }
-
-    fun enumToEra(key: EraId): ITimeEra {
-        return when (key) {
-            EraId.Mesozoic -> Mesozoic
-            EraId.Paleozoic -> Paleozoic
-            EraId.Cenozoic -> Cenozoic
-        }
-    }
-
     val Mesozoic = TimeEra(
         EraId.Mesozoic,
         R.string.time_era_mesozoic,
@@ -49,8 +37,32 @@ object Eras {
         colorLight = neogeneLight,
         colorDark = neogeneDark
     )
+
+    private val enumToEraMap = mapOf(
+        EraId.Mesozoic to Mesozoic,
+        EraId.Paleozoic to Paleozoic,
+        EraId.Cenozoic to Cenozoic
+    )
+
+    fun getList(): List<ITimeEra> {
+        return enumToEraMap.values.toList()
+    }
+
+    fun getEra(key: EraId): ITimeEra {
+        return enumToEraMap[key]!!
+    }
+
+    fun getStringToTypeMapping(): Map<String, ITimeEra> {
+        return enumToEraMap.mapKeys { it.key.name.lowercase() }
+    }
+
+    fun getStringToEnumMapping(): Map<String, EraId> {
+        return EraId.entries.associateBy { it.name.lowercase() }
+    }
 }
 
-enum class EraId {
+interface IEraId
+
+enum class EraId: IEraId {
     Mesozoic, Paleozoic, Cenozoic
 }

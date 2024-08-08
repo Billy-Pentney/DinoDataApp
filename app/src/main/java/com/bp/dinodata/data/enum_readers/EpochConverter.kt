@@ -20,7 +20,7 @@ object TimePeriods {
     val EpochModifierMap: Map<String, ITimeModifierKey>
         = SubEpochModifier.entries.associateBy { it.name.lowercase() }
 
-    val EraMap = Eras.getList().associateBy { it.getEnumId().toString().lowercase() }
+    val EraMap = Eras.getStringToTypeMapping()
 }
 
 object EraConverter: TypeConverter<ITimeEra>(TimePeriods.EraMap, "EraConverter")

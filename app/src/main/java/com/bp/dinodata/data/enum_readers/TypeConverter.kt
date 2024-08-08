@@ -38,6 +38,6 @@ abstract class TypeConverter<T>(
     }
 
     override fun getListOfOptions(): List<String> {
-        return dataMap.keys.toList()
+        return dataMap.keys.toList().map { it.lowercase() }
     }
 }

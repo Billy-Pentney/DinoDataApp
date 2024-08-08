@@ -42,7 +42,7 @@ object PaleozoicEpochs: IEpochManager<PaleozoicEpochs.PaleozoicEpochId> {
         return stringToEnumMap[text]
     }
 
-    val stringToEnumMap = PaleozoicEpochId.entries.associateBy { it.toString() }
+    val stringToEnumMap = PaleozoicEpochId.entries.associateBy { it.toString().lowercase() }
     val stringToEpochMap = stringToEnumMap.mapValues { enumToEpoch(it.value) }
 
     sealed class PaleozoicEpoch(

@@ -6,16 +6,11 @@ import androidx.compose.ui.graphics.Color
  * Represents a geological time-period known as an 'Era'.
  * An Era is a sub-unit of an Eon, and an Epoch is a sub-unit of an Era.
  * */
-interface ITimeEra: IDisplayableTimePeriod, IPartitionedTimePeriod {
+interface ITimeEra: IDisplayableTimePeriod, IPartitionedTimePeriod, IProvidesEra {
     override fun getSubdivisions(): List<IModifiableEpoch>
-    fun getEnumId(): EraId
 }
 
 
-/**
- *
- * @property key A unique Id which identifies this era.
- */
 class TimeEra(
     private val key: EraId,
     nameResId: Int,
@@ -30,5 +25,5 @@ class TimeEra(
 
     // Order from oldest (earliest) to youngest (latest)
     override fun getSubdivisions(): List<IModifiableEpoch> = orderedSubPeriods
-    override fun getEnumId(): EraId = key
+    override fun getEraId(): EraId = key
 }
