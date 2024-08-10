@@ -316,7 +316,7 @@ fun SearchPage(
                 ListGenusSearchBar(
                     updateSearchQuery = updateSearchQuery,
                     clearSearchQuery = clearSearchQuery,
-                    prefillSearchSuggestion = prefillSearchSuggestion,
+                    tryAcceptSearchSuggestion = prefillSearchSuggestion,
                     modifier = Modifier.padding(horizontal = outerPadding),
                     onSearchTermTap = removeSearchTerm,
                     uiState = uiState,

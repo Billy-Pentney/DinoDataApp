@@ -40,7 +40,9 @@ data class GenusSearch(
     }
 
     override fun getAutofillSuggestion(): String {
-        return getQuery() + getSuggestedSuffixes().getOrElse(0) { "" }
+        val suggestedSuffix = getSuggestedSuffixes().firstOrNull()
+        // If there are no suggestions, return the empty string
+        return suggestedSuffix?.let { getQuery() + it } ?: ""
     }
 
     override fun getCompletedTerms(): List<ISearchTerm<in IGenus>> = terms

@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.list_genus
 
+import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
@@ -13,10 +14,11 @@ data class ListGenusUiState(
     val allPageData: DataState<IResultsByLetter<IGenusWithPrefs>> = DataState.Idle(),
     val searchResults: DataState<out List<IGenus>> = DataState.Idle(),
     val searchBarVisible: Boolean = false,
-    val search: GenusSearch = GenusSearch(),
+    private val search: GenusSearch = GenusSearch(),
     val pageSelectionVisible: Boolean = true,
     val selectedPageIndex: Int = 0,
-    val currentQueryText: String = "",
+//    val currentQueryText: String = "",
+    private val textFieldState: TextFieldState = TextFieldState(hintContent = DEFAULT_HINT_TEXT),
     val firstVisibleItem: Int = 0,
     val firstVisibleItemOffset: Int = 0,
     private val locations: List<String> = emptyList(),
@@ -24,11 +26,52 @@ data class ListGenusUiState(
 ): ISearchBarUiState {
     val letterKeys: List<Char> = getDataOrNull()?.getKeys() ?: emptyList()
 
+    companion object {
+        const val DEFAULT_HINT_TEXT = "start typing for suggestions..."
+    }
+
+    override fun getSearchTextFieldState(): TextFieldState {
+        return textFieldState
+    }
+
     fun getDataOrNull(): IResultsByLetter<IGenusWithPrefs>? {
         if (allPageData is DataState.Success) {
             return allPageData.data
         }
         return null
+    }
+
+    private fun makeNewTextFieldState(
+        newSearch: GenusSearch = search
+    ): TextFieldState {
+        val newQuery = newSearch.getQuery()
+        val hasCompletedSearchTerms = newSearch.getCompletedTerms().isNotEmpty()
+        val autofillSuggestion = newSearch.getAutofillSuggestion()
+
+        // Now update the TextFieldState to reflect the constructed search.
+        // This will remove the text which has been converted to SearchTerms.
+
+        val canAutofillHint: Boolean
+        val hintText: String
+        val hintVisible: Boolean
+
+        if (newQuery.isEmpty() && !hasCompletedSearchTerms) {
+            hintText = DEFAULT_HINT_TEXT
+            canAutofillHint = false
+            hintVisible = true
+        }
+        else {
+            hintText = autofillSuggestion
+            canAutofillHint = true
+            hintVisible = hintText.isNotEmpty()
+        }
+
+        return textFieldState.copy(
+            textContent = newQuery,
+            hintContent = hintText,
+            canAcceptHint = canAutofillHint,
+            isHintVisible = hintVisible
+        )
     }
 
     /**
@@ -41,18 +84,20 @@ data class ListGenusUiState(
         locations: List<String> = this.locations,
         taxa: List<String> = this.taxa
     ): ListGenusUiState {
-        val search = GenusSearchBuilder(
-            query = this.currentQueryText,
+        val newSearch = GenusSearchBuilder(
+            query = this.textFieldState.textContent,
             terms = search.getCompletedTerms(),
             locations = locations,
             taxa = taxa,
         ).build()
 
+        val newTextFieldState = this.makeNewTextFieldState(newSearch)
+
         return this.copy(
             // Update the visible query text with the last term in the search object.
             // This removes completed terms (i.e. those followed by a space).
-            currentQueryText = search.getQuery(),
-            search = search,
+            textFieldState = newTextFieldState,
+            search = newSearch,
             searchResults = DataState.Idle()
         )
     }
@@ -71,14 +116,14 @@ data class ListGenusUiState(
 
     fun clearSearch(): ListGenusUiState {
         return this.copy(
-            currentQueryText = "",
+            textFieldState = this.textFieldState.clearText(),
             search = GenusSearch(search.getCompletedTerms()),
             searchResults = allPageData.map { it.toList() }
         )
     }
 
     override fun getFullQuery(): String = search.getFullQuery()
-    override fun getQuery(): String = currentQueryText
+    override fun getQuery(): String = textFieldState.textContent
     override fun isQueryEmpty(): Boolean = search.isQueryEmpty()
     override fun getSuggestedSuffixes(): List<String> = search.getSuggestedSuffixes()
     override fun getAutofillSuggestion(): String = search.getAutofillSuggestion()
@@ -86,9 +131,15 @@ data class ListGenusUiState(
     override fun getCompletedSearchTerms(): List<ISearchTerm<in IGenus>> =
         search.getCompletedTerms()
 
-    override fun updateSearchQuery(newQuery: String): ListGenusUiState {
+    override fun updateSearchQuery(
+        newQuery: String,
+        selection: TextRange
+    ): ListGenusUiState {
         return this.copy(
-            currentQueryText = newQuery
+            textFieldState = this.textFieldState.copy(
+                textContent = newQuery,
+                textSelection = selection
+            )
         )
     }
 

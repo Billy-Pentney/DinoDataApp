@@ -42,8 +42,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -54,7 +52,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.terms.DietSearchTerm
 import com.bp.dinodata.data.search.terms.BasicSearchTerm
@@ -63,6 +60,8 @@ import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.data.search.terms.LocationSearchTerm
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.MyGrey600
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
@@ -117,7 +116,7 @@ fun ListGenusSearchBar(
     updateSearchQuery: (TextFieldValue) -> Unit,
     runSearch: () -> Unit,
     clearSearchQuery: () -> Unit,
-    prefillSearchSuggestion: () -> Unit,
+    tryAcceptSearchSuggestion: () -> Unit,
     modifier: Modifier = Modifier,
     onSearchTermTap: (ISearchTerm<in IGenus>) -> Unit,
     uiState: ISearchBarUiState
@@ -137,14 +136,15 @@ fun ListGenusSearchBar(
 
     val interactionSource = remember { MutableInteractionSource() }
 
+    val searchTextFieldState = uiState.getSearchTextFieldState()
+
     val textStyle = TextStyle(
         fontSize = 18.sp,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurface
     )
 
-    var hintText by remember { mutableStateOf("") }
-    var keyboardOptions by remember { mutableStateOf(
+    val keyboardOptions by remember { mutableStateOf(
         KeyboardOptions.Default.copy(
             autoCorrectEnabled = false,
             capitalization = KeyboardCapitalization.None,
@@ -156,19 +156,8 @@ fun ListGenusSearchBar(
     var acceptSuggestionAsQuery by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
-    val currQuery = uiState.getQuery()
-    var canAutofill = uiState.hasSuggestions()
-    val searchTerms = uiState.getCompletedSearchTerms()
-
-//    keyboardOptions = keyboardOptions.copy(
-        // This dynamic imeAction causes the keyboard to die
-//        if (uiState.hasSuggestions()) {
-//            ImeAction.Next
-//        }
-//        else {
-//            ImeAction.Search
-//        }
-//    )
+    var canAutofill by remember { mutableStateOf(false) }
+    var hintText by remember { mutableStateOf("") }
 
     val (searchTextFocus) = remember { FocusRequester.createRefs() }
 
@@ -177,48 +166,37 @@ fun ListGenusSearchBar(
         searchTextFocus.requestFocus()
     }
 
-    val blankQueryHintText = stringResource(R.string.search_hint_type_for_suggestions)
-
     LaunchedEffect(uiState) {
-        textFieldValue = textFieldValue.copy(text = currQuery)
-
-        if (currQuery.isEmpty() && searchTerms.isEmpty()) {
-            hintText = blankQueryHintText
-            canAutofill = false
-        }
-        else {
-            hintText = uiState.getAutofillSuggestion()
-        }
+        textFieldValue = textFieldValue.copy(
+            text = searchTextFieldState.textContent,
+            selection = searchTextFieldState.textSelection
+        )
+        canAutofill = searchTextFieldState.canAcceptHint
+        hintText = 
+            if (searchTextFieldState.isHintVisible)
+                searchTextFieldState.hintContent
+            else {
+                ""
+            }
     }
 
-    LaunchedEffect(acceptSuggestionAsQuery) {
-        if (acceptSuggestionAsQuery) {
-            acceptSuggestionAsQuery = false
-            if (canAutofill) {
-                textFieldValue = textFieldValue.copy(
-                    text = hintText,
-                    selection = TextRange(hintText.length)
-                )
-                prefillSearchSuggestion()
-            }
+    val suggestionAcceptedFlow = remember {
+        MutableSharedFlow<String>()
+    }
+    
+    LaunchedEffect(null) {
+        suggestionAcceptedFlow.collectLatest {
+            tryAcceptSearchSuggestion()
         }
+//        if (acceptSuggestionAsQuery) {
+//            acceptSuggestionAsQuery = false
+//            if (canAutofill) {
+//                tryAcceptSearchSuggestion()
+//            }
+//        }
     }
 
     Column (modifier = Modifier.fillMaxWidth()) {
-
-//        Crossfade (searchTerms.isNotEmpty(), label="crossfadeSearchBarLabel") {
-//        AnimatedVisibility (
-//            searchTerms.isNotEmpty(),
-//            modifier = Modifier.padding(horizontal = 16.dp)
-//        ) {
-//            Text("Active Filters",
-//                color = MaterialTheme.colorScheme.onSurface,
-//                fontWeight = FontWeight.SemiBold,
-//                fontStyle = FontStyle.Italic
-//            )
-//        }
-//        }
-
         LazyColumn (
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
@@ -226,7 +204,7 @@ fun ListGenusSearchBar(
                 .padding(horizontal = 16.dp)
                 .animateContentSize()
         ) {
-            items(searchTerms) { term ->
+            items(uiState.getCompletedSearchTerms()) { term ->
                 SearchTermInputChip(
                     term,
                     onSearchTermTap = { onSearchTermTap(term) }
@@ -239,9 +217,8 @@ fun ListGenusSearchBar(
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = {
-                        textFieldValue = it
+//                        textFieldValue = it
                         updateSearchQuery(it)
-                        runSearch()
                     },
                     decorationBox = { innerTextField ->
                         TextFieldDefaults.DecorationBox(
@@ -303,12 +280,11 @@ fun ListGenusSearchBar(
                             focusManager.clearFocus()
                         },
                         onNext = {
-                            if (uiState.hasSuggestions()) {
-                                acceptSuggestionAsQuery = true
+                            if (canAutofill) {
+                                tryAcceptSearchSuggestion()
                             }
                             else {
                                 updateSearchQuery(textFieldValue)
-                                runSearch()
                                 focusManager.clearFocus()
                             }
                         }
@@ -342,7 +318,7 @@ fun PreviewSearchBar() {
             ListGenusSearchBar(
                 updateSearchQuery = {},
                 clearSearchQuery = { },
-                prefillSearchSuggestion = { },
+                tryAcceptSearchSuggestion = { },
                 onSearchTermTap = {},
                 uiState = ListGenusUiState(
                     searchBarVisible = true,

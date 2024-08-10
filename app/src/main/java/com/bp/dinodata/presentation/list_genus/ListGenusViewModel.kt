@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.list_genus
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.IResultsByLetter
@@ -82,13 +83,8 @@ class ListGenusViewModel @Inject constructor(
     private fun handleEvent(event: ListGenusPageUiEvent) {
         when(event) {
             is ListGenusPageUiEvent.UpdateSearchQuery -> {
-                val numTermsBefore = _uiState.value.getCompletedSearchTerms().size
-                makeSearch(event.state.text)
-                val numTermsAfter = _uiState.value.getCompletedSearchTerms().size
-
-                if (numTermsAfter != numTermsBefore || event.alsoRunSearch) {
-                    runSearch()
-                }
+                makeSearch(event.state.text, event.state.selection)
+                runSearch()
             }
             ListGenusPageUiEvent.RunSearch -> runSearch()
             ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearOrHideSearch()
@@ -101,7 +97,8 @@ class ListGenusViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
             }
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
-                makeSearch(_uiState.value.getAutofillSuggestion())
+                val suggestedText = _uiState.value.getAutofillSuggestion()
+                makeSearch(suggestedText, TextRange(suggestedText.length))
                 runSearch()
             }
             is ListGenusPageUiEvent.RemoveSearchTerm -> {
@@ -132,9 +129,9 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    private fun makeSearch(newQuery: String) {
+    private fun makeSearch(newQuery: String, newTextSelection: TextRange) {
         _uiState.value = _uiState.value
-            .updateSearchQuery(newQuery)
+            .updateSearchQuery(newQuery, newTextSelection)
             .makeNewSearch(
                 locations = _locationsFlow.value,
                 taxa = _taxaFlow.value
@@ -143,7 +140,7 @@ class ListGenusViewModel @Inject constructor(
 
     private fun runSearch() {
         viewModelScope.launch {
-            searchQuery.emit(_uiState.value.search.getQuery())
+            searchQuery.emit(_uiState.value.getQuery())
         }
     }
 
