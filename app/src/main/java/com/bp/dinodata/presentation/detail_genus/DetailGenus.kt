@@ -16,24 +16,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.Interests
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.sharp.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,9 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -68,28 +54,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.presentation.utils.ThemeConverter
-import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
-import com.bp.dinodata.data.TaxonTreeBuilder
 import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IDetailedGenus
-import com.bp.dinodata.data.genus.IGenus
-import com.bp.dinodata.data.genus.IGenusWithImages
-import com.bp.dinodata.data.genus.IHasTimePeriodInfo
+import com.bp.dinodata.data.genus.IHasFormationInfo
 import com.bp.dinodata.data.genus.LocalPrefs
-import com.bp.dinodata.data.quantities.IDescribesLength
-import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.convertCreatureTypeToString
-import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
-import com.bp.dinodata.presentation.icons.DietIconThin
-import com.bp.dinodata.presentation.icons.TimePeriodIcon
-import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
+import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureDietAndMeasurements
+import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureFormations
+import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureLocations
+import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureNameMeaningAndType
+import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureTimePeriod
+import com.bp.dinodata.presentation.detail_genus.card_fragments.ShowCreatureSpeciesCards
+import com.bp.dinodata.presentation.detail_genus.card_fragments.ShowTaxonomicTree
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
-import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.presentation.utils.dialog.ColorPickerDialog
 import com.bp.dinodata.theme.DinoDataTheme
 
@@ -330,6 +311,12 @@ fun ShowGenusDetail(
                     CreatureLocations(locations, iconModifier)
                 }
 
+                val formations = genus.getFormationNames()
+                if (formations.isNotEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    CreatureFormations(formations, iconModifier)
+                }
+
                 if (genus.hasSpeciesInfo()) {
                     sectionDivider()
                     ShowCreatureSpeciesCards(genus, iconModifier)
@@ -429,261 +416,6 @@ fun UpdateGenusLocalPreferencesButtons(
     }
 }
 
-@Composable
-fun CreatureLocations(locations: List<String>, iconModifier: Modifier) {
-    Column (
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        LabelContentRow(
-            label = stringResource(R.string.label_locations),
-            valueContent = {
-//                Text(locations.joinToString())
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.LocationOn, null,
-                    modifier = iconModifier
-                )
-            }
-        )
-        LocationAtlas(locations, modifier = Modifier.shadow(4.dp))
-    }
-}
-
-@Composable
-fun CreatureTimePeriod(
-    item: IHasTimePeriodInfo,
-    iconModifier: Modifier
-) {
-    val timePeriods = item.getTimePeriods()
-    val yearsLived = item.getYearsLived()
-    val timeInterval = item.getTimeIntervalLived()
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier=Modifier.fillMaxWidth()
-    ) {
-        LabelContentRow(
-            label = stringResource(R.string.label_time_period),
-            valueContent = {
-                val firstPeriod = timePeriods.firstOrNull()
-                val lastPeriod = timePeriods.lastOrNull()
-
-                if (firstPeriod == lastPeriod) {
-                    // Show the singleton
-                    TimePeriodIcon(firstPeriod)
-                }
-                else {
-                    // Show the range from the first to the last
-                    Row (verticalAlignment = Alignment.CenterVertically) {
-                        TimePeriodIcon(firstPeriod)
-                        Text(" / ")
-                        TimePeriodIcon(lastPeriod)
-                    }
-                }
-            },
-            leadingIcon = {
-                Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
-            }
-        )
-        LabelAttributeRow(
-            label = stringResource(R.string.label_years_lived),
-            value = yearsLived,
-            leadingIcon = {
-                Icon(Icons.Filled.AccessTimeFilled, null, modifier = iconModifier)
-            }
-        )
-
-        if (timePeriods.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            TimeChronologyBar(timePeriods, timeInterval)
-        }
-    }
-}
-
-@Composable
-fun CreatureDietAndMeasurements(
-    diet: Diet?,
-    length: IDescribesLength?,
-    weight: IDescribesWeight?,
-    iconModifier: Modifier
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier=Modifier.fillMaxWidth()
-    ) {
-        LabelContentRow(
-            label = stringResource(R.string.label_diet),
-            valueContent = { DietIconThin(diet) },
-            leadingIcon = {
-                Icon(
-                    Icons.Sharp.Restaurant,
-                    contentDescription = null,
-                    modifier = iconModifier
-                )
-            }
-        )
-        length?.let {
-            LabelAttributeRow(
-                label = stringResource(R.string.label_length),
-                value = length.toString(),
-                leadingIcon = {
-                    Image(
-                        painterResource(R.drawable.icon_filled_ruler),
-                        null,
-                        modifier = iconModifier,
-                        colorFilter = ColorFilter.tint(LocalContentColor.current)
-                    )
-                }
-            )
-        }
-        weight?.let {
-            LabelAttributeRow(
-                label = stringResource(R.string.label_weight),
-                value = weight.toString(),
-                leadingIcon = {
-                    Image(
-                        painterResource(R.drawable.icon_filled_weight),
-                        null,
-                        modifier = iconModifier,
-                        colorFilter = ColorFilter.tint(LocalContentColor.current)
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun CreatureNameMeaningAndType(
-    genus: IGenusWithImages,
-    iconModifier: Modifier
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier=Modifier.fillMaxWidth()
-    ) {
-        LabelAttributeRow(
-            label = stringResource(R.string.label_meaning),
-            value = genus.getNameMeaning(),
-            valueStyle = FontStyle.Italic,
-            leadingIcon = {
-                Icon(Icons.Filled.Book, null, modifier = iconModifier)
-            }
-        )
-        LabelContentRow(
-            label = "Type", //stringResource(R.string.label_creature_type),
-            valueContent = {
-                val creatureType = genus.getCreatureType()
-                val typeName = convertCreatureTypeToString(creatureType)
-                val drawableId = convertCreatureTypeToSilhouette(creatureType)
-                typeName?.let {
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        drawableId?.let {
-                            Image(
-                                painterResource(id = drawableId),
-                                null,
-                                modifier = Modifier
-                                    .height(18.dp)
-                                    .alpha(0.5f),
-                                colorFilter = ColorFilter.tint(Color.White, BlendMode.SrcIn)
-                            )
-                        }
-                        Text(typeName)
-                    }
-                }
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.AutoMirrored.Filled.Label,
-                    null,
-                    modifier = iconModifier
-                )
-            }
-        )
-    }
-}
-
-@Composable
-fun ShowTaxonomicTree(
-    genus: IGenus,
-    modifier: Modifier,
-    internalCardPadding: PaddingValues = PaddingValues(16.dp)
-) {
-    var taxonTreeUptoLast: List<String> by remember { mutableStateOf(emptyList()) }
-    var finalChild: String by remember { mutableStateOf("") }
-
-    LaunchedEffect(genus) {
-        val taxonomy = genus.getListOfTaxonomy()
-        val taxonBuilder = TaxonTreeBuilder(taxonomy)
-        val taxonTree = taxonBuilder.getPrintableTree(genus = genus.getName())
-        taxonTreeUptoLast = taxonTree.dropLast(1)
-        finalChild = taxonTree.last()
-    }
-
-    Card (
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
-    ) {
-        LazyRow (
-            modifier = Modifier
-                .padding(internalCardPadding)
-                .fillMaxWidth()
-        ) {
-            item {
-                Column {
-                    Text(
-                        taxonTreeUptoLast.joinToString("\n"),
-//                        lineHeight = 18.sp
-                    )
-                    Text(
-                        finalChild,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.scrim,
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun ShowCreatureSpeciesCards(
-    genus: IGenus,
-    iconModifier: Modifier = Modifier
-) {
-
-    Column (
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        LabelContentRow(
-            label = stringResource(R.string.label_known_species),
-            valueContent = {},
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.Interests,
-                    null,
-                    modifier = iconModifier
-                )
-            }
-        )
-        Spacer(modifier=Modifier.height(4.dp))
-        genus.getSpeciesList().forEach {
-            SpeciesListItem(it, genus.getName())
-        }
-    }
-}
-
 
 //@Preview(
 //    widthDp = 300,
@@ -720,7 +452,7 @@ fun ShowCreatureSpeciesCards(
 //    }
 //}
 
-@Preview(widthDp = 400, heightDp = 1200, name = "Dark")
+@Preview(widthDp = 400, heightDp = 2000, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
     val styraco = GenusBuilder("Styracosaurus")
@@ -735,6 +467,7 @@ fun PreviewGenusDetailDark() {
         .setEndMya("74.5")
         .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
         .setLocations(listOf("Canada", "USA"))
+        .setFormations(listOf("Alberta Woodland Formation"))
         .setSpecies(
             listOf(
                 mapOf(

@@ -50,6 +50,8 @@ class GenusWithImages(
     override fun getEndMya(): Float? = genus.getEndMya()
 
     override fun getLocations(): List<String> = genus.getLocations()
+    override fun getFormationNames(): List<String> = genus.getFormationNames()
+
     override fun getSpeciesList(): List<ISpecies> = genus.getSpeciesList()
     override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()
 

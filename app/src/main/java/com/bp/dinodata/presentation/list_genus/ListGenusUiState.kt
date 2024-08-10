@@ -41,6 +41,15 @@ data class ListGenusUiState(
         return null
     }
 
+    /**
+     * Update the SearchBar TextFieldState based on the given search. This involves setting
+     * whether the hint (auto-fill suggestion) is visible, and indicating if the user
+     * can accept the suggestion.
+     * @param newSearch The new search which should be used to update the text-field;
+     * defaults to the current search
+     * @return A new TextFieldState with the content, hint and visibility constructed from the given
+     * search.
+     */
     private fun makeNewTextFieldState(
         newSearch: GenusSearch = search
     ): TextFieldState {

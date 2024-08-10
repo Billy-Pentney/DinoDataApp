@@ -45,11 +45,15 @@ interface IHasLocationInfo {
     fun getLocations(): List<String>
 }
 
+interface IHasFormationInfo {
+    fun getFormationNames(): List<String>
+}
+
 interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
 
 interface IGenus: IHasTaxonomy, IHasMeasurements, IAdditionalNameInfo,
-    IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo {
-}
+    IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo,
+    IHasFormationInfo
 
 @Immutable
 data class Genus(
@@ -64,6 +68,7 @@ data class Genus(
     private val weight: IDescribesWeight? = null,
     private val taxonomy: List<String> = emptyList(),
     private val locations: List<String> = emptyList(),
+    private val formations: List<String> = emptyList(),
     private val species: List<ISpecies> = emptyList()
 ): IGenus {
     override fun getTaxonomy(): String = taxonomy.joinToString("\n")
@@ -84,7 +89,6 @@ data class Genus(
         return tree
     }
 
-
     override fun getName(): String = name
     override fun getCreatureType(): CreatureType = type
     override fun getDiet(): Diet = diet
@@ -98,6 +102,8 @@ data class Genus(
     override fun getTimeIntervalLived(): ITimeInterval? = timeInterval
 
     override fun getLocations(): List<String> = locations
+    override fun getFormationNames(): List<String> = formations
+
     override fun getSpeciesList(): List<ISpecies> = species
     override fun hasSpeciesInfo(): Boolean = species.isNotEmpty()
 

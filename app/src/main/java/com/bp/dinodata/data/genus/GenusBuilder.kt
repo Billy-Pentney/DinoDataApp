@@ -29,6 +29,7 @@ class GenusBuilder(
     private var type: CreatureType = CreatureType.Other,
     private var taxonomy: List<String> = emptyList(),
     private var locations: List<String> = emptyList(),
+    private var formations: List<String> = emptyList(),
     private var startMya: Float? = null,
     private var endMya: Float? = null,
     private var species: List<ISpecies> = emptyList()
@@ -51,6 +52,7 @@ class GenusBuilder(
         private const val SPECIES_KEY = "species"
         private const val START_MYA_KEY = "start_mya"
         private const val END_MYA_KEY = "end_mya"
+        private const val FORMATIONS_KEY = "formations"
         const val TIME_AGES_KEY = "time_period_ages"
 
         fun fromDict(dataMap: Map<*, *>): IBuilder<IGenus>? {
@@ -58,6 +60,24 @@ class GenusBuilder(
             return GenusBuilder(name).fromDict(
                 dataMap
             )
+        }
+
+        private fun parseToStringList(any: Any): List<String> {
+//            if (any is ArrayList<*>) {
+//                return any.map { it.toString() }
+//            }
+//            return emptyList()
+            return parseToTypedList<String>(any)
+        }
+
+        private inline fun<reified T> parseToTypedList(any: Any): List<T> {
+            if (any is ArrayList<*>) {
+                return any.mapNotNull {
+                    if (it is T) it
+                    else         null
+                }
+            }
+            return emptyList()
         }
     }
 
@@ -71,6 +91,7 @@ class GenusBuilder(
         type = CreatureType.Other
         taxonomy = emptyList()
         locations = emptyList()
+        formations = emptyList()
         species = emptyList()
         startMya = null
         endMya = null
@@ -84,13 +105,11 @@ class GenusBuilder(
         val builder = this
 
         dataMap[TIME_EPOCHS_KEY]?.let {
-            if (it is ArrayList<*>) {
-                builder.setTimePeriods(it)
-            }
+            val timePeriods = parseToStringList(it)
+            builder.setTimePeriods(timePeriods)
         }
 
         dataMap[DIET_KEY]?.let { builder.setDiet(it.toString()) }
-//        dataMap[YEARS_LIVED_KEY]?.let { builder.setYearsLived(it.toString()) }
         dataMap[START_MYA_KEY]?.let { builder.setStartMya(it.toString()) }
         dataMap[END_MYA_KEY]?.let { builder.setEndMya(it.toString()) }
 
@@ -100,11 +119,15 @@ class GenusBuilder(
         dataMap[PRONOUNCE_KEY]?.let { builder.setNamePronunciation(it.toString()) }
         dataMap[MEANING_KEY]?.let { builder.setNameMeaning(it.toString()) }
         dataMap[TAXONOMY_KEY]?.let { builder.setTaxonomy(it) }
-        dataMap[LOCATIONS_KEY]?.let { builder.setLocations(it) }
-
-        dataMap[SPECIES_KEY]?.let {
-            builder.setSpecies(it)
+        dataMap[LOCATIONS_KEY]?.let {
+            val locations = parseToStringList(it)
+            builder.setLocations(locations)
         }
+        dataMap[FORMATIONS_KEY]?.let {
+            val formations = parseToStringList(it)
+            builder.setFormations(formations)
+        }
+        dataMap[SPECIES_KEY]?.let { builder.setSpecies(it) }
         return builder
     }
 
@@ -134,10 +157,13 @@ class GenusBuilder(
         return this
     }
 
-    override fun setLocations(locations: Any): IGenusBuilder {
-        if (locations is List<*>) {
-            this.locations = locations.mapNotNull { it.toString() }
-        }
+    override fun setLocations(locations: List<String>): IGenusBuilder {
+        this.locations = locations
+        return this
+    }
+
+    override fun setFormations(formations: List<String>): IGenusBuilder {
+        this.formations = formations
         return this
     }
 
@@ -187,9 +213,9 @@ class GenusBuilder(
         return this
     }
 
-    override fun setTimePeriods(stringValues: ArrayList<*>): IGenusBuilder {
-        val periods = stringValues.mapNotNull {
-            EpochConverter.matchType(it.toString())
+    override fun setTimePeriods(periodStrings: List<String>): IGenusBuilder {
+        val periods = periodStrings.mapNotNull {
+            EpochConverter.matchType(it)
         }
         timePeriods.addAll(periods)
         return this
@@ -326,7 +352,8 @@ class GenusBuilder(
             type = type,
             taxonomy = taxonomy,
             locations = locations,
-            species = species
+            species = species,
+            formations = formations
         )
     }
 }

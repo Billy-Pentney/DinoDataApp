@@ -356,7 +356,7 @@
     <string name="location_south_africa">South Africa</string>
     <string name="location_zambia">Zambia</string>
     <string name="location_zimbabwe">Zimbabwe</string>
-    <string name="action_pinch_map_to_zoom">pinch map to zoom</string>
+    <string name="action_pinch_or_tap_map_to_zoom">pinch or double-tap to zoom</string>
     <string name="text_no_pronunciation">" - not found -"</string>
     <string name="desc_play_tts_audio">play audio pronunciation of this name</string>
     <string name="type_ichthyosaur">Ichthyosaur</string>
@@ -394,6 +394,7 @@
         impact of a large asteroid that formed the Chicxulub crater in the Gulf of Mexico.
     </string>
     <string name="search_hint_type_for_suggestions">start typing for suggestions...</string>
+    <string name="label_formations">Formations</string>
 
 
 </resources>

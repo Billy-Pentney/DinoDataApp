@@ -18,10 +18,12 @@ interface IGenusBuilder: IDictParser<IGenus>, IBuilder<IGenus> {
     fun setStartMya(startMya: String?): IGenusBuilder
     fun setEndMya(endMya: String?): IGenusBuilder
 
-    fun setLocations(locations: Any): IGenusBuilder
+    fun setLocations(locations: List<String>): IGenusBuilder
     fun setSpecies(speciesData: Any): IGenusBuilder
 
-    fun setTimePeriods(it: ArrayList<*>): IGenusBuilder
+    fun setTimePeriods(periodStrings: List<String>): IGenusBuilder
+
+    fun setFormations(formations: List<String>): IGenusBuilder
 }
 
 

@@ -35,6 +35,8 @@ class GenusWithPrefs(
     override fun getTimeIntervalLived(): ITimeInterval? = genus.getTimeIntervalLived()
 
     override fun getLocations(): List<String> = genus.getLocations()
+    override fun getFormationNames(): List<String> = genus.getFormationNames()
+
     override fun getSpeciesList(): List<ISpecies> = genus.getSpeciesList()
     override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()
 
