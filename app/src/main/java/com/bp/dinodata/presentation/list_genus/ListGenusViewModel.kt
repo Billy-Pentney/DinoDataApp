@@ -48,6 +48,13 @@ class ListGenusViewModel @Inject constructor(
                     allPageData = it
                 )
                 runSearch()
+
+                if (it is DataState.Success) {
+                    toastFlow.emit("Loaded ${it.data.getSize()} genera!")
+                }
+                else if (it is DataState.Failed) {
+                    toastFlow.emit("Failed to retrieve genus data. Please check your internet connection")
+                }
             }
         }
 

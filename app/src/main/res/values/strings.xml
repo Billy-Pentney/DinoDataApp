@@ -381,5 +381,19 @@
     <string name="credit_powered_by_phylopic">powered by Phylopic.org</string>
     <string name="label_mya">million years ago (mya)</string>
 
+    <string name="explanation_epoch_cretaceous">
+        The Cretaceous is a geological period that lasted from about 145 to 66 million years ago (Mya).
+        It is the third and final period of the Mesozoic Era, as well as the longest.
+        At around 79 million years, it is the longest geological period of the entire Phanerozoic eon.
+        The name is derived from the Latin creta, "chalk", which is abundant in the latter half of the period.
+        It is usually abbreviated K, for its German translation Kreide.
+
+        The Cretaceous (along with the Mesozoic) ended with the Cretaceous–Paleogene (K-Pg) extinction event,
+        a large mass extinction in which many groups, including non-avian dinosaurs,
+        pterosaurs, and large marine reptiles, died out, widely thought to have been caused by the
+        impact of a large asteroid that formed the Chicxulub crater in the Gulf of Mexico.
+    </string>
+    <string name="search_hint_type_for_suggestions">start typing for suggestions...</string>
+
 
 </resources>

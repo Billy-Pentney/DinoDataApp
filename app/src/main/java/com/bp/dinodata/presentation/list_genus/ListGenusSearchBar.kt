@@ -38,8 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +54,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.terms.DietSearchTerm
 import com.bp.dinodata.data.search.terms.BasicSearchTerm
@@ -72,7 +76,9 @@ fun<T> SearchTermInputChip(
         label = {
             Row (
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxHeight().padding(vertical=4.dp)
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(vertical = 4.dp)
             ){
                 Text(
                     term.toString(),
@@ -130,13 +136,14 @@ fun ListGenusSearchBar(
     )
 
     val interactionSource = remember { MutableInteractionSource() }
+
     val textStyle = TextStyle(
         fontSize = 18.sp,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurface
     )
 
-    var searchSuggestion by remember { mutableStateOf("") }
+    var hintText by remember { mutableStateOf("") }
     var keyboardOptions by remember { mutableStateOf(
         KeyboardOptions.Default.copy(
             autoCorrectEnabled = false,
@@ -153,11 +160,6 @@ fun ListGenusSearchBar(
     var canAutofill = uiState.hasSuggestions()
     val searchTerms = uiState.getCompletedSearchTerms()
 
-    if (currQuery.isEmpty() && searchTerms.isEmpty()) {
-        searchSuggestion = "start typing for suggestions..."
-        canAutofill = false
-    }
-
 //    keyboardOptions = keyboardOptions.copy(
         // This dynamic imeAction causes the keyboard to die
 //        if (uiState.hasSuggestions()) {
@@ -168,9 +170,25 @@ fun ListGenusSearchBar(
 //        }
 //    )
 
+    val (searchTextFocus) = remember { FocusRequester.createRefs() }
+
+    LaunchedEffect(null) {
+        // Take focus of the search bar when it is first opened
+        searchTextFocus.requestFocus()
+    }
+
+    val blankQueryHintText = stringResource(R.string.search_hint_type_for_suggestions)
+
     LaunchedEffect(uiState) {
         textFieldValue = textFieldValue.copy(text = currQuery)
-        searchSuggestion = uiState.getAutofillSuggestion()
+
+        if (currQuery.isEmpty() && searchTerms.isEmpty()) {
+            hintText = blankQueryHintText
+            canAutofill = false
+        }
+        else {
+            hintText = uiState.getAutofillSuggestion()
+        }
     }
 
     LaunchedEffect(acceptSuggestionAsQuery) {
@@ -178,8 +196,8 @@ fun ListGenusSearchBar(
             acceptSuggestionAsQuery = false
             if (canAutofill) {
                 textFieldValue = textFieldValue.copy(
-                    text = searchSuggestion,
-                    selection = TextRange(searchSuggestion.length)
+                    text = hintText,
+                    selection = TextRange(hintText.length)
                 )
                 prefillSearchSuggestion()
             }
@@ -231,7 +249,7 @@ fun ListGenusSearchBar(
                             innerTextField = {
                                 Box {
                                     Text(
-                                        searchSuggestion,
+                                        hintText,
                                         modifier = Modifier.alpha(0.4f),
                                         style = textStyle.copy(fontWeight = FontWeight.Normal)
                                     )
@@ -274,7 +292,9 @@ fun ListGenusSearchBar(
                         )
                     },
                     textStyle = textStyle,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(searchTextFocus),
                     enabled = true,
                     keyboardActions = KeyboardActions(
                         onSearch = {
