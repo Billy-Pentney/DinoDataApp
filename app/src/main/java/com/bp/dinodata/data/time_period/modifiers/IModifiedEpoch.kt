@@ -2,13 +2,12 @@ package com.bp.dinodata.data.time_period.modifiers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
-import com.bp.dinodata.data.time_period.EraId
+import com.bp.dinodata.data.time_period.era.EraId
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.IEpoch
-import com.bp.dinodata.data.time_period.IEpochId
-import com.bp.dinodata.data.time_period.IModifiableEpoch
-import com.bp.dinodata.data.time_period.ITimeInterval
-import com.bp.dinodata.data.time_period.ITimeModifierKey
+import com.bp.dinodata.data.time_period.epochs.IEpoch
+import com.bp.dinodata.data.time_period.epochs.IEpochId
+import com.bp.dinodata.data.time_period.epochs.IModifiableEpoch
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 interface IModifiedEpoch: IEpoch, IModifiedTimePeriod<IModifiableEpoch> {
     override fun getBase(): IModifiableEpoch

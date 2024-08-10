@@ -1,13 +1,10 @@
 package com.bp.dinodata.data.filters
 
 import com.bp.dinodata.data.genus.IHasTimePeriodInfo
-import com.bp.dinodata.data.time_period.EraId
-import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.IEpoch
-import com.bp.dinodata.data.time_period.IEpochId
-import com.bp.dinodata.data.time_period.IProvidesEpoch
-import com.bp.dinodata.data.time_period.IProvidesEra
-import com.bp.dinodata.data.time_period.ITimeEra
+import com.bp.dinodata.data.time_period.era.EraId
+import com.bp.dinodata.data.time_period.epochs.IEpoch
+import com.bp.dinodata.data.time_period.epochs.IEpochId
+import com.bp.dinodata.data.time_period.era.IProvidesEra
 
 class EraFilter(
     private val acceptedEra: List<EraId>

@@ -6,7 +6,7 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.ITimeInterval
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 interface IHasTaxonomy {
     fun getTaxonomy(): String
@@ -57,7 +57,7 @@ data class Genus(
     private val diet: Diet = Diet.Unknown,
     private val type: CreatureType = CreatureType.Other,
     private val timeInterval: ITimeInterval? = null,
-    private val timePeriod: IDisplayableTimePeriod? = null,
+    private val timePeriods: List<IDisplayableTimePeriod> = emptyList(),
     private val nameMeaning: String? = null,
     private val namePronunciation: String? = null,
     private val length: IDescribesLength? = null,
@@ -69,7 +69,8 @@ data class Genus(
     override fun getTaxonomy(): String = taxonomy.joinToString("\n")
     override fun getListOfTaxonomy(): List<String> = taxonomy
 
-    override fun getTimePeriod(): IDisplayableTimePeriod? = timePeriod
+    override fun getTimePeriod(): IDisplayableTimePeriod? = timePeriods.firstOrNull()
+    override fun getTimePeriods(): List<IDisplayableTimePeriod> = timePeriods
     override fun getYearsLived(): String? = timeInterval?.toString()
 
     override fun getTaxonomyAsPrintableTree(): String {

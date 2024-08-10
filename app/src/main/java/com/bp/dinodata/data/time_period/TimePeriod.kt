@@ -2,6 +2,7 @@ package com.bp.dinodata.data.time_period
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 /** Represents a TimePeriod which can provide its own name. */
 interface INamedTimePeriod {

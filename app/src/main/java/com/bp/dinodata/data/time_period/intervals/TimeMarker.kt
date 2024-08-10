@@ -1,4 +1,4 @@
-package com.bp.dinodata.data.time_period
+package com.bp.dinodata.data.time_period.intervals
 
 /**
  * Represents a discrete point in Time.
@@ -16,7 +16,8 @@ data class TimeMarker(
     }
 
     override fun toString(): String {
-        return "~$mya $MYA_UNITS"
+        val myaString = TimeFormatter.formatFloat(mya)
+        return "~$myaString $MYA_UNITS"
     }
 
     companion object {

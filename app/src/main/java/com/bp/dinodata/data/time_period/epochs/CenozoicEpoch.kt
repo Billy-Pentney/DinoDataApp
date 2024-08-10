@@ -2,12 +2,9 @@ package com.bp.dinodata.data.time_period.epochs
 
 import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
-import com.bp.dinodata.data.time_period.Epoch
-import com.bp.dinodata.data.time_period.EraId
-import com.bp.dinodata.data.time_period.IEpochId
-import com.bp.dinodata.data.time_period.IModifiableEpoch
-import com.bp.dinodata.data.time_period.ITimeInterval
-import com.bp.dinodata.data.time_period.TimeInterval
+import com.bp.dinodata.data.time_period.era.EraId
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
+import com.bp.dinodata.data.time_period.intervals.TimeInterval
 import com.bp.dinodata.theme.neogeneDark
 import com.bp.dinodata.theme.neogeneLight
 import com.bp.dinodata.theme.paleogeneDark

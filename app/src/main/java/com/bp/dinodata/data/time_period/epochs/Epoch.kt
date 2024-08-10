@@ -1,15 +1,26 @@
-package com.bp.dinodata.data.time_period
+package com.bp.dinodata.data.time_period.epochs
 
 import androidx.compose.ui.graphics.Color
+import com.bp.dinodata.data.time_period.DisplayableTimePeriod
+import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
+import com.bp.dinodata.data.time_period.IPartitionedTimePeriod
+import com.bp.dinodata.data.time_period.ITimePeriodProvidesParent
+import com.bp.dinodata.data.time_period.TimeStage
+import com.bp.dinodata.data.time_period.era.EraId
+import com.bp.dinodata.data.time_period.era.Eras
+import com.bp.dinodata.data.time_period.era.IProvidesEra
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 import com.bp.dinodata.data.time_period.modifiers.IModifiableTimePeriod
 import com.bp.dinodata.data.time_period.modifiers.ITimeModifier
+import com.bp.dinodata.data.time_period.modifiers.ITimeModifierKey
 
 
 interface IProvidesEpoch: IProvidesEra {
     fun getEpochId(): IEpochId
 }
 
-interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IProvidesEpoch, ITimePeriodProvidesParent {
+interface IEpoch: IDisplayableTimePeriod, IPartitionedTimePeriod, IProvidesEpoch,
+    ITimePeriodProvidesParent {
     fun getSubepochs(): List<IEpoch>
 }
 

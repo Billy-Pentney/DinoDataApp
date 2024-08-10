@@ -13,15 +13,17 @@ import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.quantities.Length
 import com.bp.dinodata.data.quantities.Weight
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.TimeInterval
-import com.bp.dinodata.data.time_period.TimeMarker
+import com.bp.dinodata.data.time_period.epochs.IProvidesEpoch
+import com.bp.dinodata.data.time_period.intervals.TimeInterval
+import com.bp.dinodata.data.time_period.intervals.TimeMarker
+import com.bp.dinodata.data.time_period.epochs.EpochRetriever
 
 class GenusBuilder(
     private val name: String,
     private var nameMeaning: String? = null,
     private var namePronunciation: String? = null,
     private var diet: Diet = Diet.Unknown,
-    private var timePeriod: IDisplayableTimePeriod? = null,
+    private var timePeriods: MutableList<IDisplayableTimePeriod> = mutableListOf(),
     private var length: IDescribesLength? = null,
     private var weight: IDescribesWeight? = null,
     private var type: CreatureType = CreatureType.Other,
@@ -63,7 +65,7 @@ class GenusBuilder(
         nameMeaning = null
         namePronunciation = null
         diet = Diet.Unknown
-        timePeriod = null
+        timePeriods = mutableListOf()
         weight = null
         length = null
         type = CreatureType.Other
@@ -81,10 +83,9 @@ class GenusBuilder(
 
         val builder = this
 
-        // TODO - fix parsing of time-period and ages
         dataMap[TIME_EPOCHS_KEY]?.let {
             if (it is ArrayList<*>) {
-                builder.setTimePeriod(it[0].toString())
+                builder.setTimePeriods(it)
             }
         }
 
@@ -182,7 +183,15 @@ class GenusBuilder(
     }
 
     override fun setTimePeriod(period: String?): IGenusBuilder {
-        timePeriod = period?.let { EpochConverter.matchType(it) }
+//        timePeriod = period?.let { EpochConverter.matchType(it) }
+        return this
+    }
+
+    override fun setTimePeriods(stringValues: ArrayList<*>): IGenusBuilder {
+        val periods = stringValues.mapNotNull {
+            EpochConverter.matchType(it.toString())
+        }
+        timePeriods.addAll(periods)
         return this
     }
 
@@ -288,8 +297,21 @@ class GenusBuilder(
         }
 
         // Attempt to deduce the Time-Period from the Years Lived
-        if (timePeriod == null && timeInterval != null) {
-            timePeriod = EpochConverter.getEpochFor(timeInterval)
+        if (timeInterval != null) {
+            // Get all the epochs which overlap with this interval
+            val deducedEpochs = EpochConverter.getEpochsIdsFor(timeInterval)
+            // Get the ids of all current periods (to avoid duplicates)
+            val knownEpochIds = timePeriods.mapNotNull {
+                if (it is IProvidesEpoch) {
+                    it.getEpochId()
+                }
+                else {
+                    null
+                }
+            }
+            // Only keep the epochs which haven't been specified already
+            val newEpochs = deducedEpochs.minus(knownEpochIds.toSet())
+            timePeriods.addAll(newEpochs.map { EpochRetriever.getEpoch(it) })
         }
 
         return Genus(
@@ -298,7 +320,7 @@ class GenusBuilder(
             length = length,
             weight = weight,
             timeInterval = timeInterval,
-            timePeriod = timePeriod,
+            timePeriods = timePeriods,
             nameMeaning = nameMeaning,
             namePronunciation = namePronunciation,
             type = type,

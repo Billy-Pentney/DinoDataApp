@@ -1,6 +1,7 @@
-package com.bp.dinodata.data.time_period
+package com.bp.dinodata.data.time_period.intervals
 
-import com.bp.dinodata.data.time_period.TimeMarker.Companion.MYA_UNITS
+import com.bp.dinodata.data.time_period.intervals.TimeMarker.Companion.MYA_UNITS
+import kotlin.math.roundToInt
 
 /**
  * Represents an interval of time in the units of Millions-of-Years-Ago (MYA).
@@ -27,7 +28,10 @@ data class TimeInterval(
     override fun getEndTimeInMYA(): Float = to
 
     override fun toString(): String {
-        return "$from-$to $MYA_UNITS"
+        // Get the minimal strings (i.e. if they are integers, without the decimal)
+        val fromStr = TimeFormatter.formatFloat(from)
+        val toStr = TimeFormatter.formatFloat(to)
+        return "$fromStr-$toStr $MYA_UNITS"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -52,10 +56,14 @@ data class TimeInterval(
          * If the input list is empty, then return an empty interval from 0 to 0.
          */
         fun fromList(interval: List<ITimeInterval>): ITimeInterval {
-            val timeIntervalStart = interval.maxOfOrNull{ it.getStartTimeInMYA() } ?: 0f
-            val timeIntervalEnd = interval.minOfOrNull { it.getEndTimeInMYA() } ?: 0f
+            val sortedIntervals = interval.sortedByDescending { it.getStartTimeInMYA() }
+            val timeIntervalStart = sortedIntervals.firstOrNull()?.getStartTimeInMYA() ?: 0f
+            val timeIntervalEnd = sortedIntervals.lastOrNull()?.getEndTimeInMYA() ?: 0f
             return TimeInterval(timeIntervalStart, timeIntervalEnd)
         }
+
+
+
     }
 
     /**
@@ -68,6 +76,7 @@ data class TimeInterval(
             minOf(this.to, other.getEndTimeInMYA())
         )
     }
+
 }
 
 

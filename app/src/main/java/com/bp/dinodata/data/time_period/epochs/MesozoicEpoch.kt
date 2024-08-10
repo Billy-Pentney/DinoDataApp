@@ -2,14 +2,11 @@ package com.bp.dinodata.data.time_period.epochs
 
 import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
-import com.bp.dinodata.data.time_period.Epoch
-import com.bp.dinodata.data.time_period.EraId
-import com.bp.dinodata.data.time_period.IEpochId
-import com.bp.dinodata.data.time_period.IModifiableEpoch
-import com.bp.dinodata.data.time_period.ITimeInterval
-import com.bp.dinodata.data.time_period.ITimeModifierKey
-import com.bp.dinodata.data.time_period.SubEpochModifier
-import com.bp.dinodata.data.time_period.TimeInterval
+import com.bp.dinodata.data.time_period.era.EraId
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
+import com.bp.dinodata.data.time_period.modifiers.ITimeModifierKey
+import com.bp.dinodata.data.time_period.modifiers.SubEpochModifier
+import com.bp.dinodata.data.time_period.intervals.TimeInterval
 import com.bp.dinodata.data.time_period.modifiers.TimeModifier
 import com.bp.dinodata.theme.Cretaceous300
 import com.bp.dinodata.theme.Cretaceous600
@@ -65,6 +62,9 @@ object MesozoicEpochs: IEpochManager<MesozoicEpochs.MesozoicEpochId> {
             return MesozoicEpochs.getEpoch(id)
         }
     }
+
+
+
 
     data object Triassic: MesozoicEpoch(
         key = MesozoicEpochId.Triassic,

@@ -85,9 +85,13 @@ fun GenusTitleCardAndControls(
 
     Log.d("GenusDetail", "Showing image at url: $genusImageUrl")
 
+    val cardShape = RoundedCornerShape(
+        0.dp, 0.dp, 16.dp, 16.dp
+    )
+
     Card(
         modifier = Modifier.padding(paddingValues),
-        shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp),
+        shape = cardShape,
         colors = CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.onSurface,
             containerColor = MaterialTheme.colorScheme.surface
@@ -99,12 +103,7 @@ fun GenusTitleCardAndControls(
         MaterialTheme(colorScheme = colorScheme) {
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(
-                    topStart = 0f,
-                    topEnd = 0f,
-                    bottomEnd = 50f,
-                    bottomStart = 50f
-                ),
+                shape = cardShape,
                 modifier = modifier
                     .fillMaxWidth()
                     .animateContentSize()

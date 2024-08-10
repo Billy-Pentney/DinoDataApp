@@ -23,9 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bp.dinodata.R
-import com.bp.dinodata.data.time_period.Eras
+import com.bp.dinodata.data.time_period.era.Eras
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.SubEpochModifier
+import com.bp.dinodata.data.time_period.modifiers.SubEpochModifier
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable

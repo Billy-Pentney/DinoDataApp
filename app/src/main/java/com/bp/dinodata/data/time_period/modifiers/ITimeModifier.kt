@@ -1,8 +1,7 @@
 package com.bp.dinodata.data.time_period.modifiers
 
-import com.bp.dinodata.data.time_period.IModifiableEpoch
-import com.bp.dinodata.data.time_period.ITimeInterval
-import com.bp.dinodata.data.time_period.ITimeModifierKey
+import com.bp.dinodata.data.time_period.epochs.IModifiableEpoch
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 interface ITimeModifier {
     fun applyTo(epoch: IModifiableEpoch): IModifiedEpoch

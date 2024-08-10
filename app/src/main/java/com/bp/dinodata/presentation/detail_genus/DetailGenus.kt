@@ -87,8 +87,6 @@ import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.detail_genus.location_map.LocationAtlas
 import com.bp.dinodata.presentation.icons.DietIconThin
 import com.bp.dinodata.presentation.icons.TimePeriodIcon
-import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.ITimeInterval
 import com.bp.dinodata.presentation.icons.chronology.TimeChronologyBar
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
@@ -458,7 +456,7 @@ fun CreatureTimePeriod(
     item: IHasTimePeriodInfo,
     iconModifier: Modifier
 ) {
-    val timePeriod = item.getTimePeriod()
+    val timePeriods = item.getTimePeriods()
     val yearsLived = item.getYearsLived()
     val timeInterval = item.getTimeIntervalLived()
 
@@ -468,7 +466,23 @@ fun CreatureTimePeriod(
     ) {
         LabelContentRow(
             label = stringResource(R.string.label_time_period),
-            valueContent = { TimePeriodIcon(timePeriod) },
+            valueContent = {
+                val firstPeriod = timePeriods.firstOrNull()
+                val lastPeriod = timePeriods.lastOrNull()
+
+                if (firstPeriod == lastPeriod) {
+                    // Show the singleton
+                    TimePeriodIcon(firstPeriod)
+                }
+                else {
+                    // Show the range from the first to the last
+                    Row (verticalAlignment = Alignment.CenterVertically) {
+                        TimePeriodIcon(firstPeriod)
+                        Text(" / ")
+                        TimePeriodIcon(lastPeriod)
+                    }
+                }
+            },
             leadingIcon = {
                 Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
             }
@@ -481,9 +495,9 @@ fun CreatureTimePeriod(
             }
         )
 
-        timePeriod?.let {
+        if (timePeriods.isNotEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))
-            TimeChronologyBar(timePeriod, timeInterval)
+            TimeChronologyBar(timePeriods, timeInterval)
         }
     }
 }

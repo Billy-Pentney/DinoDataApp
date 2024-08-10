@@ -20,6 +20,8 @@ interface IGenusBuilder: IDictParser<IGenus>, IBuilder<IGenus> {
 
     fun setLocations(locations: Any): IGenusBuilder
     fun setSpecies(speciesData: Any): IGenusBuilder
+
+    fun setTimePeriods(it: ArrayList<*>): IGenusBuilder
 }
 
 

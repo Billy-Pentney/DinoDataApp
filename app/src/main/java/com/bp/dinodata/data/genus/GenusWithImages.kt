@@ -8,7 +8,7 @@ import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.ITimeInterval
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 interface IHasImageData {
     fun getImageUrl(index: Int = 0): String?
@@ -40,8 +40,9 @@ class GenusWithImages(
     override fun getName(): String = genus.getName()
     override fun getDiet(): Diet = genus.getDiet()
     override fun getCreatureType(): CreatureType = genus.getCreatureType()
-    
+
     override fun getTimePeriod(): IDisplayableTimePeriod? = genus.getTimePeriod()
+    override fun getTimePeriods(): List<IDisplayableTimePeriod> = genus.getTimePeriods()
     override fun getYearsLived(): String? = genus.getYearsLived()
     override fun getTimeIntervalLived(): ITimeInterval? = genus.getTimeIntervalLived()
 

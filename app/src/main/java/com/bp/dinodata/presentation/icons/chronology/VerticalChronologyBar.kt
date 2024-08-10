@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -41,11 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.bp.dinodata.R
-import com.bp.dinodata.data.time_period.Eras
+import com.bp.dinodata.data.time_period.era.Eras
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.IPartitionedTimePeriod
-import com.bp.dinodata.data.time_period.ITimeInterval
-import com.bp.dinodata.data.time_period.TimeInterval
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
+import com.bp.dinodata.data.time_period.intervals.TimeInterval
 import com.bp.dinodata.data.time_period.epochs.MesozoicEpochs
 import com.bp.dinodata.theme.DinoDataTheme
 
@@ -91,6 +88,10 @@ fun VerticalChronologyBar(
         barSizeDp = Pair(xDp, yDp)
     }
 
+    val computeWidth = { frac: Float ->
+        barSizeDp.second * frac
+    }
+
     Surface(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier,
@@ -125,10 +126,7 @@ fun VerticalChronologyBar(
                     barPeriods.forEach { subPeriod ->
                         val elapsedTime = earliest - subPeriod.getStartTimeInMYA()
                         val heightProportion = subPeriod.getDurationInMYA() / totalBarDuration
-                        val height = barSizeDp.second * heightProportion
-
-                        val offsetProportion = elapsedTime / totalBarDuration
-                        val xOffset = barSizeDp.second * minOf(offsetProportion, 0.85f)
+                        val height = computeWidth(heightProportion)
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -177,9 +175,9 @@ fun VerticalChronologyBar(
                             )
 
                             val elapsed = earliest - subPeriod.getStartTimeInMYA()
-                            val elapsedWidth = barSizeDp.second * elapsed / totalBarDuration
+                            val elapsedWidth = computeWidth(elapsed / totalBarDuration)
                             val duration = subPeriod.getDurationInMYA()
-                            val proportion = barSizeDp.second * duration / totalBarDuration
+                            val proportion = computeWidth(duration / totalBarDuration)
                             Box(
                                 Modifier
                                     .height(proportion)
@@ -237,7 +235,8 @@ fun VerticalChronologyBar(
 
                         val labelHeight = 22.dp
 
-                        val xOffset = barSizeDp.second * elapsedProportion - labelHeight.times(i) - labelHeight/2
+                        val xOffset = computeWidth(elapsedProportion)
+                            - labelHeight.times(i) - labelHeight/2
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

@@ -1,8 +1,11 @@
 package com.bp.dinodata.data.time_period
 
 import androidx.compose.ui.graphics.Color
-import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.time_period.epochs.EpochRetriever
+import com.bp.dinodata.data.time_period.epochs.IEpochId
+import com.bp.dinodata.data.time_period.epochs.IProvidesEpoch
+import com.bp.dinodata.data.time_period.era.EraId
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 
 interface ITimeStage: IAtomicDisplayableTimePeriod, IProvidesEpoch, ITimePeriodProvidesParent

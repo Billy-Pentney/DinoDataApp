@@ -5,7 +5,7 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
-import com.bp.dinodata.data.time_period.ITimeInterval
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
 interface IGenusWithPrefs: IGenus, ILocalPrefs
 
@@ -28,6 +28,7 @@ class GenusWithPrefs(
     override fun getCreatureType(): CreatureType = genus.getCreatureType()
 
     override fun getTimePeriod(): IDisplayableTimePeriod? = genus.getTimePeriod()
+    override fun getTimePeriods(): List<IDisplayableTimePeriod> = genus.getTimePeriods()
     override fun getYearsLived(): String? = genus.getYearsLived()
     override fun getStartMya(): Float? = genus.getStartMya()
     override fun getEndMya(): Float? = genus.getEndMya()

@@ -1,12 +1,13 @@
 package com.bp.dinodata.data.enum_readers
 
-import com.bp.dinodata.data.time_period.Eras
-import com.bp.dinodata.data.time_period.IEpoch
-import com.bp.dinodata.data.time_period.IModifiableEpoch
-import com.bp.dinodata.data.time_period.ITimeEra
-import com.bp.dinodata.data.time_period.ITimeInterval
-import com.bp.dinodata.data.time_period.ITimeModifierKey
-import com.bp.dinodata.data.time_period.SubEpochModifier
+import com.bp.dinodata.data.time_period.era.Eras
+import com.bp.dinodata.data.time_period.epochs.IEpoch
+import com.bp.dinodata.data.time_period.epochs.IEpochId
+import com.bp.dinodata.data.time_period.epochs.IModifiableEpoch
+import com.bp.dinodata.data.time_period.era.ITimeEra
+import com.bp.dinodata.data.time_period.intervals.ITimeInterval
+import com.bp.dinodata.data.time_period.modifiers.ITimeModifierKey
+import com.bp.dinodata.data.time_period.modifiers.SubEpochModifier
 import com.bp.dinodata.data.time_period.epochs.CenozoicEpochs
 import com.bp.dinodata.data.time_period.epochs.MesozoicEpochs
 import com.bp.dinodata.data.time_period.epochs.PaleozoicEpochs
@@ -78,5 +79,24 @@ object EpochConverter: TypeConverter<IEpoch>(
         return eras.first().getSubdivisions().firstOrNull {
             it.overlapsWith(timeInterval)
         }
+    }
+
+    /**
+     * Returns a list of all epochs which have a non-zero overlap with this interval.
+     */
+    fun getEpochsIdsFor(timeInterval: ITimeInterval): List<IEpochId> {
+        val eras = Eras.getList().filter {
+            it.overlapsWith(timeInterval)
+        }
+
+        if (eras.isEmpty()) {
+            return emptyList()
+        }
+
+        // Get a list of all epochs then check for the overlap
+        return eras
+                .flatMap { it.getSubdivisions() }
+                .filter { it.overlapsWith(timeInterval) }
+                .map { it.getEpochId() }
     }
 }

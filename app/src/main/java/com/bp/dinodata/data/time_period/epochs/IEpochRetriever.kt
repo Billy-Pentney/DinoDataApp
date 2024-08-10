@@ -1,9 +1,5 @@
 package com.bp.dinodata.data.time_period.epochs
 
-import com.bp.dinodata.data.time_period.Epoch
-import com.bp.dinodata.data.time_period.IEpoch
-import com.bp.dinodata.data.time_period.IEpochId
-
 
 interface IEpochRetriever<T: IEpochId> {
     fun getEpoch(id: T): Epoch

@@ -1,4 +1,4 @@
-package com.bp.dinodata.data.time_period
+package com.bp.dinodata.data.time_period.era
 
 import com.bp.dinodata.R
 import com.bp.dinodata.data.time_period.epochs.CenozoicEpochs
