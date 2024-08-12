@@ -4,6 +4,7 @@ import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
@@ -44,4 +45,6 @@ class GenusWithPrefs(
     override fun getPreferredImageIndex(): Int = prefs.getPreferredImageIndex()
 
     override fun getSelectedColorName(): String? = prefs.getSelectedColorName()
+
+    override fun getChildrenTaxa(): List<ITaxon> = genus.getChildrenTaxa()
 }

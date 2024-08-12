@@ -5,6 +5,7 @@ import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
 
@@ -53,7 +54,7 @@ interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
 
 interface IGenus: IHasTaxonomy, IHasMeasurements, IAdditionalNameInfo,
     IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo,
-    IHasFormationInfo
+    IHasFormationInfo, ITaxon
 
 @Immutable
 data class Genus(
@@ -106,6 +107,8 @@ data class Genus(
 
     override fun getSpeciesList(): List<ISpecies> = species
     override fun hasSpeciesInfo(): Boolean = species.isNotEmpty()
+
+    override fun getChildrenTaxa(): List<ITaxon> = emptyList()
 
 }
 

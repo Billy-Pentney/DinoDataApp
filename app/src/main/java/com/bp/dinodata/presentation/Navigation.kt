@@ -28,6 +28,8 @@ import com.bp.dinodata.presentation.about.AboutScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusViewModel
 import com.bp.dinodata.presentation.list_genus.ListGenusScreen
+import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreen
+import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreenViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -69,7 +71,7 @@ fun MyNavigation(
                 }
                 Screen.Taxonomy -> {
                     visibleScreen.value = Screen.Taxonomy
-//                    navController.navigate(Screens.Taxonomy.route)
+                    navController.navigate(Screen.Taxonomy.route)
                     closeDrawer()
                 }
             }
@@ -118,7 +120,6 @@ fun MyNavigation(
                 )
             }
 
-
             composable(Screen.About.route) {
                 AboutScreen(
                     navigateBack = {
@@ -127,11 +128,10 @@ fun MyNavigation(
                 )
             }
 
-
-
-
             composable(Screen.Taxonomy.route) {
-//               TODO
+                TaxonomyScreen(
+                    hiltViewModel<TaxonomyScreenViewModel>()
+                )
             }
         }
     }

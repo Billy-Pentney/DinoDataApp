@@ -437,7 +437,6 @@ fun PageSelectorRow(
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
                         .padding(boxPadding)
-                        .animateContentSize()
                         .alpha(if (isSelected) 1f else 0.75f),
                     textAlign = TextAlign.Center,
                 )
