@@ -8,7 +8,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -37,28 +37,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -66,7 +56,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -81,7 +70,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -103,8 +91,6 @@ import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.MyNavigationDrawer
-import com.bp.dinodata.presentation.Screens
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
@@ -132,133 +118,107 @@ fun ListGenusScreenContent(
     prefillSearchSuggestion: () -> Unit,
     runSearch: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
-    showToast: (String) -> Unit
+    openNavDrawer: () -> Unit
 ) {
     val searchBarVisible = uiState.searchBarVisible
-    
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val coroutineScope = rememberCoroutineScope()
 
-    MyNavigationDrawer(
-        initialScreen = Screens.ListGenus,
-        drawerState = drawerState,
-        navigateTo = {
-            when (it) {
-                Screens.About -> {
-                    showToast("Go to About!")
-//                    TODO("About screen not yet implemented")
-                }
-                Screens.ListGenus -> {
-                    // Do nothing, we're here already!
-                    coroutineScope.launch {
-                        drawerState.close()
-                    }
-                }
-                Screens.Taxonomy -> {
-                    showToast("Go to Taxonomy!")
-//                    TODO("Taxonomy screen not yet implemented")
-                }
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            stringResource(R.string.title_creature_list),
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    },
-                    navigationIcon = {
-                        // Button to open the navigation-drawer
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch { drawerState.open() }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.List,
-                                contentDescription = null,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        stringResource(R.string.title_creature_list),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    // Button to open the navigation-drawer
+                    IconButton(
+                        onClick = {
+                            openNavDrawer()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.List,
+                            contentDescription = null,
 //                            modifier = Modifier
 //                                .padding(bottom = 4.dp)
 //                                .alpha(0.6f)
-                            )
-                        }
-                    },
-                    actions = {
-                        // Show Search Bar
-                        IconButton(
-                            onClick = {
-                                toggleSearchBarVisibility(!searchBarVisible)
-                            },
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Crossfade(searchBarVisible, label="searchBarIcon") {
-                                if (!it) {
-                                    Icon(
-                                        Icons.Filled.Search,
-                                        contentDescription = stringResource(R.string.desc_show_search),
-                                    )
-                                }
-                                else {
-                                    Icon(
-                                        Icons.Filled.KeyboardArrowUp,
-                                        contentDescription = stringResource(R.string.desc_close_search)
-                                    )
-                                }
-                            }
-                        }
-
-                        // Refresh feed button
-                        IconButton(
-                            onClick = {
-                                refreshFeed()
-                            },
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Icon(
-                                Icons.Filled.Refresh,
-                                "refresh the feed"
-                            )
-                        }
-                    }
-                )
-            }
-        ) { pad ->
-            Crossfade (uiState.allPageData, label="listCrossfade", modifier = Modifier.padding(pad)) {
-                when (it) {
-                    is DataState.Success -> {
-                        ShowHorizontalPagerOfGeneraByLetter(
-                            uiState = uiState,
-                            spacing = spacing,
-                            outerPadding = outerPadding,
-                            navigateToGenus = navigateToGenus,
-                            switchToPageByIndex = switchToPageByIndex,
-                            runSearch = runSearch,
-                            clearSearchQuery = clearSearchQuery,
-                            updateSearchQuery = updateSearchQuery,
-                            updateScrollState = updateScrollState,
-                            prefillSearchSuggestion = prefillSearchSuggestion,
-                            removeSearchTerm = removeSearchTerm
                         )
                     }
-
-                    is DataState.LoadInProgress -> {
-                        LoadingItemsPlaceholder()
+                },
+                actions = {
+                    // Show Search Bar
+                    IconButton(
+                        onClick = {
+                            toggleSearchBarVisibility(!searchBarVisible)
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Crossfade(searchBarVisible, label="searchBarIcon") {
+                            if (!it) {
+                                Icon(
+                                    Icons.Filled.Search,
+                                    contentDescription = stringResource(R.string.desc_show_search),
+                                )
+                            }
+                            else {
+                                Icon(
+                                    Icons.Filled.KeyboardArrowUp,
+                                    contentDescription = stringResource(R.string.desc_close_search)
+                                )
+                            }
+                        }
                     }
 
-                    is DataState.Failed -> {
-                        Text("Sorry! An error occurred. Reason: ${it.reason}")
-                        MissingDataPlaceholder()
+                    // Refresh feed button
+                    IconButton(
+                        onClick = {
+                            refreshFeed()
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            "refresh the feed"
+                        )
                     }
-
-                    else -> {}
                 }
+            )
+        }
+    ) { pad ->
+        Crossfade (uiState.allPageData, label="listCrossfade", modifier = Modifier.padding(pad)) {
+            when (it) {
+                is DataState.Success -> {
+                    ShowHorizontalPagerOfGeneraByLetter(
+                        uiState = uiState,
+                        spacing = spacing,
+                        outerPadding = outerPadding,
+                        navigateToGenus = navigateToGenus,
+                        switchToPageByIndex = switchToPageByIndex,
+                        runSearch = runSearch,
+                        clearSearchQuery = clearSearchQuery,
+                        updateSearchQuery = updateSearchQuery,
+                        updateScrollState = updateScrollState,
+                        prefillSearchSuggestion = prefillSearchSuggestion,
+                        removeSearchTerm = removeSearchTerm
+                    )
+                }
+
+                is DataState.LoadInProgress -> {
+                    LoadingItemsPlaceholder()
+                }
+
+                is DataState.Failed -> {
+                    Text("Sorry! An error occurred. Reason: ${it.reason}")
+                    MissingDataPlaceholder()
+                }
+
+                else -> {}
             }
         }
     }
@@ -444,20 +404,19 @@ fun PageSelectorRow(
             val key = pageKeys[index]
             val isSelected = (selectedPageIndex == index)
 
-            val boxModifier =
-                if (isSelected) {
-                    Modifier
-                        .height(IntrinsicSize.Min)
-                        .aspectRatio(0.8f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(color = MaterialTheme.colorScheme.surface)
-                } else {
-                    Modifier
-                        .height(IntrinsicSize.Min)
-                        .aspectRatio(0.5f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(color = MaterialTheme.colorScheme.background)
-                }
+            val boxBackground: Color
+            val boxAspectRatio: Float
+            val boxPadding: PaddingValues
+
+            if (isSelected) {
+                boxAspectRatio = 0.8f
+                boxBackground = MaterialTheme.colorScheme.surface
+                boxPadding = PaddingValues(vertical=8.dp, horizontal = 10.dp)
+            } else {
+                boxAspectRatio = 0.5f
+                boxBackground = MaterialTheme.colorScheme.background
+                boxPadding = PaddingValues(horizontal=4.dp, vertical=6.dp)
+            }
 
             val textStyle =
                 if (isSelected) selectedTextStyle
@@ -465,15 +424,20 @@ fun PageSelectorRow(
 
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = boxModifier
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .clip(RoundedCornerShape(8.dp))
+                    .animateContentSize()
+                    .background(boxBackground)
                     .clickable(onClick = { switchToPageByIndex(index) })
             ) {
                 Text(
                     key,
                     style = textStyle,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(vertical = 10.dp)
+                        .width(IntrinsicSize.Min)
+                        .padding(boxPadding)
+                        .animateContentSize()
                         .alpha(if (isSelected) 1f else 0.75f),
                     textAlign = TextAlign.Center,
                 )
@@ -704,6 +668,7 @@ fun LazyListOfGenera(
 fun ListGenusScreen(
     listGenusViewModel: ListGenusViewModel,
     navigateToGenus: (String) -> Unit,
+    openNavDrawer: () -> Unit
 ) {
     val uiState by remember { listGenusViewModel.getUiState() }
     val searchBarVisibility = remember { derivedStateOf { uiState.searchBarVisible } }
@@ -734,27 +699,25 @@ fun ListGenusScreen(
         clearSearchQuery = {
             listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
         },
-        toggleSearchBarVisibility = {
-            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ToggleSearchBar(visible=it))
-        },
-        prefillSearchSuggestion = {
-            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.AcceptSearchSuggestion)
-        },
-        removeSearchTerm = { term ->
-            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RemoveSearchTerm(term))
-        },
-        runSearch = {
-            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RunSearch)
-        },
         updateScrollState = {
             listGenusViewModel.onUiEvent(ListGenusPageUiEvent.UpdateScrollState(it))
+        },
+        toggleSearchBarVisibility = {
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ToggleSearchBar(visible=it))
         },
         refreshFeed = {
             listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RefreshFeed)
         },
-        showToast = {
-            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ShowToast(it))
-        }
+        prefillSearchSuggestion = {
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.AcceptSearchSuggestion)
+        },
+        runSearch = {
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RunSearch)
+        },
+        removeSearchTerm = { term ->
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RemoveSearchTerm(term))
+        },
+        openNavDrawer = openNavDrawer
     )
 }
 
@@ -831,7 +794,7 @@ fun PreviewListGenus() {
             uiState = ListGenusUiState(
                 allPageData = DataState.Success(generaGrouped),
                 searchResults = DataState.Success(genera),
-                selectedPageIndex = 5,
+                selectedPageIndex = 0,
                 searchBarVisible = false,
                 search = GenusSearchBuilder(
                     query = "taxon:ab",
@@ -841,13 +804,13 @@ fun PreviewListGenus() {
             ),
             updateSearchQuery = {},
             clearSearchQuery = {},
-            toggleSearchBarVisibility = {},
-            prefillSearchSuggestion = {},
-            removeSearchTerm = {},
-            runSearch = {},
             updateScrollState = {},
+            toggleSearchBarVisibility = {},
             refreshFeed = {},
-            showToast = {}
+            prefillSearchSuggestion = {},
+            runSearch = {},
+            removeSearchTerm = {},
+            openNavDrawer = {}
         )
     }
 }

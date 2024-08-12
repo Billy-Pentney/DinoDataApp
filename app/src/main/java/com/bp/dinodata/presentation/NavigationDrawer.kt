@@ -21,10 +21,9 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -36,12 +35,12 @@ import com.bp.dinodata.R
 @Composable
 fun MyNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
-    initialScreen: Screens,
+    screenState: State<Screen>,
     navigateTo: (INavigationDrawerScreen) -> Unit,
     content: @Composable () -> Unit
 ) {
-    var selectedDrawerItem by remember { mutableStateOf(initialScreen) }
-    
+    val selectedDrawerItem by remember { screenState }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         scrimColor = Color(0xFF555555),
@@ -71,10 +70,10 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = selectedDrawerItem == Screens.ListGenus,
+                        selected = selectedDrawerItem == Screen.ListGenus,
                         onClick = {
-                            Log.d("NavDrawer", "Go to ${Screens.ListGenus}!")
-                            navigateTo(Screens.ListGenus)
+                            Log.d("NavDrawer", "Go to ${Screen.ListGenus}!")
+                            navigateTo(Screen.ListGenus)
                         }
                     )
                     NavigationDrawerItem(
@@ -86,10 +85,10 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = selectedDrawerItem == Screens.Taxonomy,
+                        selected = selectedDrawerItem == Screen.Taxonomy,
                         onClick = {
-                            Log.d("NavDrawer", "Go to  ${Screens.Taxonomy}!")
-                            navigateTo(Screens.Taxonomy)
+                            Log.d("NavDrawer", "Go to  ${Screen.Taxonomy}!")
+                            navigateTo(Screen.Taxonomy)
                         }
                     )
                     NavigationDrawerItem(
@@ -101,10 +100,10 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = selectedDrawerItem == Screens.About,
+                        selected = selectedDrawerItem == Screen.About,
                         onClick = {
-                            Log.d("NavDrawer", "Go to  ${Screens.About}!")
-                            navigateTo(Screens.About)
+                            Log.d("NavDrawer", "Go to  ${Screen.About}!")
+                            navigateTo(Screen.About)
                         }
                     )
                 }
