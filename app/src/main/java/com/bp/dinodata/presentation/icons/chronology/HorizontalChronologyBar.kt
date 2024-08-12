@@ -93,7 +93,7 @@ fun HorizontalChronologyBar(
         }
         allSubperiods.addAll(newSubperiods)
         allSubperiods
-    }
+    }.sortedByDescending { it.getStartTimeInMYA() }
 
     // The time-range this bar covers
     val earliest = barPeriods.maxOf { it.getStartTimeInMYA() }

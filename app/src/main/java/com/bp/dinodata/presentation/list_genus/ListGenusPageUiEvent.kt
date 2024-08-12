@@ -26,4 +26,7 @@ sealed class ListGenusPageUiEvent {
 
     data class RemoveSearchTerm(val term: ISearchTerm<in IGenus>): ListGenusPageUiEvent()
     data class UpdateScrollState(val state: LazyListState) : ListGenusPageUiEvent()
+
+    // Ui triggers a toast to be displayed with the given message
+    data class ShowToast(val message: String) : ListGenusPageUiEvent()
 }

@@ -17,7 +17,6 @@ data class ListGenusUiState(
     private val search: GenusSearch = GenusSearch(),
     val pageSelectionVisible: Boolean = true,
     val selectedPageIndex: Int = 0,
-//    val currentQueryText: String = "",
     private val textFieldState: TextFieldState = TextFieldState(hintContent = DEFAULT_HINT_TEXT),
     val firstVisibleItem: Int = 0,
     val firstVisibleItemOffset: Int = 0,

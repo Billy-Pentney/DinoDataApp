@@ -8,6 +8,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,18 +36,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +66,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -63,6 +76,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -89,11 +103,14 @@ import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
+import com.bp.dinodata.presentation.MyNavigationDrawer
+import com.bp.dinodata.presentation.Screens
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -114,100 +131,134 @@ fun ListGenusScreenContent(
     refreshFeed: () -> Unit,
     prefillSearchSuggestion: () -> Unit,
     runSearch: () -> Unit,
-    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit
+    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
+    showToast: (String) -> Unit
 ) {
     val searchBarVisible = uiState.searchBarVisible
+    
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(R.string.title_creature_list),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    Icon(
-                        painterResource(id = R.mipmap.ic_launcher_v1_foreground),
-                        contentDescription = "app_logo",
-                        modifier = Modifier
-                            .padding(bottom = 4.dp)
-                            .alpha(0.6f)
-                    )
-                },
-                actions = {
-                    // Show Search Bar
-                    IconButton(
-                        onClick = {
-                            toggleSearchBarVisibility(!searchBarVisible)
-                        },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurface
+    MyNavigationDrawer(
+        initialScreen = Screens.ListGenus,
+        drawerState = drawerState,
+        navigateTo = {
+            when (it) {
+                Screens.About -> {
+                    showToast("Go to About!")
+//                    TODO("About screen not yet implemented")
+                }
+                Screens.ListGenus -> {
+                    // Do nothing, we're here already!
+                    coroutineScope.launch {
+                        drawerState.close()
+                    }
+                }
+                Screens.Taxonomy -> {
+                    showToast("Go to Taxonomy!")
+//                    TODO("Taxonomy screen not yet implemented")
+                }
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            stringResource(R.string.title_creature_list),
+                            fontWeight = FontWeight.SemiBold
                         )
-                    ) {
-                        Crossfade(searchBarVisible, label="searchBarIcon") {
-                            if (!it) {
-                                Icon(
-                                    Icons.Filled.Search,
-                                    contentDescription = stringResource(R.string.desc_show_search),
-                                )
+                    },
+                    navigationIcon = {
+                        // Button to open the navigation-drawer
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch { drawerState.open() }
                             }
-                            else {
-                                Icon(
-                                    Icons.Filled.KeyboardArrowUp,
-                                    contentDescription = stringResource(R.string.desc_close_search)
-                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.List,
+                                contentDescription = null,
+//                            modifier = Modifier
+//                                .padding(bottom = 4.dp)
+//                                .alpha(0.6f)
+                            )
+                        }
+                    },
+                    actions = {
+                        // Show Search Bar
+                        IconButton(
+                            onClick = {
+                                toggleSearchBarVisibility(!searchBarVisible)
+                            },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        ) {
+                            Crossfade(searchBarVisible, label="searchBarIcon") {
+                                if (!it) {
+                                    Icon(
+                                        Icons.Filled.Search,
+                                        contentDescription = stringResource(R.string.desc_show_search),
+                                    )
+                                }
+                                else {
+                                    Icon(
+                                        Icons.Filled.KeyboardArrowUp,
+                                        contentDescription = stringResource(R.string.desc_close_search)
+                                    )
+                                }
                             }
                         }
+
+                        // Refresh feed button
+                        IconButton(
+                            onClick = {
+                                refreshFeed()
+                            },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        ) {
+                            Icon(
+                                Icons.Filled.Refresh,
+                                "refresh the feed"
+                            )
+                        }
+                    }
+                )
+            }
+        ) { pad ->
+            Crossfade (uiState.allPageData, label="listCrossfade", modifier = Modifier.padding(pad)) {
+                when (it) {
+                    is DataState.Success -> {
+                        ShowHorizontalPagerOfGeneraByLetter(
+                            uiState = uiState,
+                            spacing = spacing,
+                            outerPadding = outerPadding,
+                            navigateToGenus = navigateToGenus,
+                            switchToPageByIndex = switchToPageByIndex,
+                            runSearch = runSearch,
+                            clearSearchQuery = clearSearchQuery,
+                            updateSearchQuery = updateSearchQuery,
+                            updateScrollState = updateScrollState,
+                            prefillSearchSuggestion = prefillSearchSuggestion,
+                            removeSearchTerm = removeSearchTerm
+                        )
                     }
 
-                    // Refresh feed button
-                    IconButton(
-                        onClick = {
-                            refreshFeed()
-                        },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    ) {
-                        Icon(
-                            Icons.Filled.Refresh,
-                            "refresh the feed"
-                        )
+                    is DataState.LoadInProgress -> {
+                        LoadingItemsPlaceholder()
                     }
-                }
-            )
-        }
-    ) { pad ->
-        Crossfade (uiState.allPageData, label="listCrossfade", modifier = Modifier.padding(pad)) {
-            when (it) {
-                is DataState.Success -> {
-                    ShowHorizontalPagerOfGeneraByLetter(
-                        uiState = uiState,
-                        spacing = spacing,
-                        outerPadding = outerPadding,
-                        navigateToGenus = navigateToGenus,
-                        switchToPageByIndex = switchToPageByIndex,
-                        runSearch = runSearch,
-                        clearSearchQuery = clearSearchQuery,
-                        updateSearchQuery = updateSearchQuery,
-                        updateScrollState = updateScrollState,
-                        prefillSearchSuggestion = prefillSearchSuggestion,
-                        removeSearchTerm = removeSearchTerm
-                    )
-                }
 
-                is DataState.LoadInProgress -> {
-                    LoadingItemsPlaceholder()
-                }
+                    is DataState.Failed -> {
+                        Text("Sorry! An error occurred. Reason: ${it.reason}")
+                        MissingDataPlaceholder()
+                    }
 
-                is DataState.Failed -> {
-                    Text("Sorry! An error occurred. Reason: ${it.reason}")
-                    MissingDataPlaceholder()
+                    else -> {}
                 }
-
-                else -> {}
             }
         }
     }
@@ -700,6 +751,9 @@ fun ListGenusScreen(
         },
         refreshFeed = {
             listGenusViewModel.onUiEvent(ListGenusPageUiEvent.RefreshFeed)
+        },
+        showToast = {
+            listGenusViewModel.onUiEvent(ListGenusPageUiEvent.ShowToast(it))
         }
     )
 }
@@ -792,7 +846,8 @@ fun PreviewListGenus() {
             removeSearchTerm = {},
             runSearch = {},
             updateScrollState = {},
-            refreshFeed = {}
+            refreshFeed = {},
+            showToast = {}
         )
     }
 }

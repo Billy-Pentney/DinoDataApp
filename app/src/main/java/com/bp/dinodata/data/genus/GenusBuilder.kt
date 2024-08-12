@@ -340,13 +340,17 @@ class GenusBuilder(
             timePeriods.addAll(newEpochs.map { EpochRetriever.getEpoch(it) })
         }
 
+        // We may have parsed the time-periods in a non-chronological order
+        // so sort them to enforce it
+        val sortedTimePeriods = timePeriods.sortedByDescending { it.getStartTimeInMYA() }
+
         return Genus(
             name = name,
             diet = diet,
             length = length,
             weight = weight,
             timeInterval = timeInterval,
-            timePeriods = timePeriods,
+            timePeriods = sortedTimePeriods,
             nameMeaning = nameMeaning,
             namePronunciation = namePronunciation,
             type = type,

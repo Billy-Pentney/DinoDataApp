@@ -395,6 +395,8 @@
     </string>
     <string name="search_hint_type_for_suggestions">start typing for suggestions...</string>
     <string name="label_formations">Formations</string>
+    <string name="screen_title_taxonomy">Taxonomy</string>
+    <string name="screen_title_about">About</string>
 
 
 </resources>

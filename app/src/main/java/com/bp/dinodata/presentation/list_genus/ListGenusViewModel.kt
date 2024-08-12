@@ -126,6 +126,12 @@ class ListGenusViewModel @Inject constructor(
                     handleEvent(ListGenusPageUiEvent.ToggleSearchBar(false))
                 }
             }
+
+            is ListGenusPageUiEvent.ShowToast -> {
+                viewModelScope.launch {
+                    toastFlow.emit(event.message)
+                }
+            }
         }
     }
 
