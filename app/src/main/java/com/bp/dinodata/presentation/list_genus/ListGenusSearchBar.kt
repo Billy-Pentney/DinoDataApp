@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.list_genus
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -39,7 +40,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
@@ -115,11 +118,13 @@ fun<T> SearchTermInputChip(
 fun ListGenusSearchBar(
     updateSearchQuery: (TextFieldValue) -> Unit,
     runSearch: () -> Unit,
+    searchTextFieldState: TextFieldState,
+    completedSearchTerms: List<ISearchTerm<in IGenus>>,
     clearSearchQuery: () -> Unit,
     tryAcceptSearchSuggestion: () -> Unit,
     modifier: Modifier = Modifier,
     onSearchTermTap: (ISearchTerm<in IGenus>) -> Unit,
-    uiState: ISearchBarUiState
+    onSearchBarFocusChanged: (Boolean) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -136,8 +141,6 @@ fun ListGenusSearchBar(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    val searchTextFieldState = uiState.getSearchTextFieldState()
-
     val textStyle = TextStyle(
         fontSize = 18.sp,
         fontWeight = FontWeight.SemiBold,
@@ -153,7 +156,6 @@ fun ListGenusSearchBar(
         )
     ) }
 
-    var acceptSuggestionAsQuery by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
     var canAutofill by remember { mutableStateOf(false) }
@@ -161,12 +163,22 @@ fun ListGenusSearchBar(
 
     val (searchTextFocus) = remember { FocusRequester.createRefs() }
 
+
     LaunchedEffect(null) {
-        // Take focus of the search bar when it is first opened
-        searchTextFocus.requestFocus()
+        if (searchTextFieldState.isFocused) {
+            // Take focus of the search bar when it is first opened
+            searchTextFocus.requestFocus()
+        }
+        else {
+            searchTextFocus.freeFocus()
+        }
     }
 
-    LaunchedEffect(uiState) {
+    BackHandler(searchTextFieldState.isFocused) {
+        searchTextFocus.freeFocus()
+    }
+
+    LaunchedEffect(searchTextFieldState) {
         textFieldValue = textFieldValue.copy(
             text = searchTextFieldState.textContent,
             selection = searchTextFieldState.textSelection
@@ -188,12 +200,6 @@ fun ListGenusSearchBar(
         suggestionAcceptedFlow.collectLatest {
             tryAcceptSearchSuggestion()
         }
-//        if (acceptSuggestionAsQuery) {
-//            acceptSuggestionAsQuery = false
-//            if (canAutofill) {
-//                tryAcceptSearchSuggestion()
-//            }
-//        }
     }
 
     Column (modifier = Modifier.fillMaxWidth()) {
@@ -204,7 +210,7 @@ fun ListGenusSearchBar(
                 .padding(horizontal = 16.dp)
                 .animateContentSize()
         ) {
-            items(uiState.getCompletedSearchTerms()) { term ->
+            items(completedSearchTerms) { term ->
                 SearchTermInputChip(
                     term,
                     onSearchTermTap = { onSearchTermTap(term) }
@@ -225,11 +231,13 @@ fun ListGenusSearchBar(
                             value = textFieldValue.text,
                             innerTextField = {
                                 Box {
-                                    Text(
-                                        hintText,
-                                        modifier = Modifier.alpha(0.4f),
-                                        style = textStyle.copy(fontWeight = FontWeight.Normal)
-                                    )
+                                    if (searchTextFieldState.isHintVisible) {
+                                        Text(
+                                            hintText,
+                                            modifier = Modifier.alpha(0.4f),
+                                            style = textStyle.copy(fontWeight = FontWeight.Normal)
+                                        )
+                                    }
                                     innerTextField()
                                 }
                             },
@@ -271,7 +279,8 @@ fun ListGenusSearchBar(
                     textStyle = textStyle,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusRequester(searchTextFocus),
+                        .focusRequester(searchTextFocus)
+                        .onFocusChanged { onSearchBarFocusChanged(it.isFocused) },
                     enabled = true,
                     keyboardActions = KeyboardActions(
                         onSearch = {
@@ -313,6 +322,21 @@ fun ListGenusSearchBar(
 @Preview
 @Composable
 fun PreviewSearchBar() {
+    val uiState = ListGenusUiState(
+        contentMode = ListGenusContentMode.Search,
+        search = GenusSearchBuilder(
+            "xyz",
+            taxa = listOf("abelisauridae", "brachiosauridae"),
+            terms = listOf<ISearchTerm<in IGenus>>(
+                BasicSearchTerm("abc"),
+                DietSearchTerm("diet:carnivore"),
+                LocationSearchTerm(
+                    "location:canada+united_kingdom+usa+brazil"
+                )
+            )
+        ).build()
+    )
+
     DinoDataTheme {
         Surface {
             ListGenusSearchBar(
@@ -320,21 +344,10 @@ fun PreviewSearchBar() {
                 clearSearchQuery = { },
                 tryAcceptSearchSuggestion = { },
                 onSearchTermTap = {},
-                uiState = ListGenusUiState(
-                    searchBarVisible = true,
-                    search = GenusSearchBuilder(
-                        "xyz",
-                        taxa = listOf("abelisauridae", "brachiosauridae"),
-                        terms = listOf<ISearchTerm<in IGenus>>(
-                            BasicSearchTerm("abc"),
-                            DietSearchTerm("diet:carnivore"),
-                            LocationSearchTerm(
-                                "location:canada+united_kingdom+usa+brazil"
-                            )
-                        )
-                    ).build()
-                ),
-                runSearch = {}
+                searchTextFieldState = uiState.getSearchTextFieldState(),
+                completedSearchTerms = uiState.getCompletedSearchTerms(),
+                runSearch = {},
+                onSearchBarFocusChanged = {}
             )
         }
     }

@@ -7,7 +7,7 @@ interface IConvertToFilter<T> {
     fun toFilter(): IFilter<T>
 }
 
-interface IDataQuery {
+interface IHasSearchQuery {
     fun getFullQuery(): String
     fun getQuery(): String
     fun isQueryEmpty(): Boolean
@@ -15,7 +15,7 @@ interface IDataQuery {
     fun getAutofillSuggestion(): String
 }
 
-interface ISearch<T>: IConvertToFilter<T>, IFilter<T>, IDataQuery
+interface ISearch<T>: IConvertToFilter<T>, IFilter<T>, IHasSearchQuery
 
 interface IMutableSearch<T>: ISearch<T> {
     fun removeTerm(term: ISearchTerm<in T>): ISearch<T>

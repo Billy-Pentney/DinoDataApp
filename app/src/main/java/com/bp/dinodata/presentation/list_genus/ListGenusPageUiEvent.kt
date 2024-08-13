@@ -29,4 +29,5 @@ sealed class ListGenusPageUiEvent {
 
     // Ui triggers a toast to be displayed with the given message
     data class ShowToast(val message: String) : ListGenusPageUiEvent()
+    data class FocusSearchBar(val focused: Boolean) : ListGenusPageUiEvent()
 }

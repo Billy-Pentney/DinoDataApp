@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.list_genus
 
+import android.provider.ContactsContract.Data
 import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenus
@@ -10,20 +11,50 @@ import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
 
+enum class ListGenusContentMode {
+    Search, Pager
+}
+
+interface IListGenusUiState: IMutableSearchBarUiState, IListGenusPageUiState {
+    fun getDataState(): DataState<IResultsByLetter<IGenusWithPrefs>>
+    fun getContentMode(): ListGenusContentMode
+    fun hideSearchBar(): IListGenusUiState
+}
+
+/**
+ * Manages the state of the UI for the ListGenusScreen.
+ */
 data class ListGenusUiState(
     val allPageData: DataState<IResultsByLetter<IGenusWithPrefs>> = DataState.Idle(),
     val searchResults: DataState<out List<IGenus>> = DataState.Idle(),
-    val searchBarVisible: Boolean = false,
+    private val contentMode: ListGenusContentMode = ListGenusContentMode.Pager,
+    private val firstVisibleItem: Int = 0,
+    private val firstVisibleItemOffset: Int = 0,
     private val search: GenusSearch = GenusSearch(),
     val pageSelectionVisible: Boolean = true,
-    val selectedPageIndex: Int = 0,
+    private val selectedPageIndex: Int = 0,
     private val textFieldState: TextFieldState = TextFieldState(hintContent = DEFAULT_HINT_TEXT),
-    val firstVisibleItem: Int = 0,
-    val firstVisibleItemOffset: Int = 0,
     private val locations: List<String> = emptyList(),
     private val taxa: List<String> = emptyList()
-): ISearchBarUiState {
-    val letterKeys: List<Char> = getDataOrNull()?.getKeys() ?: emptyList()
+): IListGenusUiState {
+
+    private val letterKeys: List<Char> = getDataOrNull()?.getKeys() ?: emptyList()
+
+    private fun getDataOrNull(): IResultsByLetter<IGenusWithPrefs>? {
+        if (allPageData is DataState.Success) {
+            return allPageData.data
+        }
+        return null
+    }
+
+    override fun getDataState(): DataState<IResultsByLetter<IGenusWithPrefs>> {
+        return allPageData
+    }
+
+    override fun getContentMode(): ListGenusContentMode = contentMode
+    override fun hideSearchBar(): ListGenusUiState {
+        return this.copy (contentMode = ListGenusContentMode.Pager)
+    }
 
     companion object {
         const val DEFAULT_HINT_TEXT = "start typing for suggestions..."
@@ -33,12 +64,15 @@ data class ListGenusUiState(
         return textFieldState
     }
 
-    fun getDataOrNull(): IResultsByLetter<IGenusWithPrefs>? {
-        if (allPageData is DataState.Success) {
-            return allPageData.data
+    override fun getSearchResultsAsList(): List<IGenus> {
+        return when (searchResults) {
+            is DataState.Success -> searchResults.data
+            else -> emptyList()
         }
-        return null
     }
+
+    override fun getFirstVisibleItemIndex(): Int = firstVisibleItem
+    override fun getFirstVisibleItemOffset(): Int = firstVisibleItemOffset
 
     /**
      * Update the SearchBar TextFieldState based on the given search. This involves setting
@@ -88,15 +122,15 @@ data class ListGenusUiState(
      * @param taxa A list of all known taxa (e.g. clades/families), to be used in the predictive auto-fill.
      * @return A new UiState with the constructed search and the resulting search items.
      */
-    fun makeNewSearch(
-        locations: List<String> = this.locations,
-        taxa: List<String> = this.taxa
+    override fun makeNewSearch(
+        locations: List<String>?,
+        taxa: List<String>?
     ): ListGenusUiState {
         val newSearch = GenusSearchBuilder(
             query = this.textFieldState.textContent,
             terms = search.getCompletedTerms(),
-            locations = locations,
-            taxa = taxa,
+            locations = locations ?: this.locations,
+            taxa = taxa ?: this.taxa
         ).build()
 
         val newTextFieldState = this.makeNewTextFieldState(newSearch)
@@ -110,19 +144,16 @@ data class ListGenusUiState(
         )
     }
 
-    override fun runSearch(): ListGenusUiState {
+    override fun runSearch(resetScroll: Boolean): ListGenusUiState {
         return this.copy (
             searchResults = allPageData.map { search.applyTo(it) },
-            firstVisibleItem = 0,
-            firstVisibleItemOffset = 0
+            firstVisibleItem = if (resetScroll) 0 else this.firstVisibleItem,
+            firstVisibleItemOffset = if (resetScroll) 0 else this.firstVisibleItemOffset
         )
     }
 
-    fun getPageByIndex(index: Int): List<IGenusWithPrefs>? {
-        return getDataOrNull()?.getGroupByIndex(index)
-    }
 
-    fun clearSearch(): ListGenusUiState {
+    override fun clearSearchTextField(): ListGenusUiState {
         return this.copy(
             textFieldState = this.textFieldState.clearText(),
             search = GenusSearch(search.getCompletedTerms()),
@@ -156,5 +187,19 @@ data class ListGenusUiState(
         return this.copy(
             search = newSearch
         )
+    }
+
+    override fun isSearchBarVisible(): Boolean = contentMode == ListGenusContentMode.Search
+
+    override fun getPagerKeys(): List<String> {
+        // These are the keys which identify the page of elements to show.
+        // Currently, this is the letters A-Z
+        return letterKeys.map { char -> char.toString() }
+    }
+
+    override fun getCurrentPagerIndex(): Int = selectedPageIndex
+
+    override fun getPageByIndex(index: Int): List<IGenusWithPrefs>? {
+        return getDataOrNull()?.getGroupByIndex(index)
     }
 }

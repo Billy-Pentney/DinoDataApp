@@ -7,7 +7,8 @@ data class TextFieldState(
     val hintContent: String = "start typing for suggestions...",
     val isHintVisible: Boolean = false,
     val textSelection: TextRange = TextRange.Zero,
-    val canAcceptHint: Boolean = false
+    val canAcceptHint: Boolean = false,
+    val isFocused: Boolean = false
 ) {
     fun clearText(): TextFieldState {
         return TextFieldState(
