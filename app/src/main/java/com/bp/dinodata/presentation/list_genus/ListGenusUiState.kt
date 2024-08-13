@@ -104,7 +104,7 @@ data class ListGenusUiState(
         }
         else {
             hintText = autofillSuggestion
-            canAutofillHint = true
+            canAutofillHint = autofillSuggestion.isNotEmpty()
             hintVisible = hintText.isNotEmpty()
         }
 

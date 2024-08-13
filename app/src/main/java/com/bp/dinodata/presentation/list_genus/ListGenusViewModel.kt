@@ -107,9 +107,18 @@ class ListGenusViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
             }
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
-                val suggestedText = _uiState.value.getAutofillSuggestion()
-                makeSearch(suggestedText, TextRange(suggestedText.length))
-                applySearch()
+                if (_uiState.value.hasSuggestions()) {
+                    val suggestedText = _uiState.value.getAutofillSuggestion()
+                    makeSearch(suggestedText, TextRange(suggestedText.length))
+                    applySearch()
+                }
+                else {
+                    _uiState.value = _uiState.value.copy(
+                        textFieldState = _uiState.value.getSearchTextFieldState().copy(
+                            isFocused = false
+                        )
+                    )
+                }
             }
             is ListGenusPageUiEvent.RemoveSearchTerm -> {
                 _uiState.value = _uiState.value.removeSearchTerm(event.term)

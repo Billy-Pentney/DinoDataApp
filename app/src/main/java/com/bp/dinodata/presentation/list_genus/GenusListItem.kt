@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,7 +50,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.presentation.utils.ThemeConverter
-import com.bp.dinodata.data.genus.IDisplayInList
+import com.bp.dinodata.data.genus.IDisplayableCreature
 import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.presentation.icons.DietIconSquare
@@ -62,7 +61,7 @@ import com.bp.dinodata.theme.colorFavourite700
 
 @Composable
 fun GenusListItem(
-    genus: IDisplayInList,
+    genus: IDisplayableCreature,
     onClick: () -> Unit = {},
     height: Dp = 54.dp,
     showImage: Boolean = true,

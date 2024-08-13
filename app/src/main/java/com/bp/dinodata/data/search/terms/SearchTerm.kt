@@ -17,11 +17,13 @@ interface ISearchTerm<T>: IFilter<T> {
     fun toOriginalText(): String
     /** Return the drawable Id for the resource representing this term. */
     fun getIconId(): ImageVector?
+
+    fun getQueries(): List<String>
 }
 
 
 enum class SearchTermType {
-    Name,
+    Text,
     CreatureType,
     Diet,
     TimePeriod,

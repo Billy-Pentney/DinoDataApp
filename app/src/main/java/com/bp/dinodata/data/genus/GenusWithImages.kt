@@ -73,4 +73,6 @@ class GenusWithImages(
     override fun getNumDistinctImages(): Int = allImagesUrlData?.size ?: 0
 
     override fun getChildrenTaxa(): List<ITaxon> = genus.getChildrenTaxa()
+
+    override fun containsText(searchText: String): Boolean = genus.containsText(searchText)
 }

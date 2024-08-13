@@ -9,6 +9,9 @@ import com.bp.dinodata.data.filters.FavouriteFilter
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
 
+/**
+ * A search-term which filters by whether the given item is or is not a favourite of the user.
+ */
 class FavouriteSearchTerm(
     private val originalText: String
 ): ISearchTerm<IGenus> {
@@ -48,6 +51,9 @@ class FavouriteSearchTerm(
 
     override fun toOriginalText(): String = originalText
     override fun getIconId(): ImageVector = Icons.Filled.Star
+    override fun getQueries(): List<String> {
+        return listOf(acceptFavourites.toString())
+    }
 
     override fun toString(): String {
         return "IsFavourite: $acceptFavourites"

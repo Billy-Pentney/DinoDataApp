@@ -53,4 +53,6 @@ abstract class ListBasedSearchTerm(
     override fun getIconId(): ImageVector? = imageIconVector
 
     override fun acceptsItem(item: IGenus): Boolean = this.filter.acceptsItem(item)
+
+    override fun getQueries(): List<String> = queryArguments
 }

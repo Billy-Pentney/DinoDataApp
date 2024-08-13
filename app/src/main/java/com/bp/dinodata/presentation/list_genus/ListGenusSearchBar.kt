@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -55,12 +57,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.terms.DietSearchTerm
 import com.bp.dinodata.data.search.terms.BasicSearchTerm
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.data.search.terms.LocationSearchTerm
+import com.bp.dinodata.data.search.terms.SearchTermType
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.MyGrey600
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -68,10 +72,25 @@ import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
+fun convertSearchTermTypeToString(type: SearchTermType): String {
+    return when (type) {
+        SearchTermType.Text -> stringResource(R.string.search_term_text)
+        SearchTermType.CreatureType -> stringResource(R.string.search_term_creature_type)
+        SearchTermType.Diet -> stringResource(R.string.search_term_diet)
+        SearchTermType.TimePeriod -> stringResource(R.string.search_term_time_period)
+        SearchTermType.Taxon -> stringResource(id = R.string.search_term_taxon)
+        SearchTermType.Color -> stringResource(id = R.string.search_term_color)
+        SearchTermType.Location -> stringResource(id = R.string.search_term_location)
+        SearchTermType.Favourite -> stringResource(id = R.string.search_term_favourite)
+    }
+}
+
+@Composable
 fun<T> SearchTermInputChip(
     term: ISearchTerm<T>,
     onSearchTermTap: () -> Unit
 ) {
+    val disjunctiveTerm = stringResource(id = R.string.disjunctive_connective)
     InputChip(
         selected = false,
         onClick = onSearchTermTap,
@@ -82,10 +101,16 @@ fun<T> SearchTermInputChip(
                     .fillMaxHeight()
                     .padding(vertical = 4.dp)
             ){
+                val type = convertSearchTermTypeToString(type = term.getType())
                 Text(
-                    term.toString(),
+                    "$type: ",
+                    modifier = Modifier.alpha(0.7f)
+                )
+                Text(
+                    term.getQueries().joinToString(" $disjunctiveTerm "),
                     modifier = Modifier.padding(vertical = 6.dp),
-                    maxLines = 2
+                    maxLines = 2,
+                    fontWeight = FontWeight.Normal
                 )
             }
         },
@@ -156,6 +181,7 @@ fun ListGenusSearchBar(
         )
     ) }
 
+
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
     var canAutofill by remember { mutableStateOf(false) }
@@ -163,19 +189,10 @@ fun ListGenusSearchBar(
 
     val (searchTextFocus) = remember { FocusRequester.createRefs() }
 
-
-    LaunchedEffect(null) {
-        if (searchTextFieldState.isFocused) {
-            // Take focus of the search bar when it is first opened
-            searchTextFocus.requestFocus()
-        }
-        else {
-            searchTextFocus.freeFocus()
-        }
-    }
+    var isFocused by remember  { mutableStateOf(false) }
 
     BackHandler(searchTextFieldState.isFocused) {
-        searchTextFocus.freeFocus()
+        focusManager.clearFocus()
     }
 
     LaunchedEffect(searchTextFieldState) {
@@ -184,21 +201,16 @@ fun ListGenusSearchBar(
             selection = searchTextFieldState.textSelection
         )
         canAutofill = searchTextFieldState.canAcceptHint
-        hintText = 
-            if (searchTextFieldState.isHintVisible)
-                searchTextFieldState.hintContent
-            else {
-                ""
-            }
+        hintText = searchTextFieldState.hintContent
+        isFocused = searchTextFieldState.isFocused
     }
 
-    val suggestionAcceptedFlow = remember {
-        MutableSharedFlow<String>()
-    }
-    
-    LaunchedEffect(null) {
-        suggestionAcceptedFlow.collectLatest {
-            tryAcceptSearchSuggestion()
+    LaunchedEffect(isFocused) {
+        if (isFocused) {
+            // Take focus of the search bar when it is first opened
+            searchTextFocus.requestFocus()
+        } else {
+            focusManager.clearFocus()
         }
     }
 
@@ -223,7 +235,6 @@ fun ListGenusSearchBar(
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = {
-//                        textFieldValue = it
                         updateSearchQuery(it)
                     },
                     decorationBox = { innerTextField ->
@@ -248,12 +259,17 @@ fun ListGenusSearchBar(
                                     Icons.Outlined.Search,
                                     "search",
                                     tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.padding(8.dp)
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .padding(start = 8.dp)
                                 )
                             },
                             trailingIcon = {
                                 if (textFieldValue.text.isNotEmpty()) {
-                                    IconButton(onClick = { clearSearchQuery() }) {
+                                    IconButton(
+                                        onClick = { clearSearchQuery() },
+                                        modifier = Modifier.padding(end=8.dp)
+                                    ) {
                                         Icon(
                                             Icons.Filled.Close,
                                             "clear search",
@@ -294,7 +310,7 @@ fun ListGenusSearchBar(
                             }
                             else {
                                 updateSearchQuery(textFieldValue)
-                                focusManager.clearFocus()
+                                onSearchBarFocusChanged(false)
                             }
                         }
                     ),
@@ -323,19 +339,10 @@ fun ListGenusSearchBar(
 @Composable
 fun PreviewSearchBar() {
     val uiState = ListGenusUiState(
-        contentMode = ListGenusContentMode.Search,
-        search = GenusSearchBuilder(
-            "xyz",
-            taxa = listOf("abelisauridae", "brachiosauridae"),
-            terms = listOf<ISearchTerm<in IGenus>>(
-                BasicSearchTerm("abc"),
-                DietSearchTerm("diet:carnivore"),
-                LocationSearchTerm(
-                    "location:canada+united_kingdom+usa+brazil"
-                )
-            )
-        ).build()
-    )
+        contentMode = ListGenusContentMode.Search
+    ).updateSearchQuery("abs diet:carnivore+omnivore loc")
+        .makeNewSearch()
+        .runSearch()
 
     DinoDataTheme {
         Surface {

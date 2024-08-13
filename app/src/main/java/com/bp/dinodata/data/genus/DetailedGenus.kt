@@ -13,6 +13,9 @@ interface IDetailedGenus: IGenusWithImages, ILocalPrefs, IHasCurrentSelectedImag
     fun getLocalPrefs(): ILocalPrefs
 }
 
+/**
+ * Describes a genus, along with its locally-stored preferences information.
+ */
 class DetailedGenus(
     private val genus: IGenusWithImages,
     prefs: ILocalPrefs? = null
@@ -60,4 +63,7 @@ class DetailedGenus(
     override fun getPreferredImageIndex(): Int = _prefs.getPreferredImageIndex()
 
     override fun getChildrenTaxa(): List<ITaxon> = genus.getChildrenTaxa()
+    override fun containsText(searchText: String): Boolean {
+        return genus.containsText(searchText)
+    }
 }

@@ -44,6 +44,10 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
 
+    <string name="screen_title_taxonomy">Taxonomy</string>
+    <string name="screen_title_about">About</string>
+    <string name="title_creature_list">Creature List</string>
+
     <string name="label_creature_type">Creature Type</string>
     <string name="label_meaning">Meaning</string>
     <string name="label_diet">Diet</string>
@@ -54,7 +58,6 @@
     <string name="label_taxonomy">Taxonomy</string>
 
     <string name="placeholder_unknown_period">Unknown Period</string>
-    <string name="title_creature_list">Creature List</string>
 
     <string name="type_large_theropod">Large Theropod</string>
     <string name="type_small_theropod">Small Theropod</string>
@@ -393,13 +396,24 @@
         pterosaurs, and large marine reptiles, died out, widely thought to have been caused by the
         impact of a large asteroid that formed the Chicxulub crater in the Gulf of Mexico.
     </string>
-    <string name="search_hint_type_for_suggestions">start typing for suggestions...</string>
+    <string name="search_hint_type_for_suggestions">start typing for suggestions…</string>
     <string name="label_formations">Formations</string>
-    <string name="screen_title_taxonomy">Taxonomy</string>
-    <string name="screen_title_about">About</string>
+
+
     <string name="source_nhm">Natural-History-Museum</string>
     <string name="source_wiki">Wikipedia</string>
     <string name="source_phylopic">Phylopic.org</string>
+
+
+    <string name="search_term_text">Contains</string>
+    <string name="search_term_creature_type">Creature Type</string>
+    <string name="search_term_diet">Diet</string>
+    <string name="search_term_time_period">Time Period</string>
+    <string name="search_term_taxon">Has Taxon</string>
+    <string name="search_term_color">Color</string>
+    <string name="search_term_location">Location</string>
+    <string name="search_term_favourite">Is Favourite</string>
+    <string name="disjunctive_connective">or</string>
 
 
 </resources>

@@ -1,9 +1,8 @@
 package com.bp.dinodata.data.genus
 
-import com.bp.dinodata.data.IBuilder
-import com.bp.dinodata.data.IDictParser
+import com.bp.dinodata.data.taxon.ITaxon
 
-interface ISpecies: IHasName {
+interface ISpecies: IHasName, ITextSearchable, ITaxon {
     fun getDiscoveryText(): String?
     fun isTypeSpecies(): Boolean
 }
@@ -23,4 +22,10 @@ data class Species(
 
     override fun isTypeSpecies(): Boolean = isType
     override fun getName(): String = name
+
+    override fun containsText(searchText: String): Boolean {
+        return name.contains(searchText)
+    }
+
+    override fun getChildrenTaxa(): List<ITaxon> = emptyList()
 }

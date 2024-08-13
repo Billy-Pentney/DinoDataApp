@@ -1,10 +1,15 @@
 package com.bp.dinodata.data.taxon
 
-import android.util.Log
 import com.bp.dinodata.data.genus.IHasName
 
 interface ITaxon: IHasName {
+    /**
+     * Get all children who are immediate descendants of this node.
+     * For a genus, this is the species.
+     * */
     fun getChildrenTaxa(): List<ITaxon>
+
+    /** Indicates if this node has any children. */
     fun hasChildrenTaxa(): Boolean = getChildrenTaxa().isNotEmpty()
 
     /** Get the number of immediate children of this node. */
@@ -19,6 +24,12 @@ interface ITaxon: IHasName {
     }
 }
 
+
+/**
+ * Describes a high-level node of the Taxonomic tree whose type is not specified.
+ * This could be a Clade, Family, Order,.. etc.
+ * Genera and Species should be constructed using their respective builders.
+ * */
 data class Taxon(
     private val name: String,
     private val children: List<ITaxon> = emptyList()
@@ -27,25 +38,3 @@ data class Taxon(
     override fun getName(): String = name
 }
 
-interface IMutableTaxon: ITaxon {
-    fun addChild(child: ITaxon): Boolean
-}
-
-data class MutableTaxon(
-    private val name: String,
-    private val initialChildren: List<ITaxon> = listOf()
-): IMutableTaxon {
-    private val childrenByName: MutableMap<String, ITaxon> = initialChildren.associateBy { it.getName() }.toMutableMap()
-
-    override fun getChildrenTaxa(): List<ITaxon> = childrenByName.values.toList()
-    override fun getName(): String = name
-    override fun addChild(child: ITaxon): Boolean {
-        val childName = child.getName()
-
-        if (childName in childrenByName.keys) {
-            Log.w("Taxon", "Adding duplicate taxon with name $childName")
-        }
-        childrenByName[childName] = child
-        return true
-    }
-}

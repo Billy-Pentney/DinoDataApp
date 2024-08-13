@@ -14,7 +14,6 @@ class GenusWithPrefs(
     val genus: IGenus,
     prefsIn: ILocalPrefs? = null
 ): IGenusWithPrefs {
-
     private val prefs = prefsIn ?: LocalPrefs()
 
     override fun getTaxonomy(): String = genus.getTaxonomy()
@@ -47,4 +46,8 @@ class GenusWithPrefs(
     override fun getSelectedColorName(): String? = prefs.getSelectedColorName()
 
     override fun getChildrenTaxa(): List<ITaxon> = genus.getChildrenTaxa()
+
+    override fun containsText(searchText: String): Boolean {
+        return genus.containsText(searchText)
+    }
 }

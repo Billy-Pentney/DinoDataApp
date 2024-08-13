@@ -24,6 +24,11 @@ interface IHasName {
     fun getName(): String
 }
 
+/** Describes a class which can check if it contains the given text*/
+interface ITextSearchable {
+    fun containsText(searchText: String): Boolean
+}
+
 interface IHasDiet {
     fun getDiet(): Diet
 }
@@ -50,11 +55,14 @@ interface IHasFormationInfo {
     fun getFormationNames(): List<String>
 }
 
-interface IDisplayInList: IHasName, IHasDiet, IHasCreatureType
+interface IDisplayableCreature: IHasName, IHasDiet, IHasCreatureType
+
+
+
 
 interface IGenus: IHasTaxonomy, IHasMeasurements, IAdditionalNameInfo,
-    IDisplayInList, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo,
-    IHasFormationInfo, ITaxon
+    IDisplayableCreature, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo,
+    IHasFormationInfo, ITaxon, ITextSearchable
 
 @Immutable
 data class Genus(
@@ -108,7 +116,12 @@ data class Genus(
     override fun getSpeciesList(): List<ISpecies> = species
     override fun hasSpeciesInfo(): Boolean = species.isNotEmpty()
 
-    override fun getChildrenTaxa(): List<ITaxon> = emptyList()
+    override fun getChildrenTaxa(): List<ITaxon> = species
+
+    override fun containsText(searchText: String): Boolean {
+        return name.contains(searchText) ||
+            this.species.any { it.containsText(searchText) }
+    }
 
 }
 
