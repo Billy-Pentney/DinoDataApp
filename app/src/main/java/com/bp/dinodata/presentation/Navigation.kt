@@ -13,6 +13,8 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,6 +30,7 @@ import com.bp.dinodata.presentation.about.AboutScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusViewModel
 import com.bp.dinodata.presentation.list_genus.ListGenusScreen
+import com.bp.dinodata.presentation.list_genus.ListGenusViewModel
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreen
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreenViewModel
 import kotlinx.coroutines.launch
@@ -39,17 +42,26 @@ fun MyNavigation(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
+    val startRoute = Screen.ListGenus.route
+
     val closeDrawer = {
         coroutineScope.launch {
             drawerState.close()
         }
     }
 
-    val optionsSingleTop = NavOptions.Builder().setLaunchSingleTop(true).build()
-    var visibleScreen: MutableState<Screen> = remember { mutableStateOf(Screen.ListGenus) }
+    val optionsSingleTop = NavOptions.Builder()
+        .setLaunchSingleTop(true)
+        .build()
+
+    val visibleScreen: MutableState<String?> = remember { mutableStateOf(startRoute) }
+
+    val updateVisibleScreen = {
+        visibleScreen.value = navController.currentDestination?.route
+    }
 
     MyNavigationDrawer(
-        screenState = visibleScreen,
+        screenRouteState = visibleScreen,
         drawerState = drawerState,
         navigateTo = {
             when (it) {
@@ -58,7 +70,7 @@ fun MyNavigation(
                         Screen.About.route,
                         navOptions = optionsSingleTop
                     )
-                    visibleScreen.value = Screen.About
+                    updateVisibleScreen()
                     closeDrawer()
                 }
                 Screen.ListGenus -> {
@@ -66,12 +78,12 @@ fun MyNavigation(
                         Screen.ListGenus.route,
                         navOptions = optionsSingleTop
                     )
-                    visibleScreen.value = Screen.ListGenus
+                    updateVisibleScreen()
                     closeDrawer()
                 }
                 Screen.Taxonomy -> {
-                    visibleScreen.value = Screen.Taxonomy
                     navController.navigate(Screen.Taxonomy.route)
+                    updateVisibleScreen()
                     closeDrawer()
                 }
             }
@@ -79,7 +91,7 @@ fun MyNavigation(
     ) {
         NavHost(
             navController = navController,
-            startDestination = Screen.ListGenus.route
+            startDestination = startRoute
         ) {
             composable(
                 Screen.ListGenus.route,
@@ -89,11 +101,12 @@ fun MyNavigation(
                 popExitTransition = { fadeOut() }
             ) {
                 ListGenusScreen(
-                    listGenusViewModel = hiltViewModel(),
+                    listGenusViewModel = hiltViewModel<ListGenusViewModel>(),
                     navigateToGenus = { genus: String ->
                         val route = "${Screen.DetailGenus.route}/${genus}"
                         Log.d("NavHost", "Attempt to navigate to \'$route\'")
                         navController.navigate(route, optionsSingleTop)
+                        updateVisibleScreen()
                     },
                     openNavDrawer = {
                         coroutineScope.launch { drawerState.open() }
@@ -109,9 +122,8 @@ fun MyNavigation(
                 enterTransition = { fadeIn() + scaleIn() },
                 exitTransition = { fadeOut() + shrinkOut() },
                 popExitTransition = {
-                    fadeOut(
-                        animationSpec = tween(200)
-                    ) + scaleOut(targetScale = 0.5f)
+                    fadeOut(animationSpec = tween(200)) +
+                            scaleOut(targetScale = 0.5f)
                 },
                 popEnterTransition = { fadeIn() }
             ) {
@@ -120,17 +132,25 @@ fun MyNavigation(
                 )
             }
 
-            composable(Screen.About.route) {
+            composable(
+                Screen.About.route,
+                enterTransition = { fadeIn() + slideIntoContainer(towards = AnimatedContentTransitionScope.SlideDirection.Right) },
+                exitTransition = { fadeOut() + slideOutOfContainer(towards = AnimatedContentTransitionScope.SlideDirection.Right)}
+            ) {
                 AboutScreen(
                     navigateBack = {
                         navController.navigateUp()
+                        updateVisibleScreen()
                     }
                 )
             }
 
             composable(Screen.Taxonomy.route) {
                 TaxonomyScreen(
-                    hiltViewModel<TaxonomyScreenViewModel>()
+                    hiltViewModel<TaxonomyScreenViewModel>(),
+                    openNavDrawer = {
+                        coroutineScope.launch { drawerState.open() }
+                    }
                 )
             }
         }

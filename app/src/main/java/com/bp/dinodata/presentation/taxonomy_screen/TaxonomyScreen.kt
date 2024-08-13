@@ -27,8 +27,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -361,11 +364,19 @@ fun TaxonCard(
 @Composable
 fun TaxonomyScreenContent(
     taxaState: DataState<List<ITaxon>>,
-    showDebugBranchLines: Boolean = false
+    showDebugBranchLines: Boolean = false,
+    openNavDrawer: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(id = R.string.screen_title_taxonomy)) })
+            TopAppBar(
+                title = { Text(stringResource(id = R.string.screen_title_taxonomy)) },
+                navigationIcon = {
+                    IconButton(onClick = openNavDrawer) {
+                        Icon(Icons.AutoMirrored.Filled.List, "open nav drawer")
+                    }
+                }
+            )
         },
         contentWindowInsets = WindowInsets(top=80.dp)
     ) {
@@ -426,10 +437,14 @@ fun TaxonomyScreenContent(
 
 @Composable
 fun TaxonomyScreen(
-    viewModel: ITaxonomyScreenViewModel
+    viewModel: ITaxonomyScreenViewModel,
+    openNavDrawer: () -> Unit
 ) {
     val taxaState by remember { viewModel.getTaxonomyList() }
-    TaxonomyScreenContent(taxaState = taxaState)
+    TaxonomyScreenContent(
+        taxaState = taxaState,
+        openNavDrawer = openNavDrawer
+    )
 }
 
 
@@ -484,7 +499,8 @@ fun PreviewTaxonomyScreen() {
     DinoDataTheme (darkTheme = true) {
         TaxonomyScreenContent(
             DataState.Success(taxa),
-            showDebugBranchLines = true
+            showDebugBranchLines = true,
+            openNavDrawer = {}
         )
     }
 }

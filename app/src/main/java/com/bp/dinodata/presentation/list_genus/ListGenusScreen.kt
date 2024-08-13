@@ -665,7 +665,7 @@ fun LazyListOfGenera(
 
 @Composable
 fun ListGenusScreen(
-    listGenusViewModel: ListGenusViewModel,
+    listGenusViewModel: IListGenusViewModel,
     navigateToGenus: (String) -> Unit,
     openNavDrawer: () -> Unit
 ) {

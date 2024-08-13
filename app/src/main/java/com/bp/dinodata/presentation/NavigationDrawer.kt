@@ -35,11 +35,11 @@ import com.bp.dinodata.R
 @Composable
 fun MyNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
-    screenState: State<Screen>,
+    screenRouteState: State<String?>,
     navigateTo: (INavigationDrawerScreen) -> Unit,
     content: @Composable () -> Unit
 ) {
-    val selectedDrawerItem by remember { screenState }
+    val currentNavRoute by remember { screenRouteState }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -70,7 +70,7 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = selectedDrawerItem == Screen.ListGenus,
+                        selected = currentNavRoute == Screen.ListGenus.route,
                         onClick = {
                             Log.d("NavDrawer", "Go to ${Screen.ListGenus}!")
                             navigateTo(Screen.ListGenus)
@@ -85,7 +85,7 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = selectedDrawerItem == Screen.Taxonomy,
+                        selected = currentNavRoute == Screen.Taxonomy.route,
                         onClick = {
                             Log.d("NavDrawer", "Go to  ${Screen.Taxonomy}!")
                             navigateTo(Screen.Taxonomy)
@@ -100,7 +100,7 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = selectedDrawerItem == Screen.About,
+                        selected = currentNavRoute == Screen.About.route,
                         onClick = {
                             Log.d("NavDrawer", "Go to  ${Screen.About}!")
                             navigateTo(Screen.About)
