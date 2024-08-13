@@ -85,6 +85,7 @@ object AtlasMarkers {
     private val EUROPEAN_MAP = RegionMap(
         EUROPE,
         "UK" to Marker(0.468f, 0.267f, R.string.location_uk_full),
+        "Ireland" to Marker(0.451f, 0.263f, R.string.location_ireland),
         "France" to Marker(0.477f, 0.30f, R.string.location_france),
         "Belgium" to Marker(0.483f, 0.28f, R.string.location_belgium),
         "Switzerland" to Marker(0.489f, 0.31f, R.string.location_switzerland),
@@ -121,7 +122,8 @@ object AtlasMarkers {
         "Malawi" to Marker(0.565f, 0.605f, R.string.location_malawi),
         "Lesotho" to Marker(0.548f, 0.677f, R.string.location_lesotho),
         "Tanzania" to Marker(0.566f, 0.567f, R.string.location_tanzania),
-        "Western Sahara" to Marker(0.438f, 0.425f, R.string.location_western_sahara)
+        "Western Sahara" to Marker(0.438f, 0.425f, R.string.location_western_sahara),
+        "Mali" to Marker(0.465f, 0.46f, R.string.location_mali)
     )
 
     private val ASIA_MAP = RegionMap(
