@@ -58,6 +58,7 @@ import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
+import com.bp.dinodata.data.genus.DebugGenusFactory
 import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IDetailedGenus
@@ -456,30 +457,7 @@ fun UpdateGenusLocalPreferencesButtons(
 @Preview(widthDp = 400, heightDp = 2000, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
-    val styraco = GenusBuilder("Styracosaurus")
-        .setDiet("Herbivorous")
-        .splitTimePeriodAndYears("Early Cretaceous, 70-65.5 mya")
-        .setNamePronunciation("'sty-RAK-oh-SORE-us'")
-        .setNameMeaning("spiked lizard")
-        .setLength("5 metres")
-        .setWeight("1 tonnes")
-        .setCreatureType("ceratopsian")
-        .setStartMya("75.5")
-        .setEndMya("74.5")
-        .setTaxonomy(listOf("Dinosauria", "Saurischia", "Ceratopsidae", "Centrosaurinae"))
-        .setLocations(listOf("Canada", "USA"))
-        .setFormations(listOf("Alberta Woodland Formation"))
-        .setSpecies(
-            listOf(
-                mapOf(
-                    "name" to "albertensis",
-                    "discovered_by" to "Marsh",
-                    "discovered_year" to "1885",
-                    "is_type" to "true"
-                )
-            )
-        )
-        .build()
+    val styraco = DebugGenusFactory.getGenus(DebugGenusFactory.GenusFactoryKey.Styracosaurus)
 
     val imageMap = mapOf(
         "sty" to MultiImageUrlData(

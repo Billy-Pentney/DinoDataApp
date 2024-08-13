@@ -82,6 +82,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
+import com.bp.dinodata.data.genus.DebugGenusFactory
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenus
@@ -716,56 +717,8 @@ fun ListGenusScreen(
 @Preview(widthDp=400)
 @Composable
 fun PreviewListGenus() {
-    val acro = GenusBuilder("Acrocanthosaurus")
-        .setDiet("Carnivorous")
-        .setTimePeriod("Late Cretaceous")
-        .setCreatureType("large theropod")
-        .build()
-    val trike = GenusBuilder("Triceratops")
-        .setDiet("Herbivorous")
-        .setTimePeriod("Cretaceous")
-        .setCreatureType("ceratopsian")
-        .build()
-    val dipl = GenusBuilder("Diplodocus")
-        .setDiet("Herbivorous")
-        .setTimePeriod("Jurassic")
-        .setCreatureType("sauropod")
-        .build()
-    val edmon = GenusBuilder("Edmontosaurus")
-        .setDiet("Herbivorous")
-        .setTimePeriod("Jurassic")
-        .setCreatureType("hadrosaur")
-        .build()
-    val ptero = GenusBuilder("Pteranodon")
-        .setDiet("Piscivorous")
-        .setTimePeriod("Jurassic")
-        .setCreatureType("pterosaur")
-        .build()
-    val raptor = GenusBuilder("Velociraptor")
-        .setDiet("Carnivorous")
-        .setTimePeriod("Cretaceous")
-        .setCreatureType("small theropod")
-        .build()
-    val ankylo = GenusBuilder("Ankylosaurus")
-        .setDiet("Herbivorous")
-        .setTimePeriod("Cretaceous")
-        .setCreatureType("ankylosaurid")
-        .build()
-    val stego = GenusBuilder("Stegosaurus")
-        .setDiet("Herbivorous")
-        .setTimePeriod("Jurassic")
-        .setCreatureType("Stegosaurid").build()
-    val spino = GenusBuilder("Spinosaurus").setDiet("Piscivorous")
-        .setTimePeriod("Cretaceous")
-        .setCreatureType("spinosaur").build()
-    val unkn = GenusBuilder("Othersaurus").setDiet("Nuts")
-        .setTimePeriod("Other")
-        .setCreatureType("other").build()
 
-    val genera = listOf(
-        acro, trike, dipl, raptor, ptero, edmon,
-        ankylo, stego, spino, unkn
-    )
+    val genera = DebugGenusFactory.getAll()
     val generaPrefs = genera.map {
         val color = when (it.getDiet()) {
             Diet.Carnivore -> "BURGUNDY"
