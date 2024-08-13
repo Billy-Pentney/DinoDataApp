@@ -65,6 +65,7 @@ fun GenusListItem(
     genus: IDisplayInList,
     onClick: () -> Unit = {},
     height: Dp = 54.dp,
+    showImage: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     var silhouetteId by remember { mutableStateOf<Int?>(null) }
@@ -170,7 +171,7 @@ fun GenusListItem(
                 }
             }
             AnimatedVisibility(
-                silhouetteId != null,
+                silhouetteId != null && showImage,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {

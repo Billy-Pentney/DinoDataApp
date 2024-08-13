@@ -4,6 +4,9 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -96,8 +102,8 @@ fun convertPxToDp(px: Float): Dp {
 }
 
 @Composable
-fun convertDpToPx(dp: Dp): Int {
-    return with (LocalDensity.current) { dp.toPx() }.roundToInt()
+fun convertDpToPx(dp: Dp): Float {
+    return with (LocalDensity.current) { dp.toPx() }
 }
 
 
@@ -106,13 +112,14 @@ fun TaxonCard(
     taxon: ITaxon,
     modifier: Modifier = Modifier,
     depth: Int = 0,
-    initiallyExpanded: Boolean = depth == 0,
+    initiallyExpanded: Boolean = (depth == 0),
     depthPadding: Dp = 20.dp,
     cardHeight: Dp = 54.dp,
-    branchAlpha: Float = 0.6f,
+    minCardWidth: Dp = 200.dp,
+    branchAlpha: Float = 0.35f,
     onExpand: () -> Unit = {},
     onClose: () -> Unit = {},
-    showDebugBranchLines: Boolean = true,
+    showDebugBranchLines: Boolean = false,
 ) {
 
     if (depth > 10) {
@@ -129,8 +136,8 @@ fun TaxonCard(
 
     val branchWidth = 8.dp
     val branchThickness = 2.dp
-    val paddingBeforeFirstChild = 6.dp
-    val paddingBetweenChildren = 6.dp
+    val paddingBeforeFirstChild = 12.dp
+    val paddingBetweenChildren = 8.dp
 
     val expandCard = {
         onExpand()
@@ -151,7 +158,7 @@ fun TaxonCard(
 
     var barHeight by remember { mutableStateOf(0.dp) }
 
-    val defaultCardHeightPx = convertDpToPx(cardHeight + paddingBetweenChildren)
+    val defaultCardHeightPx = convertDpToPx(cardHeight)
 
     // Store the height of each child card
     val childHeights by remember { mutableStateOf(
@@ -160,7 +167,7 @@ fun TaxonCard(
 
     // The total height of this composable's children
     // which is used to determine the height of the branch bar
-    var totalHeightPx by remember { mutableIntStateOf(childHeights.sum()) }
+    var totalHeightPx by remember { mutableFloatStateOf(childHeights.sum()) }
 
     LaunchedEffect(null) {
         if (isExpanded) {
@@ -168,16 +175,46 @@ fun TaxonCard(
         }
     }
 
-    with (LocalDensity.current) {
-        val totalHeightDp = totalHeightPx.toDp()
-        barHeight = paddingBeforeFirstChild + totalHeightDp - cardHeight / 2
+    var childHeightsDp by remember { mutableStateOf(Array(numChildren) { 0.dp }) }
+
+    val preChildrenPaddingColor =
+        if (showDebugBranchLines) Color.Green
+        else Color.White
+    
+    val betweenChildrenPaddingColor =
+        if (showDebugBranchLines) Color.Red
+        else Color.White
+
+    val density = LocalDensity.current
+
+    val recalculateHeight = {
+        // Calculate the height of the "branch" line which runs down the left-side of the cards
+        childHeightsDp = with(density) { childHeights.map { it.toDp() } }
+            .mapIndexed { i, pxHeight ->
+                // For the last child, the bar should stop at the halfway point
+                when (i == numChildren - 1) {
+                    true -> cardHeight / 2
+                    false -> pxHeight
+                }
+            }.toTypedArray()
     }
 
-    Column (modifier = modifier.fillMaxWidth()) {
+    Column (modifier = modifier.width(IntrinsicSize.Min)) {
+        if (depth == 0) {
+            Text(
+                "root",
+                fontSize = 12.sp,
+                modifier = Modifier.alpha(0.5f),
+                fontStyle = FontStyle.Italic
+            )
+        }
         Surface(
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.height(cardHeight),
+            modifier = Modifier
+                .height(cardHeight)
+                .widthIn(min = minCardWidth)
+                .width(IntrinsicSize.Min),
             onClick = toggleCardState
         ) {
 //
@@ -212,7 +249,7 @@ fun TaxonCard(
                 }
 
                 if (hasChildren) {
-//                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
                     IconButton(onClick = toggleCardState) {
                         Crossfade(isExpanded, label="expand_card_crossfade") {
                             if (!it) {
@@ -236,27 +273,38 @@ fun TaxonCard(
 
         AnimatedVisibility(visible = isExpanded) {
             Row (modifier = Modifier.padding(start = 8.dp)) {
-                Column {
+                Column (
+                    modifier = Modifier.alpha(branchAlpha)
+                ) {
                     VerticalDivider(
-                        thickness = branchThickness,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier
-                            .height(barHeight)
-                            .alpha(0.6f)
+                        Modifier.height(paddingBeforeFirstChild),
+                        color = preChildrenPaddingColor,
+                        thickness = branchThickness
                     )
-                    // Dynamic Bottom-Padding
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .then(
-                                if (showDebugBranchLines) {
-                                    Modifier
-                                        .width(branchThickness)
-                                        .background(Color.Red)
-                                } else Modifier
+                    childHeightsDp.forEachIndexed { i, height ->
+                        VerticalDivider(
+                            modifier = Modifier.height(height),
+                            thickness = branchThickness,
+                            color = Color.White
+                        )
+                        if (i < numChildren-1) {
+                            VerticalDivider(
+                                Modifier.height(paddingBetweenChildren),
+                                color = betweenChildrenPaddingColor,
+                                thickness = branchThickness
                             )
-                    )
+                        }
+                    }
                 }
+//                Column {
+//                    VerticalDivider(
+//                        thickness = branchThickness,
+//                        color = MaterialTheme.colorScheme.onBackground,
+//                        modifier = Modifier
+//                            .height(barHeight)
+//                            .alpha(branchAlpha)
+//                    )
+//                }
                 Column(
                     verticalArrangement = Arrangement.spacedBy(paddingBetweenChildren),
                     modifier = Modifier
@@ -274,6 +322,7 @@ fun TaxonCard(
                                 GenusListItem(
                                     subtaxon,
                                     height = cardHeight,
+                                    showImage = false
                                 )
                             } else {
                                 TaxonCard(
@@ -282,10 +331,11 @@ fun TaxonCard(
                                     cardHeight = cardHeight,
                                     branchAlpha = branchAlpha,
                                     depth = depth+1,
+                                    showDebugBranchLines = showDebugBranchLines,
                                     modifier = Modifier.onSizeChanged {
                                         val oldChildHeight = childHeights[i]
                                         val newChildHeight = it.height
-                                        childHeights[i] = newChildHeight
+                                        childHeights[i] = newChildHeight.toFloat()
 
                                         // Ignore the last child
                                         if (i < numChildren - 1) {
@@ -293,6 +343,8 @@ fun TaxonCard(
                                             // by the difference in the child's height
                                             totalHeightPx += newChildHeight - oldChildHeight
                                         }
+
+                                        recalculateHeight()
                                     }
                                 )
                             }
@@ -300,7 +352,7 @@ fun TaxonCard(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -308,13 +360,14 @@ fun TaxonCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaxonomyScreenContent(
-    taxaState: DataState<List<ITaxon>>
+    taxaState: DataState<List<ITaxon>>,
+    showDebugBranchLines: Boolean = false
 ) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(id = R.string.screen_title_taxonomy)) })
         },
-        contentWindowInsets = WindowInsets(left=8.dp, top=8.dp, right=8.dp, bottom = 8.dp)
+        contentWindowInsets = WindowInsets(top=80.dp)
     ) {
         pad ->
         when (taxaState) {
@@ -328,25 +381,41 @@ fun TaxonomyScreenContent(
 
             is DataState.LoadInProgress -> LoadingItemsPlaceholder()
             is DataState.Success -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(8.dp),
+                Row (
                     modifier = Modifier
-                        .fillMaxSize()
+                        .scrollable(
+                            rememberScrollableState {
+                                val consumed = it / 2
+                                it - consumed
+                            },
+                            orientation = Orientation.Horizontal
+                        )
+                        .fillMaxHeight()
                         .padding(pad)
                 ) {
-                    items(taxaState.data) {
-                        TaxonCard(
-                            taxon = it,
-                            depth = 0
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(
+                            vertical=16.dp,
+                            horizontal=16.dp
                         )
+                    ) {
+                        items(taxaState.data) {
+                            TaxonCard(
+                                taxon = it,
+                                depth = 0,
+//                                minCardWidth = 1000.dp,
+                                showDebugBranchLines = showDebugBranchLines
+                            )
+                            Spacer(Modifier.height(50.dp))
+                        }
+                        item {
+                            Spacer(Modifier.height(50.dp))
+                        }
                     }
-                    item {
-                        Spacer(Modifier.height(50.dp))
+                    if (taxaState.data.isEmpty()) {
+                        NoDataPlaceholder()
                     }
-                }
-                if (taxaState.data.isEmpty()) {
-                    NoDataPlaceholder()
                 }
             }
         }
@@ -401,10 +470,21 @@ fun PreviewTaxonomyScreen() {
                 ),
 //                Taxon("Ornithischia")
             )
+        ),
+        Taxon("Plesiosauria",
+            children = listOf(
+                Taxon("Anningasauroidea"),
+//                Taxon("Anningasauroidea"),
+//                Taxon("Anningasauroidea"),
+//                Taxon("Anningasauroidea")
+            )
         )
     )
 
     DinoDataTheme (darkTheme = true) {
-        TaxonomyScreenContent(DataState.Success(taxa))
+        TaxonomyScreenContent(
+            DataState.Success(taxa),
+            showDebugBranchLines = true
+        )
     }
 }
