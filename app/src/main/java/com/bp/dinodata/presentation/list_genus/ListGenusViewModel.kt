@@ -24,7 +24,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ListGenusViewModel @Inject constructor(
     @set:Inject var genusUseCases: GenusUseCases,
-    @set:Inject var listGenusUseCases: ListGenusScreenUseCases
 ): ViewModel(), IListGenusViewModel {
 
     private val _listOfGeneraByLetter: StateFlow<DataState<IResultsByLetter<IGenusWithPrefs>>>

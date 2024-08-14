@@ -14,6 +14,7 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
 import com.bp.dinodata.repo.AudioPlayStatus
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
+import com.bp.dinodata.use_cases.GenusDetailUseCases
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailGenusViewModel @Inject constructor(
     handle: SavedStateHandle,
-    @set:Inject var genusUseCases: GenusUseCases,
+    @set:Inject var genusUseCases: GenusDetailUseCases,
     @set:Inject var audioPronunciationUseCases: AudioPronunciationUseCases
 ): ViewModel() {
 
@@ -41,15 +42,10 @@ class DetailGenusViewModel @Inject constructor(
 
     private var currentGenusName: String = checkNotNull(handle[GENUS_KEY])
 
-    // Stores the details for the Genus being shown
-    private var _genusWithImages: Flow<DataState<IGenusWithImages>>
-        = genusUseCases.getGenusByNameFlow(currentGenusName)
-    // Store the local preferences (color/favourite.. etc.) for the genus, if they exist
-    private var _genusPrefs: Flow<ILocalPrefs?>
-        = genusUseCases.getGenusPrefsFlow(currentGenusName)
     // Combined unit for this genus
     private var _genusDetail: StateFlow<DataState<out DetailedGenus>>
-        = MutableStateFlow(DataState.Idle())
+        = genusUseCases.getDetailedGenus(currentGenusName)
+        .stateIn(viewModelScope, SharingStarted.Lazily, DataState.LoadInProgress())
 
     private var _uiState: MutableState<DetailScreenUiState> = mutableStateOf(
         DetailScreenUiState(currentGenusName)
@@ -58,12 +54,6 @@ class DetailGenusViewModel @Inject constructor(
     private var toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
 
     init {
-        _genusDetail = combine(_genusWithImages, _genusPrefs) { genusWithImages, genusPrefs ->
-            genusWithImages.map { data ->
-                DetailedGenus(data, genusPrefs)
-            }
-        }.stateIn(viewModelScope, SharingStarted.Lazily, DataState.LoadInProgress())
-
         viewModelScope.launch {
             _genusDetail.collectLatest {
                 _uiState.value = _uiState.value.copy(

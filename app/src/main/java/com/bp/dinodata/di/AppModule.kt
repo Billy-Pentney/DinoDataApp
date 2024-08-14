@@ -2,20 +2,22 @@ package com.bp.dinodata.di
 
 import android.content.Context
 import android.net.ConnectivityManager
-import androidx.core.content.ContextCompat.getSystemService
 import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.repo.AudioRepository
 import com.bp.dinodata.repo.ConnectionChecker
+import com.bp.dinodata.repo.FormationsRepository
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.repo.IAudioRepository
 import com.bp.dinodata.repo.IConnectionChecker
+import com.bp.dinodata.repo.IFormationsRepository
 import com.bp.dinodata.repo.IGenusRepository
+import com.bp.dinodata.repo.ILocalPreferencesRepository
 import com.bp.dinodata.repo.LocalPreferencesRepository
-import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
+import com.bp.dinodata.use_cases.GenusDetailUseCases
+import com.bp.dinodata.use_cases.GenusUseCases
 import com.bp.dinodata.use_cases.ListGenusScreenUseCases
 import com.bp.dinodata.use_cases.PlayPrerecordedAudioUseCase
-import com.bp.dinodata.use_cases.ReadTextToSpeechUseCase
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
@@ -29,9 +31,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    private const val GENERA_COLLECTION_NAME = "genera"
-    private const val IMAGES_COLLECTION_NAME = "images"
 
     @Provides
     fun providesConnectivityManager(@ApplicationContext context: Context): ConnectivityManager {
@@ -51,8 +50,19 @@ object AppModule {
     fun providesGenusRepository(connectionChecker: IConnectionChecker): GenusRepository {
         val storage = Firebase.firestore
         return GenusRepository(
-            genusCollection = storage.collection(GENERA_COLLECTION_NAME),
-            genusImageCollection = storage.collection(IMAGES_COLLECTION_NAME),
+            genusCollection = storage.collection(FirebaseCollections.GENERA),
+            genusImageCollection = storage.collection(FirebaseCollections.IMAGES),
+            connectivityChecker = connectionChecker
+        )
+    }
+
+
+    @Singleton
+    @Provides
+    fun providesFormationsRepository(connectionChecker: IConnectionChecker): FormationsRepository {
+        val storage = Firebase.firestore
+        return FormationsRepository(
+            formationsCollection = storage.collection(FirebaseCollections.FORMATIONS),
             connectivityChecker = connectionChecker
         )
     }
@@ -85,8 +95,16 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesListGenusUseCases(): ListGenusScreenUseCases {
-        return ListGenusScreenUseCases()
+    fun providesGenusDetailUseCases(
+        genusRepository: IGenusRepository,
+        localPreferencesRepo: ILocalPreferencesRepository,
+        formationsRepo: IFormationsRepository
+    ): GenusDetailUseCases {
+        return GenusDetailUseCases(
+            genusRepository,
+            localPreferencesRepo,
+            formationsRepo
+        )
     }
 
     @Singleton

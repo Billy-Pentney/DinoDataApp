@@ -6,6 +6,7 @@ import com.bp.dinodata.data.enum_readers.CreatureTypeConverter
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.enum_readers.DietConverter
 import com.bp.dinodata.data.IBuilder
+import com.bp.dinodata.data.MyBuilderUtils
 import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.data.quantities.IDescribesLength
@@ -61,24 +62,6 @@ class GenusBuilder(
                 dataMap
             )
         }
-
-        private fun parseToStringList(any: Any): List<String> {
-//            if (any is ArrayList<*>) {
-//                return any.map { it.toString() }
-//            }
-//            return emptyList()
-            return parseToTypedList<String>(any)
-        }
-
-        private inline fun<reified T> parseToTypedList(any: Any): List<T> {
-            if (any is ArrayList<*>) {
-                return any.mapNotNull {
-                    if (it is T) it
-                    else         null
-                }
-            }
-            return emptyList()
-        }
     }
 
     override fun clear(): IGenusBuilder {
@@ -105,7 +88,7 @@ class GenusBuilder(
         val builder = this
 
         dataMap[TIME_EPOCHS_KEY]?.let {
-            val timePeriods = parseToStringList(it)
+            val timePeriods = MyBuilderUtils.parseToStringList(it)
             builder.setTimePeriods(timePeriods)
         }
 
@@ -120,11 +103,11 @@ class GenusBuilder(
         dataMap[MEANING_KEY]?.let { builder.setNameMeaning(it.toString()) }
         dataMap[TAXONOMY_KEY]?.let { builder.setTaxonomy(it) }
         dataMap[LOCATIONS_KEY]?.let {
-            val locations = parseToStringList(it)
+            val locations = MyBuilderUtils.parseToStringList(it)
             builder.setLocations(locations)
         }
         dataMap[FORMATIONS_KEY]?.let {
-            val formations = parseToStringList(it)
+            val formations = MyBuilderUtils.parseToStringList(it)
             builder.setFormations(formations)
         }
         dataMap[SPECIES_KEY]?.let { builder.setSpecies(it) }

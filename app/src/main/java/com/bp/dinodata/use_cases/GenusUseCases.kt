@@ -1,16 +1,12 @@
 package com.bp.dinodata.use_cases
 
-import android.util.Log
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.GenusWithPrefs
-import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.data.genus.IGenusWithPrefs
-import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.data.taxon.IMutableTaxon
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.taxon.MutableTaxon
-import com.bp.dinodata.data.taxon.Taxon
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
@@ -22,31 +18,12 @@ class GenusUseCases(
     private val genusRepository: IGenusRepository,
     private val localPrefRepository: ILocalPreferencesRepository
 ) {
-    fun getGenusByNameFlow(genusName: String): Flow<DataState<IGenusWithImages>> {
-        return genusRepository.getGenusWithImagesFlow(genusName).map {
-            if (it == null) {
-                DataState.Failed("Null data")
-            }
-            else {
-                DataState.Success(it)
-            }
-        }
-    }
-
     fun getGenusLocationsFlow(): Flow<List<String>> {
         return genusRepository.getLocationsFlow()
     }
 
     fun getGenusTaxaFlow(): Flow<List<String>> {
         return genusRepository.getAllTaxaFlow()
-    }
-
-    fun getGenusPrefsFlow(currentGenusName: String): Flow<ILocalPrefs?> {
-        return localPrefRepository.getPrefsFlow(currentGenusName)
-    }
-
-    suspend fun updateColor(genusName: String, colorName: String?) {
-        localPrefRepository.updateColorForGenus(genusName, colorName)
     }
 
     suspend fun getAllColors(): List<String> {
@@ -76,16 +53,6 @@ class GenusUseCases(
         }
     }
 
-    suspend fun updateFavouriteStatus(currentGenusName: String, favourite: Boolean) {
-        localPrefRepository.updateFavouriteStatus(currentGenusName, favourite)
-    }
-
-    suspend fun updateSelectedImageIndex(
-        genusName: String,
-        newImageIndex: Int
-    ) {
-        localPrefRepository.updateSelectedImageIndex(genusName, newImageIndex)
-    }
 
 
     fun getTaxonomyList(): Flow<DataState<List<ITaxon>>> {

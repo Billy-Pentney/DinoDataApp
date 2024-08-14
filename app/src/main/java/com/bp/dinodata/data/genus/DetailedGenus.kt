@@ -2,14 +2,20 @@ package com.bp.dinodata.data.genus
 
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
+import com.bp.dinodata.data.IFormation
 import com.bp.dinodata.data.ImageUrlData
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesWeight
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
+import okhttp3.internal.format
 
-interface IDetailedGenus: IGenusWithImages, ILocalPrefs, IHasCurrentSelectedImage {
+interface IHasListOfFormations {
+    fun getFormations(): List<IFormation>
+}
+
+interface IDetailedGenus: IGenusWithImages, ILocalPrefs, IHasCurrentSelectedImage, IHasListOfFormations {
     fun getLocalPrefs(): ILocalPrefs
 }
 
@@ -18,7 +24,8 @@ interface IDetailedGenus: IGenusWithImages, ILocalPrefs, IHasCurrentSelectedImag
  */
 class DetailedGenus(
     private val genus: IGenusWithImages,
-    prefs: ILocalPrefs? = null
+    prefs: ILocalPrefs? = null,
+    private val formations: List<IFormation> = emptyList()
 ): IDetailedGenus {
     private val _prefs = prefs ?: LocalPrefs()
     override fun getLocalPrefs(): ILocalPrefs = _prefs
@@ -36,6 +43,7 @@ class DetailedGenus(
 
     override fun getLocations(): List<String> = genus.getLocations()
     override fun getFormationNames(): List<String> = genus.getFormationNames()
+    override fun getFormations(): List<IFormation> = formations
 
     override fun getSpeciesList(): List<ISpecies> = genus.getSpeciesList()
     override fun hasSpeciesInfo(): Boolean = genus.hasSpeciesInfo()

@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
+import com.bp.dinodata.data.Formation
 import com.bp.dinodata.presentation.utils.ThemeConverter
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.MultiImageUrlData
@@ -313,7 +314,7 @@ fun ShowGenusDetail(
                     CreatureLocations(locations, iconModifier)
                 }
 
-                val formations = genus.getFormationNames()
+                val formations = genus.getFormations()
                 if (formations.isNotEmpty()) {
                     Spacer(Modifier.height(8.dp))
                     CreatureFormations(formations, iconModifier)
@@ -484,14 +485,24 @@ fun PreviewGenusDetailDark() {
         )
     )
 
+    val genusData = DetailedGenus(
+        GenusWithImages(styraco, imageMap),
+        LocalPrefs(_isFavourite = false),
+        formations = listOf(
+            Formation(
+                "Alberta Mountain Formation",
+                "alberta_mountain",
+                continent = "North America",
+                location = "Canada, US",
+                countries = listOf("Canada", "US")
+            ),
+            Formation("Test formation")
+        )
+    )
+
     val uiState = DetailScreenUiState(
         genusName = styraco.getName(),
-        genusData = DataState.Success(
-            DetailedGenus(
-                GenusWithImages(styraco, imageMap),
-                LocalPrefs(_isFavourite = false)
-            )
-        ),
+        genusData = DataState.Success(genusData),
         listOfColors = ThemeConverter.listOfColors,
         dialogState = DetailScreenDialogState.NoDialog,
         preferencesCardExpanded = true

@@ -119,3 +119,18 @@ object ImageDataProcessingUtils {
 }
 
 
+object MyBuilderUtils {
+    fun parseToStringList(any: Any): List<String> {
+        return parseToTypedList<String>(any)
+    }
+
+    inline fun<reified T> parseToTypedList(any: Any): List<T> {
+        if (any is ArrayList<*>) {
+            return any.mapNotNull {
+                if (it is T) it
+                else         null
+            }
+        }
+        return emptyList()
+    }
+}

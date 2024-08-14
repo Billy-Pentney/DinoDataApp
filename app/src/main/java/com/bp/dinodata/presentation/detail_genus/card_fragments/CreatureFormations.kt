@@ -21,10 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
+import com.bp.dinodata.data.IFormation
 import com.bp.dinodata.presentation.detail_genus.LabelContentRow
 
 @Composable
-fun CreatureFormations(formations: List<String>, iconModifier: Modifier) {
+fun CreatureFormations(formations: List<IFormation>, iconModifier: Modifier) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -52,20 +53,20 @@ fun CreatureFormations(formations: List<String>, iconModifier: Modifier) {
                     modifier = Modifier.padding(12.dp).fillMaxWidth()
                 ) {
                     Text(
-                        it,
+                        it.getName(),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
-                    // TODO - get the country from the Formation
-//                    val country = stringResource(id = R.string.location_canada)
-//                    if (country != null) {
-//                        Text(
-//                            country,
-//                            Modifier.alpha(0.5f),
-//                            fontSize = 14.sp,
-//                            lineHeight = 18.sp
-//                        )
-//                    }
+                    // Display a comma-separated list of countries containing this country
+                    if (it.hasCountries()) {
+                        val countries = it.getLocations().joinToString()
+                        Text(
+                            countries,
+                            Modifier.alpha(0.5f),
+                            fontSize = 14.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
                 }
             }
         }
