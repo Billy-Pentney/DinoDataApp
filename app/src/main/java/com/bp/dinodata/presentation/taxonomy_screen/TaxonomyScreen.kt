@@ -3,12 +3,10 @@ package com.bp.dinodata.presentation.taxonomy_screen
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,8 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -30,8 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,12 +38,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,10 +54,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.IGenus
@@ -79,9 +66,6 @@ import com.bp.dinodata.presentation.list_genus.GenusListItem
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
-import dagger.Lazy
-import kotlin.math.exp
-import kotlin.math.roundToInt
 
 @Composable
 fun ChildBranchSymbol(
@@ -169,12 +153,10 @@ fun TaxonCard(
         }
     }
 
-    var barHeight by remember { mutableStateOf(0.dp) }
-
     val defaultCardHeightPx = convertDpToPx(cardHeight)
 
     // Store the height of each child card
-    var childHeightsPx by remember { mutableStateOf(
+    val childHeightsPx by remember { mutableStateOf(
         Array(numChildren) { defaultCardHeightPx }
     ) }
 
@@ -185,34 +167,46 @@ fun TaxonCard(
     }
 
     val density = LocalDensity.current
+    
+    var totalChildrenHeight by remember { mutableStateOf(0.dp) }
 
-    val childHeightsDp by remember { derivedStateOf {
-        childHeightsPx
-            .map { with(density) { it.toDp() } }
-            .mapIndexed { i, dp ->
-                if (i == childHeightsPx.size-1) {
-                    dp / 2
-                }
-                else {
-                    dp
-                }
-            }
-        }
-    }
-
+    // if debugging, the color given to the divider before the children
     val preChildrenPaddingColor =
         if (showDebugBranchLines) Color.Green
         else Color.White
-    
+
+    // If debugging, the color given to the divider in the padding between the children
     val betweenChildrenPaddingColor =
         if (showDebugBranchLines) Color.Red
         else Color.White
 
 
+    val recalculateBranchHeight = {
+        // The last child branch finishes at halfway through the card
+        val lastChildTrimmed = childHeightsPx
+            .lastOrNull()?.plus(1)?.div(2) ?: 0f
+
+        val totalChildrenPx = childHeightsPx.dropLast(1).sum() + lastChildTrimmed
+        val totalChildrenDp = with(density) { totalChildrenPx.toDp() }
+
+        totalChildrenHeight =
+            paddingBeforeFirstChild +
+            totalChildrenDp +
+            paddingBetweenChildren * (numChildren-1)
+    }
+
+    LaunchedEffect(null) {
+        recalculateBranchHeight()
+    }
+
     val updateChildHeight = { childIndex: Int, newHeightPx: Float  ->
         if (childIndex in 0..numChildren-2) {
+            val oldHeightPx = childHeightsPx[childIndex]
             childHeightsPx[childIndex] = newHeightPx
-            childHeightsPx = childHeightsPx.copyOf()
+            val heightDiffDp = with(density) {
+                (newHeightPx - oldHeightPx).toDp()
+            }
+            totalChildrenHeight += heightDiffDp
         }
     }
 
@@ -293,35 +287,37 @@ fun TaxonCard(
         AnimatedVisibility(visible = isExpanded) {
             Row (modifier = Modifier.padding(start = 8.dp)) {
                 Column (modifier = Modifier.alpha(branchAlpha)) {
-                    VerticalDivider(
-                        Modifier.height(paddingBeforeFirstChild),
-                        color = preChildrenPaddingColor,
-                        thickness = branchThickness
-                    )
-                    childHeightsDp.forEachIndexed { i, height ->
+                    if (showDebugBranchLines) {
                         VerticalDivider(
-                            modifier = Modifier.height(height),
-                            thickness = branchThickness,
-                            color = Color.White
+                            Modifier.height(paddingBeforeFirstChild),
+                            color = preChildrenPaddingColor,
+                            thickness = branchThickness
                         )
-                        if (i < numChildren-1) {
+                        childHeightsPx.forEachIndexed { i, height ->
+                            val heightDp = convertPxToDp(px = height)
                             VerticalDivider(
-                                Modifier.height(paddingBetweenChildren),
-                                color = betweenChildrenPaddingColor,
-                                thickness = branchThickness
+                                modifier = Modifier.height(heightDp),
+                                thickness = branchThickness,
+                                color = Color.White
                             )
+                            if (i < numChildren-1) {
+                                VerticalDivider(
+                                    Modifier.height(paddingBetweenChildren),
+                                    color = betweenChildrenPaddingColor,
+                                    thickness = branchThickness
+                                )
+                            }
                         }
                     }
+                    else {
+                        VerticalDivider(
+                            Modifier.height(totalChildrenHeight),
+                            color = Color.White,
+                            thickness = branchThickness
+                        )
+                    }
                 }
-//                Column {
-//                    VerticalDivider(
-//                        thickness = branchThickness,
-//                        color = MaterialTheme.colorScheme.onBackground,
-//                        modifier = Modifier
-//                            .height(barHeight)
-//                            .alpha(branchAlpha)
-//                    )
-//                }
+
                 Column(
                     verticalArrangement = Arrangement.spacedBy(paddingBetweenChildren),
                     modifier = Modifier
@@ -514,7 +510,7 @@ fun PreviewTaxonomyScreen() {
     DinoDataTheme (darkTheme = true) {
         TaxonomyScreenContent(
             DataState.Success(taxa),
-            showDebugBranchLines = true,
+            showDebugBranchLines = false,
             openNavDrawer = {}
         )
     }
