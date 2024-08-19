@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -113,6 +114,7 @@ fun TaxonCard(
     onExpand: () -> Unit = {},
     onClose: () -> Unit = {},
     showDebugBranchLines: Boolean = false,
+    gotoGenus: (IGenus) -> Unit = {}
 ) {
 
     if (depth > 10) {
@@ -123,7 +125,7 @@ fun TaxonCard(
     val hasChildren = remember { taxon.hasChildrenTaxa() }
     val numChildren = remember { taxon.getNumChildren() }
     val childrenTaxa = remember { taxon.getChildrenTaxa() }
-    var isExpanded: Boolean by remember { mutableStateOf(
+    var isExpanded: Boolean by rememberSaveable { mutableStateOf(
         initiallyExpanded && hasChildren
     ) }
 
@@ -338,7 +340,8 @@ fun TaxonCard(
                                 GenusListItem(
                                     subtaxon,
                                     height = cardHeight,
-                                    showImage = false
+                                    showImage = false,
+                                    onClick = { gotoGenus(subtaxon) }
                                 )
                             } else {
                                 TaxonCard(
@@ -351,7 +354,8 @@ fun TaxonCard(
                                     modifier = Modifier.onSizeChanged {
                                         Log.d("TaxonCard", "Update child $i height")
                                         updateChildHeight(i, it.height.toFloat())
-                                    }
+                                    },
+                                    gotoGenus = gotoGenus
                                 )
                             }
                         }
@@ -368,7 +372,8 @@ fun TaxonCard(
 fun TaxonomyScreenContent(
     taxaState: DataState<ITaxonCollection>,
     showDebugBranchLines: Boolean = false,
-    openNavDrawer: () -> Unit
+    openNavDrawer: () -> Unit,
+    gotoGenus: (IGenus) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -420,7 +425,8 @@ fun TaxonomyScreenContent(
                                 taxon = it,
                                 depth = 0,
 //                                minCardWidth = 1000.dp,
-                                showDebugBranchLines = showDebugBranchLines
+                                showDebugBranchLines = showDebugBranchLines,
+                                gotoGenus = gotoGenus
                             )
                             HorizontalDivider(
                                 Modifier
@@ -447,12 +453,18 @@ fun TaxonomyScreenContent(
 @Composable
 fun TaxonomyScreen(
     viewModel: ITaxonomyScreenViewModel,
-    openNavDrawer: () -> Unit
+    openNavDrawer: () -> Unit,
+    gotoGenusByName: (String) -> Unit
 ) {
     val taxaState by remember { viewModel.getTaxonomyList() }
     TaxonomyScreenContent(
         taxaState = taxaState,
         openNavDrawer = openNavDrawer,
+        gotoGenus = { genus ->
+            val genusName = genus.getName()
+            Log.d("TaxonomyScreen", "Attempt to navigate to genus $genusName")
+            gotoGenusByName(genusName)
+        }
 //        showDebugBranchLines = true
     )
 }
@@ -497,7 +509,8 @@ fun PreviewTaxonomyScreen() {
         TaxonomyScreenContent(
             DataState.Success(taxaCollection),
             showDebugBranchLines = false,
-            openNavDrawer = {}
+            openNavDrawer = {},
+            gotoGenus = {}
         )
     }
 }

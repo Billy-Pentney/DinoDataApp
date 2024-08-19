@@ -150,6 +150,12 @@ fun MyNavigation(
                     hiltViewModel<TaxonomyScreenViewModel>(),
                     openNavDrawer = {
                         coroutineScope.launch { drawerState.open() }
+                    },
+                    gotoGenusByName = { genusName ->
+                        val route = "${Screen.DetailGenus.route}/${genusName}"
+                        Log.d("NavHost", "Attempt to navigate to \'$route\'")
+                        navController.navigate(route, optionsSingleTop)
+                        updateVisibleScreen()
                     }
                 )
             }

@@ -7,15 +7,15 @@ class TaxonCollectionBuilder(
     childToParentMap: Map<String, String> = emptyMap()
 ): IBuilder<ITaxonCollection> {
 
+    private val taxaMap: MutableMap<String, IMutableTaxon> = mutableMapOf()
+    private var taxaRoots: List<ITaxon> = emptyList()
+    private var taxaChildren: MutableSet<String> = mutableSetOf()
+
     init {
         if (childToParentMap.isNotEmpty()) {
             buildTaxaFromParentMapping(childToParentMap)
         }
     }
-
-    private val taxaMap: MutableMap<String, IMutableTaxon> = mutableMapOf()
-    private var taxaRoots: List<ITaxon> = emptyList()
-    private var taxaChildren: MutableSet<String> = mutableSetOf()
 
     fun buildTaxaFromParentMapping(parents: Map<String, String>): TaxonCollectionBuilder {
         // Construct taxa to represent the tree
