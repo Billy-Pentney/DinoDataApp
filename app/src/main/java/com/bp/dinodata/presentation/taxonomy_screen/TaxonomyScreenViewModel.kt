@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.taxon.ITaxon
+import com.bp.dinodata.data.taxon.ITaxonCollection
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,7 @@ class TaxonomyScreenViewModel @Inject constructor(
     @set:Inject var genusUseCases: GenusUseCases
 ): ViewModel(), ITaxonomyScreenViewModel {
 
-    private val taxonomyFlow: MutableState<DataState<List<ITaxon>>> = mutableStateOf(DataState.Idle())
+    private val taxonomyFlow: MutableState<DataState<ITaxonCollection>> = mutableStateOf(DataState.Idle())
 
     init {
         viewModelScope.launch {
@@ -33,7 +34,7 @@ class TaxonomyScreenViewModel @Inject constructor(
         }
     }
 
-    override fun getTaxonomyList(): State<DataState<List<ITaxon>>> {
+    override fun getTaxonomyList(): State<DataState<ITaxonCollection>> {
         return taxonomyFlow
     }
 }

@@ -12,7 +12,9 @@ import com.bp.dinodata.repo.IConnectionChecker
 import com.bp.dinodata.repo.IFormationsRepository
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
+import com.bp.dinodata.repo.ITaxonomyRepository
 import com.bp.dinodata.repo.LocalPreferencesRepository
+import com.bp.dinodata.repo.TaxonomyRepository
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import com.bp.dinodata.use_cases.GenusDetailUseCases
 import com.bp.dinodata.use_cases.GenusUseCases
@@ -75,6 +77,12 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun providesTaxonomyRepository(): TaxonomyRepository {
+        return TaxonomyRepository(Firebase.firestore.collection(FirebaseCollections.TAXONOMY))
+    }
+
+    @Singleton
+    @Provides
     fun providesAudioRepository(
         @ApplicationContext context: Context,
         connectionChecker: IConnectionChecker
@@ -88,9 +96,10 @@ object AppModule {
     @Provides
     fun providesGenusUseCases(
         genusRepo: IGenusRepository,
-        localPreferencesRepo: LocalPreferencesRepository
+        localPreferencesRepo: LocalPreferencesRepository,
+        taxonRepo: ITaxonomyRepository
     ): GenusUseCases {
-        return GenusUseCases(genusRepo, localPreferencesRepo)
+        return GenusUseCases(genusRepo, localPreferencesRepo, taxonRepo)
     }
 
     @Singleton

@@ -9,7 +9,9 @@ import com.bp.dinodata.repo.IConnectionChecker
 import com.bp.dinodata.repo.IFormationsRepository
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
+import com.bp.dinodata.repo.ITaxonomyRepository
 import com.bp.dinodata.repo.LocalPreferencesRepository
+import com.bp.dinodata.repo.TaxonomyRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -29,6 +31,9 @@ interface MyRepositoryModules {
 
     @Binds
     fun bindsFormationsRepository(repository: FormationsRepository): IFormationsRepository
+
+    @Binds
+    fun bindsTaxonomyRepository(repository: TaxonomyRepository): ITaxonomyRepository
 
     @Binds
     fun bindsConnectionChecker(connectionChecker: ConnectionChecker): IConnectionChecker

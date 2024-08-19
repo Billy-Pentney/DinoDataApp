@@ -60,7 +60,10 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.taxon.ITaxon
+import com.bp.dinodata.data.taxon.ITaxonCollection
 import com.bp.dinodata.data.taxon.Taxon
+import com.bp.dinodata.data.taxon.TaxonCollection
+import com.bp.dinodata.data.taxon.TaxonCollectionBuilder
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.list_genus.GenusListItem
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
@@ -363,7 +366,7 @@ fun TaxonCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaxonomyScreenContent(
-    taxaState: DataState<List<ITaxon>>,
+    taxaState: DataState<ITaxonCollection>,
     showDebugBranchLines: Boolean = false,
     openNavDrawer: () -> Unit
 ) {
@@ -412,7 +415,7 @@ fun TaxonomyScreenContent(
                             start=16.dp
                         )
                     ) {
-                        items(taxaState.data) {
+                        items(taxaState.data.getRoots()) {
                             TaxonCard(
                                 taxon = it,
                                 depth = 0,
@@ -463,53 +466,36 @@ fun PreviewTaxonomyScreen() {
     val acro = GenusBuilder("Acrocanthosaurus")
         .setDiet("carnivore")
         .setCreatureType("carcharodontosaurid")
+        .setTaxonomy(listOf("Dinosauria", "Carcharodontosauridae"))
         .build()
 
     val carcharo = GenusBuilder("Carcharo")
         .setDiet("carnivore")
         .setCreatureType("carcharodontosaurid")
+        .setTaxonomy(listOf("Dinosauria", "Carcharodontosauridae"))
         .build()
 
     val veloci = GenusBuilder("Velociraptor")
         .setDiet("carnivore")
         .setCreatureType("dromaeosaurid")
+        .setTaxonomy(listOf("Dinosauria", "Dromaeosauridae"))
         .build()
 
-    val taxa = listOf(
-        Taxon(
-            "Dinosauria",
-            listOf(
-                Taxon("XBYZ"),
-                Taxon(
-                    "Theropoda",
-                    listOf(
-                        Taxon(
-                            "Carcharodontosauridae",
-                            listOf(acro, carcharo)
-                        ),
-                        Taxon(
-                            "Dromaeosauridae",
-                            listOf(veloci)
-                        )
-                    )
-                ),
-//                Taxon("Ornithischia")
-            )
-        ),
-        Taxon(
-            "Plesiosauria",
-            listOf(
-                Taxon("Anningasauroidea"),
-//                Taxon("Anningasauroidea"),
-//                Taxon("Anningasauroidea"),
-//                Taxon("Anningasauroidea")
-            )
-        )
+    val taxaParents = mapOf(
+        "XBYZ" to "Dinosauria",
+        "Theropoda" to "Dinosauria",
+        "Carcharodontosauridae" to "Theropoda",
+        "Dromaeosauridae" to "Theropoda",
+        "Anningasauroidea" to "Plesiosauria"
     )
+
+    val taxaCollection = TaxonCollectionBuilder(taxaParents)
+        .addGenera(listOf(acro, carcharo, veloci))
+        .build()
 
     DinoDataTheme (darkTheme = true) {
         TaxonomyScreenContent(
-            DataState.Success(taxa),
+            DataState.Success(taxaCollection),
             showDebugBranchLines = false,
             openNavDrawer = {}
         )

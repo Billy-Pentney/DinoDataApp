@@ -16,32 +16,55 @@ data class ExpandableTaxon(
     override fun getName(): String = taxon.getName()
 }
 
-data class TaxonCollection(
-    val rootTaxa: List<ITaxon>
-) {
-    private val nameToTaxon: MutableMap<String, ITaxon> = mutableMapOf()
-    private val isExpanded: MutableMap<ITaxon, Boolean> = mutableMapOf()
+interface ITaxonCollection {
+    fun getTaxonByName(name: String): ITaxon?
+    fun getRoots(): List<ITaxon>
+    fun isEmpty(): Boolean
+}
+
+class TaxonCollection(
+    private val rootTaxa: List<ITaxon>,
+    taxaByName: Map<String, ITaxon> = emptyMap(),
+    isTaxonExpanded: Map<ITaxon, Boolean> = emptyMap()
+): ITaxonCollection {
+
+    private val _taxonDictionary = taxaByName.toMutableMap()
+    private val _isTaxonExpanded = isTaxonExpanded.toMutableMap()
 
     init {
         rootTaxa.forEach {
-            nameToTaxon[it.getName()] = it
+            _taxonDictionary[it.getName()] = it
         }
     }
 
     private fun addTaxaToMap(taxa: List<ITaxon>) {
         taxa.forEach {
-            nameToTaxon[it.getName()] = it
+            _taxonDictionary[it.getName()] = it
             addTaxaToMap(it.getChildrenTaxa())
         }
     }
 
     fun markAsExpanded(taxon: ITaxon) {
-        isExpanded[taxon] = true
+        _isTaxonExpanded[taxon] = true
     }
 
-    fun getDisplayableTaxonList(): List<IDisplayableTaxon> {
-        return rootTaxa.map {
-            ExpandableTaxon(it, isExpanded[it] ?: false)
+//    fun getDisplayableTaxonList(): List<IDisplayableTaxon> {
+//        return rootTaxa.map {
+//            ExpandableTaxon(it, isExpanded[it] ?: false)
+//        }
+//    }
+
+    override fun getTaxonByName(name: String): ITaxon? = _taxonDictionary[name]
+    override fun getRoots(): List<ITaxon> = rootTaxa
+    override fun isEmpty(): Boolean = rootTaxa.isEmpty()
+
+    companion object {
+        fun buildTaxaFromParentMapping(taxonParents: Map<String, String>): Map<String, IMutableTaxon> {
+            val taxaMap: MutableMap<String, IMutableTaxon> = mutableMapOf()
+
+
+
+            return taxaMap
         }
     }
 
