@@ -416,4 +416,12 @@
     <string name="disjunctive_connective">or</string>
 
 
+    <string name="num_taxon_children">"num "</string>
+
+    <plurals name="num_taxon_children">
+        <item quantity="one">%d child</item>
+        <item quantity="other">%d children</item>
+    </plurals>
+
+
 </resources>

@@ -96,8 +96,12 @@ class GenusUseCases(
                 }
             }
 
-            // Get the taxa which have no parents (i.e. the roots)
-            val rootTaxa = taxonMap.filter { it.key !in nonRootNames }.map { it.value }
+            // Get the taxa which have no parents (i.e. the roots).
+            // Then convert to immutable taxa.
+            val rootTaxa = taxonMap
+                .filterKeys { it !in nonRootNames }
+                .map { it.value.toTaxon() }
+
             DataState.Success(rootTaxa)
         }
     }

@@ -1,5 +1,6 @@
 package com.bp.dinodata.data.taxon
 
+import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IHasName
 
 interface ITaxon: IHasName {
@@ -32,9 +33,27 @@ interface ITaxon: IHasName {
  * */
 data class Taxon(
     private val name: String,
-    private val children: List<ITaxon> = emptyList()
+    private val initialChildren: List<ITaxon> = emptyList()
 ): ITaxon {
-    override fun getChildrenTaxa(): List<ITaxon> = children
+
+    private val _children = Taxon.sortChildrenTaxa(initialChildren)
+
+    companion object {
+        fun sortChildrenTaxa(children: List<ITaxon>): List<ITaxon> {
+            return children.sortedWith{ taxonA: ITaxon, taxonB: ITaxon ->
+                // Place the clades, families... before the genera
+                if (taxonA !is IGenus || taxonB is IGenus) {
+                    -1
+                }
+                else {
+                    1
+                }
+            }
+        }
+    }
+
+    // Sort the children so that taxa are grouped first, and genera are at the end
+    override fun getChildrenTaxa(): List<ITaxon> = _children
     override fun getName(): String = name
 }
 
