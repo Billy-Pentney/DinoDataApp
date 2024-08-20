@@ -1,5 +1,7 @@
 package com.bp.dinodata.data.taxon
 
+import kotlin.math.exp
+
 interface IDescribesExpandedState {
     fun isExpanded(): Boolean
 }
@@ -44,13 +46,18 @@ interface ITaxonCollection {
 
     fun getExpansionMapping(): Map<String, Boolean>
 
+    /** Return true if and only if the given taxon is marked as expanded. */
     fun isExpanded(taxon: ITaxon): Boolean
+
+    /** Return a new collection in which all taxa are contracted (not expanded). */
+    fun closeAllTaxa(): ITaxonCollection
+    fun getNumExpandedTaxa(): Int
 }
 
 class TaxonCollection(
-    private val _taxonDictionary: MutableMap<String, ITaxon> = mutableMapOf(),
+    private val taxonDictionary: MutableMap<String, ITaxon> = mutableMapOf(),
     private val roots: List<String> = emptyList(),
-    private val expanded: MutableMap<String, Boolean> = mutableMapOf()
+    private val expanded: MutableMap<String, Boolean> = roots.associateWith { true }.toMutableMap()
 ): ITaxonCollection {
 
     constructor(
@@ -58,35 +65,28 @@ class TaxonCollection(
         taxaByName: Map<String, ITaxon> = emptyMap(),
         isTaxonExpanded: Map<ITaxon, Boolean> = emptyMap()
     ): this(
-        _taxonDictionary = taxaByName.mapValues {
+        taxonDictionary = taxaByName.mapValues {
             val taxon = it.value
             ExpandableTaxon(taxon, isTaxonExpanded[taxon] ?: false)
         }.toMutableMap(),
         roots = rootTaxa
     )
 
-    init {
-        // Mark all the roots as expanded by default
-        roots.forEach {
-            expanded[it] = true
-        }
-    }
-
     private fun addTaxon(taxon: ITaxon, isExpanded: Boolean = false) {
-        _taxonDictionary[taxon.getName()] = taxon
+        taxonDictionary[taxon.getName()] = taxon
         addTaxa(taxon.getChildrenTaxa())
     }
 
     private fun addTaxa(taxa: List<ITaxon>) {
         taxa.forEach {
-            _taxonDictionary[it.getName()] = ExpandableTaxon(it)
+            taxonDictionary[it.getName()] = ExpandableTaxon(it)
             addTaxa(it.getChildrenTaxa())
         }
     }
 
     override fun markTaxonAsExpanded(taxon: ITaxon): Boolean {
         val taxonName = taxon.getName()
-        if (taxonName !in _taxonDictionary.keys) {
+        if (taxonName !in taxonDictionary.keys) {
             addTaxon(taxon, true)
         }
         else {
@@ -97,7 +97,7 @@ class TaxonCollection(
 
     override fun markAsExpanded(vararg names: String): List<Boolean> {
         return names.map { name ->
-            val taxon = _taxonDictionary[name]
+            val taxon = taxonDictionary[name]
             if (taxon != null) {
                 markTaxonAsExpanded(taxon)
             }
@@ -107,8 +107,8 @@ class TaxonCollection(
         }
     }
 
-    override fun getTaxonByName(name: String): ITaxon? = _taxonDictionary[name]
-    override fun getRoots(): List<ITaxon> = roots.mapNotNull { _taxonDictionary[it] }
+    override fun getTaxonByName(name: String): ITaxon? = taxonDictionary[name]
+    override fun getRoots(): List<ITaxon> = roots.mapNotNull { taxonDictionary[it] }
     override fun isEmpty(): Boolean = roots.isEmpty()
 
     /**
@@ -116,12 +116,12 @@ class TaxonCollection(
      * taxa as expanded
      * */
     fun copy(vararg taxonStates: Pair<String, Boolean>): TaxonCollection {
-        val expandedMap = expanded.toMutableMap()
+        val newExpandedMap = expanded.toMutableMap()
         taxonStates.forEach {
-            expandedMap[it.first] = it.second
+            newExpandedMap[it.first] = it.second
         }
 
-        return TaxonCollection(_taxonDictionary, roots)
+        return TaxonCollection(taxonDictionary, roots, newExpandedMap)
     }
 
     override fun getExpansionMapping(): Map<String, Boolean> = expanded
@@ -129,4 +129,14 @@ class TaxonCollection(
     override fun isExpanded(taxon: ITaxon): Boolean {
         return expanded[taxon.getName()] ?: false
     }
+
+    override fun closeAllTaxa(): TaxonCollection {
+        return TaxonCollection(
+            taxonDictionary = taxonDictionary,
+            roots = roots,
+            expanded = mutableMapOf()
+        )
+    }
+
+    override fun getNumExpandedTaxa(): Int = expanded.count { it.value }
 }

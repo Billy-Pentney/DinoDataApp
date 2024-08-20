@@ -1,19 +1,24 @@
 package com.bp.dinodata.presentation.taxonomy_screen
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -21,11 +26,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -38,6 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +77,7 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.list_genus.GenusListItem
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
+import com.bp.dinodata.presentation.utils.ZoomableBox
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
@@ -129,9 +139,7 @@ fun TaxonCard(
         isTaxonExpanded(taxon)
     ) }
 
-    LaunchedEffect(null) {
-        isExpanded = isTaxonExpanded(taxon)
-    }
+    isExpanded = isTaxonExpanded(taxon)
 
     // Load the text to indicate the number of children
     val childText = pluralStringResource(
@@ -239,7 +247,8 @@ fun TaxonCard(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .heightIn(min = cardHeight)
-                .widthIn(min = minCardWidth),
+                .widthIn(min = minCardWidth)
+                .width(IntrinsicSize.Min),
             onClick = toggleCardState
         ) {
 //
@@ -335,7 +344,6 @@ fun TaxonCard(
                     verticalArrangement = Arrangement.spacedBy(paddingBetweenChildren),
                     modifier = Modifier
                         .padding(top = paddingBeforeFirstChild)
-                        .padding(end = 2.dp)
                 ) {
                     childrenTaxa.forEachIndexed { i, subtaxon ->
                         Row {
@@ -349,7 +357,8 @@ fun TaxonCard(
                                     subtaxon,
                                     height = cardHeight,
                                     showImage = false,
-                                    onClick = { gotoGenus(subtaxon) }
+                                    onClick = { gotoGenus(subtaxon) },
+                                    modifier = Modifier.width(270.dp)
                                 )
                             } else {
                                 TaxonCard(
@@ -385,7 +394,8 @@ fun TaxonomyScreenContent(
     showDebugBranchLines: Boolean = false,
     openNavDrawer: () -> Unit,
     gotoGenus: (IGenus) -> Unit,
-    updateExpansion: (ITaxon, Boolean) -> Unit
+    updateExpansion: (ITaxon, Boolean) -> Unit,
+    closeAllTaxa: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -396,11 +406,11 @@ fun TaxonomyScreenContent(
                         Icon(Icons.AutoMirrored.Filled.List, "open nav drawer")
                     }
                 },
-//                actions = {
-//                    IconButton() {
-//                        Icon(Icons.Filled.C)
-//                    }
-//                }
+                actions = {
+                    IconButton(onClick = closeAllTaxa) {
+                        Icon(Icons.Filled.CloseFullscreen, "close all taxa")
+                    }
+                }
             )
         },
         contentWindowInsets = WindowInsets(top=80.dp)
@@ -421,39 +431,35 @@ fun TaxonomyScreenContent(
                 // Callback to check if the taxon is currently expanded
                 val isTaxonExpanded =  { taxon: ITaxon -> collection.isExpanded(taxon) }
 
-                Row (
+                Box (
                     modifier = Modifier
-                        .scrollable(
-                            rememberScrollableState {
-                                val consumed = it / 2
-                                it - consumed
-                            },
-                            orientation = Orientation.Horizontal
-                        )
                         .fillMaxHeight()
                         .padding(pad)
+                        .horizontalScroll(rememberScrollState())
                 ) {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(
                             top=16.dp,
                             bottom=16.dp,
-                            start=16.dp
-                        )
+                        ),
+                        modifier = Modifier.width(700.dp)
                     ) {
                         items(collection.getRoots()) {
-
                             TaxonCard(
                                 taxon = it,
                                 showDebugBranchLines = showDebugBranchLines,
                                 gotoGenus = gotoGenus,
                                 updateExpansion = updateExpansion,
-                                isTaxonExpanded = isTaxonExpanded
+                                isTaxonExpanded = isTaxonExpanded,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
                             )
                             HorizontalDivider(
                                 Modifier
                                     .height(2.dp)
-                                    .padding(horizontal = 16.dp, vertical = 24.dp)
+                                    .padding(vertical = 24.dp)
                             )
                             Spacer(Modifier.height(25.dp))
                         }
@@ -479,6 +485,17 @@ fun TaxonomyScreen(
     gotoGenusByName: (String) -> Unit
 ) {
     val taxaState by remember { viewModel.getTaxonomyList() }
+
+    val toastFlow = remember { viewModel.getToastFlow() }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(null) {
+        toastFlow.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     TaxonomyScreenContent(
         taxaState = taxaState,
         openNavDrawer = openNavDrawer,
@@ -489,9 +506,12 @@ fun TaxonomyScreen(
         },
         updateExpansion = { taxon, expanded ->
             viewModel.onEvent(
-                TaxonomyScreenUiEvent.UpdateTaxonExpansion(
-                    taxon, expanded
-                )
+                TaxonomyScreenUiEvent.UpdateTaxonExpansion(taxon, expanded)
+            )
+        },
+        closeAllTaxa = {
+            viewModel.onEvent(
+                TaxonomyScreenUiEvent.CloseAllExpandedTaxa
             )
         }
 //        showDebugBranchLines = true
@@ -534,7 +554,9 @@ fun PreviewTaxonomyScreen() {
         .addGenera(listOf(acro, carcharo, veloci))
         .build()
     
-    taxaCollection.markAsExpanded("Dinosauria", "Theropoda", "Plesiosauria")
+    taxaCollection.markAsExpanded(
+        "Dinosauria", "Theropoda", "Plesiosauria", "Carcharodontosauridae"
+    )
 
     DinoDataTheme (darkTheme = true) {
         TaxonomyScreenContent(
@@ -542,7 +564,8 @@ fun PreviewTaxonomyScreen() {
             showDebugBranchLines = false,
             openNavDrawer = {},
             gotoGenus = {},
-            updateExpansion = { _,_ -> }
+            updateExpansion = { _,_ -> },
+            closeAllTaxa = {}
         )
     }
 }
