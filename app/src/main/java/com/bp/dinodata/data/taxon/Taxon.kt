@@ -42,11 +42,15 @@ data class Taxon(
         fun sortChildrenTaxa(children: List<ITaxon>): List<ITaxon> {
             return children.sortedWith{ taxonA: ITaxon, taxonB: ITaxon ->
                 // Place the clades, families... before the genera
-                if (taxonA !is IGenus || taxonB is IGenus) {
+                if (taxonA !is IGenus) {
                     -1
                 }
-                else {
+                else if (taxonB !is IGenus) {
                     1
+                }
+                else {
+                    // Sort alphabetically
+                    taxonA.getName().compareTo(taxonB.getName())
                 }
             }
         }

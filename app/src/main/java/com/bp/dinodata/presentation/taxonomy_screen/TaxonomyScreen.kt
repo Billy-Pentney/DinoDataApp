@@ -4,9 +4,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +13,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,12 +60,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.IGenus
-import com.bp.dinodata.data.taxon.IDisplayableTaxon
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.taxon.ITaxonCollection
 import com.bp.dinodata.data.taxon.TaxonCollectionBuilder
@@ -77,7 +73,6 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.list_genus.GenusListItem
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
-import com.bp.dinodata.presentation.utils.ZoomableBox
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
@@ -124,6 +119,7 @@ fun TaxonCard(
     branchAlpha: Float = 0.35f,
     showDebugBranchLines: Boolean = false,
     gotoGenus: (IGenus) -> Unit = {},
+    onSizeChanged: (IntSize) -> Unit = {}
 ) {
 
     if (depth > 10) {
@@ -155,15 +151,21 @@ fun TaxonCard(
     val paddingBeforeFirstChild = paddingBetweenChildren
     val paddingAfterChildren = 20.dp
 
+    var cardSize by remember { mutableStateOf(IntSize.Zero) }
+
     val expandCard = {
         isExpanded = true
         updateExpansion(taxon, true)
+//        onSizeChanged(cardSize)
     }
     val closeCard = {
         isExpanded = false
         updateExpansion(taxon, false)
+//        onSizeChanged(cardSize)
     }
     val toggleCardState = {
+        // When the card changes state, we inform its parent of the new size
+        onSizeChanged(cardSize)
         if (isExpanded) {
             closeCard()
         }
@@ -172,16 +174,24 @@ fun TaxonCard(
         }
     }
 
+
     val defaultCardHeightPx = convertDpToPx(cardHeight)
 
     // Store the height of each child card
-    val childHeightsPx by remember { mutableStateOf(
-        Array(numChildren) { defaultCardHeightPx }
-    ) }
+    val childHeightsPx by remember { mutableStateOf(Array(numChildren) { defaultCardHeightPx }) }
 
     val density = LocalDensity.current
-    
-    var totalChildrenHeight by remember { mutableStateOf(0.dp) }
+
+    val calculateBranchHeight = {
+        val lastChildTrimmed = childHeightsPx.lastOrNull()?.plus(1)?.div(2) ?: 0f
+        val totalChildrenHeightPx = childHeightsPx.dropLast(1).sum() + lastChildTrimmed
+        val totalChildrenDp = with(density) { totalChildrenHeightPx.toDp() }
+        paddingBeforeFirstChild +
+                totalChildrenDp +
+                paddingBetweenChildren * (numChildren-1)
+    }
+
+    var totalChildrenHeight by remember { mutableStateOf(calculateBranchHeight()) }
 
     // if debugging, the color given to the divider before the children
     val preChildrenPaddingColor =
@@ -194,32 +204,25 @@ fun TaxonCard(
         else Color.White
 
 
-    val recalculateBranchHeight = {
-        // The last child branch finishes at halfway through the card
-        val lastChildTrimmed = childHeightsPx
-            .lastOrNull()?.plus(1)?.div(2) ?: 0f
-
-        val totalChildrenPx = childHeightsPx.dropLast(1).sum() + lastChildTrimmed
-        val totalChildrenDp = with(density) { totalChildrenPx.toDp() }
-
-        totalChildrenHeight =
-            paddingBeforeFirstChild +
-            totalChildrenDp +
-            paddingBetweenChildren * (numChildren-1)
+    LaunchedEffect(null) {
+        totalChildrenHeight = calculateBranchHeight()
     }
 
-    LaunchedEffect(null) {
-        recalculateBranchHeight()
+    SideEffect {
+        onSizeChanged(cardSize)
     }
 
     val updateChildHeight = { childIndex: Int, newHeightPx: Float  ->
         if (childIndex in 0..numChildren-2) {
+            onSizeChanged(cardSize)
             val oldHeightPx = childHeightsPx[childIndex]
             childHeightsPx[childIndex] = newHeightPx
-            val heightDiffDp = with(density) {
-                (newHeightPx - oldHeightPx).toDp()
+            with(density) {
+                // Update the height by the difference in this child.
+                // Do separate calculations as dp can't be negative.
+                totalChildrenHeight -= oldHeightPx.toDp()
+                totalChildrenHeight += newHeightPx.toDp()
             }
-            totalChildrenHeight += heightDiffDp
         }
     }
 
@@ -232,7 +235,7 @@ fun TaxonCard(
 
     val branchColor = MaterialTheme.colorScheme.onBackground
 
-    Column (modifier = modifier) {
+    Column (modifier = modifier.onSizeChanged { cardSize = it }) {
         if (depth == 0) {
             Text(
                 stringResource(R.string.label_taxon_root),
@@ -251,10 +254,6 @@ fun TaxonCard(
                 .width(IntrinsicSize.Min),
             onClick = toggleCardState
         ) {
-//
-//        Card(
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -304,8 +303,6 @@ fun TaxonCard(
             }
         }
 
-        Log.d("TaxonCard", "Recomposed for ${taxon.getName()}")
-
         AnimatedVisibility(visible = isExpanded) {
             Row (modifier = Modifier.padding(start = 8.dp)) {
                 Column (modifier = Modifier.alpha(branchAlpha)) {
@@ -342,8 +339,7 @@ fun TaxonCard(
 
                 Column(
                     verticalArrangement = Arrangement.spacedBy(paddingBetweenChildren),
-                    modifier = Modifier
-                        .padding(top = paddingBeforeFirstChild)
+                    modifier = Modifier.padding(top = paddingBeforeFirstChild)
                 ) {
                     childrenTaxa.forEachIndexed { i, subtaxon ->
                         Row {
@@ -368,13 +364,13 @@ fun TaxonCard(
                                     branchAlpha = branchAlpha,
                                     depth = depth+1,
                                     showDebugBranchLines = showDebugBranchLines,
-                                    modifier = Modifier.onSizeChanged {
-                                        Log.d("TaxonCard", "Update child $i height")
-                                        updateChildHeight(i, it.height.toFloat())
-                                    },
                                     gotoGenus = gotoGenus,
                                     updateExpansion = updateExpansion,
-                                    isTaxonExpanded = isTaxonExpanded
+                                    isTaxonExpanded = isTaxonExpanded,
+                                    onSizeChanged = {
+                                        Log.d("TaxonCard", "Update child \'${subtaxon.getName()}\' height")
+                                        updateChildHeight(i, it.height.toFloat())
+                                    }
                                 )
                             }
                         }
@@ -513,8 +509,8 @@ fun TaxonomyScreen(
             viewModel.onEvent(
                 TaxonomyScreenUiEvent.CloseAllExpandedTaxa
             )
-        }
-//        showDebugBranchLines = true
+        },
+        showDebugBranchLines = false
     )
 }
 
