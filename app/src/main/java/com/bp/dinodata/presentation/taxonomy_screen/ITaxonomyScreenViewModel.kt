@@ -9,5 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 
 interface ITaxonomyScreenViewModel {
-    fun getTaxonomyList(): State<DataState<ITaxonCollection>>
+    fun getTaxonomyList(): State<DataState<out ITaxonCollection>>
+
+    // Handle Ui Events
+    fun onEvent(event: TaxonomyScreenUiEvent)
 }

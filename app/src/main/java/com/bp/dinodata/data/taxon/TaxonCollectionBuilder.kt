@@ -60,9 +60,9 @@ class TaxonCollectionBuilder(
         return this
     }
 
-    override fun build(): ITaxonCollection {
+    override fun build(): TaxonCollection {
         return TaxonCollection(
-            taxaRoots.sortedByDescending { it.getNumOfDescendants() },
+            taxaRoots.sortedByDescending { it.getNumOfDescendants() }.map { it.getName() },
             taxaMap
         )
     }

@@ -60,10 +60,9 @@ import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.IGenus
+import com.bp.dinodata.data.taxon.IDisplayableTaxon
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.taxon.ITaxonCollection
-import com.bp.dinodata.data.taxon.Taxon
-import com.bp.dinodata.data.taxon.TaxonCollection
 import com.bp.dinodata.data.taxon.TaxonCollectionBuilder
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.list_genus.GenusListItem
@@ -106,15 +105,15 @@ fun TaxonCard(
     taxon: ITaxon,
     modifier: Modifier = Modifier,
     depth: Int = 0,
-    initiallyExpanded: Boolean = (depth == 0),
+    isTaxonExpanded: (ITaxon) -> Boolean,
+    updateExpansion: (ITaxon, Boolean) -> Unit,
+//    initiallyExpanded: Boolean = (depth == 0),
     depthPadding: Dp = 20.dp,
     cardHeight: Dp = 54.dp,
     minCardWidth: Dp = 200.dp,
     branchAlpha: Float = 0.35f,
-    onExpand: () -> Unit = {},
-    onClose: () -> Unit = {},
     showDebugBranchLines: Boolean = false,
-    gotoGenus: (IGenus) -> Unit = {}
+    gotoGenus: (IGenus) -> Unit = {},
 ) {
 
     if (depth > 10) {
@@ -125,9 +124,14 @@ fun TaxonCard(
     val hasChildren = remember { taxon.hasChildrenTaxa() }
     val numChildren = remember { taxon.getNumChildren() }
     val childrenTaxa = remember { taxon.getChildrenTaxa() }
+
     var isExpanded: Boolean by rememberSaveable { mutableStateOf(
-        initiallyExpanded && hasChildren
+        isTaxonExpanded(taxon)
     ) }
+
+    LaunchedEffect(null) {
+        isExpanded = isTaxonExpanded(taxon)
+    }
 
     // Load the text to indicate the number of children
     val childText = pluralStringResource(
@@ -136,18 +140,20 @@ fun TaxonCard(
         numChildren
     )
 
-    val branchWidth = 8.dp
+    val childBranchIndent = 8.dp
     val branchThickness = 2.dp
-    val paddingBeforeFirstChild = 12.dp
+    
     val paddingBetweenChildren = 8.dp
+    val paddingBeforeFirstChild = paddingBetweenChildren
+    val paddingAfterChildren = 20.dp
 
     val expandCard = {
-        onExpand()
         isExpanded = true
+        updateExpansion(taxon, true)
     }
     val closeCard = {
-        onClose()
         isExpanded = false
+        updateExpansion(taxon, false)
     }
     val toggleCardState = {
         if (isExpanded) {
@@ -164,12 +170,6 @@ fun TaxonCard(
     val childHeightsPx by remember { mutableStateOf(
         Array(numChildren) { defaultCardHeightPx }
     ) }
-
-    LaunchedEffect(null) {
-        if (isExpanded) {
-            onExpand()
-        }
-    }
 
     val density = LocalDensity.current
     
@@ -215,19 +215,27 @@ fun TaxonCard(
         }
     }
 
-    Column (
-        modifier = modifier
-    ) {
+    val surfaceColor = if (isExpanded) {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    val branchColor = MaterialTheme.colorScheme.onBackground
+
+    Column (modifier = modifier) {
         if (depth == 0) {
             Text(
-                "root",
+                stringResource(R.string.label_taxon_root),
                 fontSize = 12.sp,
-                modifier = Modifier.alpha(0.5f),
-                fontStyle = FontStyle.Italic
+                modifier = Modifier.alpha(0.7f),
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
         Surface(
-            color = MaterialTheme.colorScheme.surface,
+            color = surfaceColor,
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .heightIn(min = cardHeight)
@@ -303,7 +311,7 @@ fun TaxonCard(
                             VerticalDivider(
                                 modifier = Modifier.height(heightDp),
                                 thickness = branchThickness,
-                                color = Color.White
+                                color = branchColor
                             )
                             if (i < numChildren-1) {
                                 VerticalDivider(
@@ -317,7 +325,7 @@ fun TaxonCard(
                     else {
                         VerticalDivider(
                             Modifier.height(totalChildrenHeight),
-                            color = Color.White,
+                            color = branchColor,
                             thickness = branchThickness
                         )
                     }
@@ -332,7 +340,7 @@ fun TaxonCard(
                     childrenTaxa.forEachIndexed { i, subtaxon ->
                         Row {
                             ChildBranchSymbol(
-                                branchWidth = branchWidth,
+                                branchWidth = childBranchIndent,
                                 thickness = branchThickness,
                                 alpha = branchAlpha
                             )
@@ -355,11 +363,14 @@ fun TaxonCard(
                                         Log.d("TaxonCard", "Update child $i height")
                                         updateChildHeight(i, it.height.toFloat())
                                     },
-                                    gotoGenus = gotoGenus
+                                    gotoGenus = gotoGenus,
+                                    updateExpansion = updateExpansion,
+                                    isTaxonExpanded = isTaxonExpanded
                                 )
                             }
                         }
                     }
+                    Spacer(Modifier.height(paddingAfterChildren))
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -370,10 +381,11 @@ fun TaxonCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaxonomyScreenContent(
-    taxaState: DataState<ITaxonCollection>,
+    taxaState: DataState<out ITaxonCollection>,
     showDebugBranchLines: Boolean = false,
     openNavDrawer: () -> Unit,
-    gotoGenus: (IGenus) -> Unit
+    gotoGenus: (IGenus) -> Unit,
+    updateExpansion: (ITaxon, Boolean) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -383,7 +395,12 @@ fun TaxonomyScreenContent(
                     IconButton(onClick = openNavDrawer) {
                         Icon(Icons.AutoMirrored.Filled.List, "open nav drawer")
                     }
-                }
+                },
+//                actions = {
+//                    IconButton() {
+//                        Icon(Icons.Filled.C)
+//                    }
+//                }
             )
         },
         contentWindowInsets = WindowInsets(top=80.dp)
@@ -400,6 +417,10 @@ fun TaxonomyScreenContent(
 
             is DataState.LoadInProgress -> LoadingItemsPlaceholder()
             is DataState.Success -> {
+                val collection = taxaState.data
+                // Callback to check if the taxon is currently expanded
+                val isTaxonExpanded =  { taxon: ITaxon -> collection.isExpanded(taxon) }
+
                 Row (
                     modifier = Modifier
                         .scrollable(
@@ -420,13 +441,14 @@ fun TaxonomyScreenContent(
                             start=16.dp
                         )
                     ) {
-                        items(taxaState.data.getRoots()) {
+                        items(collection.getRoots()) {
+
                             TaxonCard(
                                 taxon = it,
-                                depth = 0,
-//                                minCardWidth = 1000.dp,
                                 showDebugBranchLines = showDebugBranchLines,
-                                gotoGenus = gotoGenus
+                                gotoGenus = gotoGenus,
+                                updateExpansion = updateExpansion,
+                                isTaxonExpanded = isTaxonExpanded
                             )
                             HorizontalDivider(
                                 Modifier
@@ -464,6 +486,13 @@ fun TaxonomyScreen(
             val genusName = genus.getName()
             Log.d("TaxonomyScreen", "Attempt to navigate to genus $genusName")
             gotoGenusByName(genusName)
+        },
+        updateExpansion = { taxon, expanded ->
+            viewModel.onEvent(
+                TaxonomyScreenUiEvent.UpdateTaxonExpansion(
+                    taxon, expanded
+                )
+            )
         }
 //        showDebugBranchLines = true
     )
@@ -504,13 +533,16 @@ fun PreviewTaxonomyScreen() {
     val taxaCollection = TaxonCollectionBuilder(taxaParents)
         .addGenera(listOf(acro, carcharo, veloci))
         .build()
+    
+    taxaCollection.markAsExpanded("Dinosauria", "Theropoda", "Plesiosauria")
 
     DinoDataTheme (darkTheme = true) {
         TaxonomyScreenContent(
             DataState.Success(taxaCollection),
             showDebugBranchLines = false,
             openNavDrawer = {},
-            gotoGenus = {}
+            gotoGenus = {},
+            updateExpansion = { _,_ -> }
         )
     }
 }

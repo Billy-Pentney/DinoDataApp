@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.taxon.ITaxonCollection
+import com.bp.dinodata.data.taxon.TaxonCollection
 import com.bp.dinodata.presentation.DataState
+import com.bp.dinodata.presentation.map
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +25,7 @@ class TaxonomyScreenViewModel @Inject constructor(
     @set:Inject var genusUseCases: GenusUseCases
 ): ViewModel(), ITaxonomyScreenViewModel {
 
-    private val taxonomyFlow: MutableState<DataState<ITaxonCollection>> = mutableStateOf(DataState.Idle())
+    private val taxonomyFlow: MutableState<DataState<out TaxonCollection>> = mutableStateOf(DataState.Idle())
 
     init {
         viewModelScope.launch {
@@ -34,7 +36,18 @@ class TaxonomyScreenViewModel @Inject constructor(
         }
     }
 
-    override fun getTaxonomyList(): State<DataState<ITaxonCollection>> {
-        return taxonomyFlow
+    override fun onEvent(event: TaxonomyScreenUiEvent) {
+        when (event) {
+            is TaxonomyScreenUiEvent.UpdateTaxonExpansion -> {
+                // Set whether this taxon is expanded
+                taxonomyFlow.value = taxonomyFlow.value.map {
+                    it.copy(
+                        event.taxon.getName() to event.expanded
+                    )
+                }
+            }
+        }
     }
+
+    override fun getTaxonomyList(): State<DataState<out ITaxonCollection>> = taxonomyFlow
 }

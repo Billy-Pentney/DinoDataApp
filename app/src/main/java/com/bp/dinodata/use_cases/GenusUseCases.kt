@@ -5,6 +5,7 @@ import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.taxon.ITaxonCollection
+import com.bp.dinodata.data.taxon.TaxonCollection
 import com.bp.dinodata.data.taxon.TaxonCollectionBuilder
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.repo.IGenusRepository
@@ -55,7 +56,7 @@ class GenusUseCases(
     }
 
     /** Build the taxonomy collection from the parent mapping and the genera */
-    fun getTaxonomyList(): Flow<DataState<ITaxonCollection>> {
+    fun getTaxonomyList(): Flow<DataState<TaxonCollection>> {
         val taxonomyMap = taxonRepository.getTaxonToParentMapFlow()
         val generaList = genusRepository.getAllGeneraFlow()
 
