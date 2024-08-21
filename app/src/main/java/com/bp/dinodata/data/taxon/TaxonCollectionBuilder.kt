@@ -7,9 +7,10 @@ class TaxonCollectionBuilder(
     childToParentMap: Map<String, String> = emptyMap()
 ): IBuilder<ITaxonCollection> {
 
-    private val taxaMap: MutableMap<String, IMutableTaxon> = mutableMapOf()
+    private val taxaMap: MutableMap<String, ITaxon> = mutableMapOf()
     private var taxaRoots: List<ITaxon> = emptyList()
     private var taxaChildren: MutableSet<String> = mutableSetOf()
+    private var parentMap: Map<String, String> = mutableMapOf()
 
     init {
         if (childToParentMap.isNotEmpty()) {
@@ -20,22 +21,36 @@ class TaxonCollectionBuilder(
     fun buildTaxaFromParentMapping(parents: Map<String, String>): TaxonCollectionBuilder {
         // Construct taxa to represent the tree
         parents.forEach { (childName, parentName) ->
-            if (parentName !in taxaMap.keys) {
-                taxaMap[parentName] = MutableTaxon(parentName)
-            }
-            if (childName !in taxaMap.keys) {
-                taxaMap[childName] = MutableTaxon(childName)
+            val lowerChildName = childName.lowercase()
+            val lowerParentName = parentName.lowercase()
+
+            if (lowerParentName == "saurischia") {
+                print("here!")
             }
 
-            taxaMap[childName]?.let {
-                taxaMap[parentName]?.addChild(it)
+            if (lowerParentName !in taxaMap.keys) {
+                taxaMap[lowerParentName] = MutableTaxon(lowerParentName)
+            }
+            if (lowerChildName !in taxaMap.keys) {
+                taxaMap[lowerChildName] = MutableTaxon(lowerChildName, parentName = lowerParentName)
+            }
+
+            val child = taxaMap[lowerChildName]
+            val parent = taxaMap[lowerParentName]
+
+            if (child is IMutableTaxon) {
+                child.setParent(lowerParentName)
+            }
+            if (parent is IMutableTaxon && child != null) {
+                parent.addChild(child)
             }
         }
-        taxaChildren.addAll(parents.keys.toList())
+        taxaChildren.addAll(parents.keys.map { it.lowercase() })
+        parentMap = parentMap + parents.mapKeys { it.key.lowercase() }
 
         // Get the names of taxa which do not have a parent
-        val taxaNamesRoots = taxaMap.keys.filter { it !in taxaChildren }
-        taxaRoots = taxaMap.filter { it.key in taxaNamesRoots }.map { it.value.toTaxon() }
+        val taxaNamesRoots = parentMap.values.map { it.lowercase() }.minus(taxaChildren)
+        taxaRoots = taxaMap.filter { it.key in taxaNamesRoots }.map { it.value }
 
         return this
     }
@@ -45,11 +60,22 @@ class TaxonCollectionBuilder(
         generaList.forEach { genus ->
             val lineage = genus.getListOfTaxonomy()
             lineage.lastOrNull()?.let { lastTaxon ->
-                if (lastTaxon !in taxaMap.keys) {
-                    taxaMap[lastTaxon] = MutableTaxon(lastTaxon)
+                val lastTaxonLower = lastTaxon.lowercase()
+                val parent: ITaxon?
+
+                if (lastTaxonLower !in taxaMap.keys) {
+                    parent = MutableTaxon(lastTaxonLower)
+                    taxaMap[lastTaxonLower] = parent
                 }
-                taxaMap[lastTaxon]?.addChild(genus)
+                else {
+                    parent = taxaMap[lastTaxonLower]
+                }
+
+                if (parent is IMutableTaxon) {
+                    parent.addChild(genus)
+                }
             }
+            taxaMap[genus.getName().lowercase()] = genus
         }
         return this
     }
@@ -62,8 +88,8 @@ class TaxonCollectionBuilder(
 
     override fun build(): TaxonCollection {
         return TaxonCollection(
-            taxaRoots.sortedByDescending { it.getNumOfDescendants() }.map { it.getName() },
-            taxaMap
+            taxaMap,
+            taxaRoots.sortedByDescending { it.getNumOfDescendants() }.map { it.getName().lowercase() }
         )
     }
 }

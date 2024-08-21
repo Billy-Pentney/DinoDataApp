@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -103,7 +102,7 @@ fun SpeciesListItem(
 @Preview(widthDp=250)
 @Composable
 fun PreviewSpeciesListItem() {
-    val species = SpeciesBuilder("atokensis")
+    val species = SpeciesBuilder("atokensis", genusName = "Acrocanthosaurus")
         .setTypeSpecies(true)
         .setDiscoverer("Marsh")
         .setYearOfDiscovery("1891")

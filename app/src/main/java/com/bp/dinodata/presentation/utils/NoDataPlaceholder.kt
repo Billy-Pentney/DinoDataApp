@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.dp
 import com.bp.dinodata.R
 
 @Composable
-fun NoDataPlaceholder() {
+fun NoDataPlaceholder(
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .alpha(0.5f),
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -4,7 +4,16 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +22,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -24,19 +32,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloseFullscreen
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -45,6 +65,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,8 +77,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -71,20 +95,24 @@ import com.bp.dinodata.data.taxon.ITaxonCollection
 import com.bp.dinodata.data.taxon.TaxonCollectionBuilder
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.list_genus.GenusListItem
+import com.bp.dinodata.presentation.list_genus.TextFieldState
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
+import com.bp.dinodata.theme.MyGrey600
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 @Composable
 fun ChildBranchSymbol(
+    modifier: Modifier = Modifier,
     thickness: Dp = 4.dp,
     height: Dp = 50.dp,
     branchWidth: Dp = 4.dp,
     color: Color = MaterialTheme.colorScheme.onBackground,
-    alpha: Float = 1f
+    alpha: Float = 1f,
 ) {
     HorizontalDivider(
-        modifier = Modifier
+        modifier = modifier
             .width(branchWidth)
             .padding(top = height / 2)
             .alpha(alpha),
@@ -92,6 +120,12 @@ fun ChildBranchSymbol(
         color = color
     )
 }
+
+
+data class ChildExpandedEvent(
+    val childIndex: Int,
+    val newSize: IntSize
+)
 
 
 @Composable
@@ -104,15 +138,17 @@ fun convertDpToPx(dp: Dp): Float {
     return with (LocalDensity.current) { dp.toPx() }
 }
 
+const val MAX_TAXONOMY_DEPTH = 20
+
 
 @Composable
 fun TaxonCard(
     taxon: ITaxon,
+    expandedTaxaNames: Set<String>,
+    highlightedTaxaNames: Set<String>,
     modifier: Modifier = Modifier,
     depth: Int = 0,
-    isTaxonExpanded: (ITaxon) -> Boolean,
     updateExpansion: (ITaxon, Boolean) -> Unit,
-//    initiallyExpanded: Boolean = (depth == 0),
     depthPadding: Dp = 20.dp,
     cardHeight: Dp = 54.dp,
     minCardWidth: Dp = 200.dp,
@@ -122,20 +158,26 @@ fun TaxonCard(
     onSizeChanged: (IntSize) -> Unit = {}
 ) {
 
-    if (depth > 10) {
-        Log.e("TaxonCard", "Depth limit reached with taxon ${taxon.getName()}")
-        return
-    }
-
     val hasChildren = remember { taxon.hasChildrenTaxa() }
     val numChildren = remember { taxon.getNumChildren() }
     val childrenTaxa = remember { taxon.getChildrenTaxa() }
 
+    var canExpand by remember { mutableStateOf(hasChildren) }
+
+    if (depth > MAX_TAXONOMY_DEPTH) {
+        Log.e("TaxonCard", "Depth limit reached with taxon ${taxon.getName()}")
+        canExpand = false
+    }
+
     var isExpanded: Boolean by rememberSaveable { mutableStateOf(
-        isTaxonExpanded(taxon)
+        taxon.getName().lowercase() in expandedTaxaNames
+    )}
+    var isHighlighted: Boolean by rememberSaveable { mutableStateOf(
+        taxon.getName().lowercase() in highlightedTaxaNames
     ) }
 
-    isExpanded = isTaxonExpanded(taxon)
+    isExpanded = taxon.getName().lowercase() in expandedTaxaNames
+    isHighlighted = taxon.getName().lowercase() in highlightedTaxaNames
 
     // Load the text to indicate the number of children
     val childText = pluralStringResource(
@@ -151,34 +193,12 @@ fun TaxonCard(
     val paddingBeforeFirstChild = paddingBetweenChildren
     val paddingAfterChildren = 20.dp
 
-    var cardSize by remember { mutableStateOf(IntSize.Zero) }
-
-    val expandCard = {
-        isExpanded = true
-        updateExpansion(taxon, true)
-//        onSizeChanged(cardSize)
-    }
-    val closeCard = {
-        isExpanded = false
-        updateExpansion(taxon, false)
-//        onSizeChanged(cardSize)
-    }
-    val toggleCardState = {
-        // When the card changes state, we inform its parent of the new size
-        onSizeChanged(cardSize)
-        if (isExpanded) {
-            closeCard()
-        }
-        else {
-            expandCard()
-        }
-    }
-
-
     val defaultCardHeightPx = convertDpToPx(cardHeight)
 
+    var cardSize by remember { mutableStateOf(IntSize(0, defaultCardHeightPx.toInt())) }
+
     // Store the height of each child card
-    val childHeightsPx by remember { mutableStateOf(Array(numChildren) { defaultCardHeightPx }) }
+    val childHeightsPx by rememberSaveable { mutableStateOf(Array(numChildren) { defaultCardHeightPx }) }
 
     val density = LocalDensity.current
 
@@ -187,11 +207,31 @@ fun TaxonCard(
         val totalChildrenHeightPx = childHeightsPx.dropLast(1).sum() + lastChildTrimmed
         val totalChildrenDp = with(density) { totalChildrenHeightPx.toDp() }
         paddingBeforeFirstChild +
-                totalChildrenDp +
-                paddingBetweenChildren * (numChildren-1)
+            totalChildrenDp +
+            paddingBetweenChildren * (numChildren-1)
+        
+        // Calculate by subtracting the final child's height
+//        val totalHeight = with(density) {
+//            cardSize.height.toDp() }
+//        val finalChildHeightDp = with(density) {
+//            childHeightsPx.lastOrNull()?.toDp() ?: 0.dp
+//        }
+//        totalHeight - finalChildHeightDp - paddingAfterChildren + (cardHeight+1.dp)/2
     }
 
-    var totalChildrenHeight by remember { mutableStateOf(calculateBranchHeight()) }
+    val childUpdatedFlow: MutableSharedFlow<Int> = remember { MutableSharedFlow() }
+    val coroutineScope = rememberCoroutineScope()
+
+    var totalChildrenHeight by remember { mutableStateOf(0.dp) }
+
+    val setCardExpansion = { newState: Boolean ->
+        updateExpansion(taxon, newState)
+        onSizeChanged(cardSize)
+    }
+    val toggleCardState = {
+        // When the card changes state, we inform its parent of the new size
+        setCardExpansion(!isExpanded)
+    }
 
     // if debugging, the color given to the divider before the children
     val preChildrenPaddingColor =
@@ -203,28 +243,14 @@ fun TaxonCard(
         if (showDebugBranchLines) Color.Red
         else Color.White
 
-
-    LaunchedEffect(null) {
+    val updateChildHeight = { childIndex: Int, newHeightPx: Float  ->
+        if (childIndex in 0..<numChildren-1) {
+            childHeightsPx[childIndex] = newHeightPx
+        }
         totalChildrenHeight = calculateBranchHeight()
     }
 
-    SideEffect {
-        onSizeChanged(cardSize)
-    }
-
-    val updateChildHeight = { childIndex: Int, newHeightPx: Float  ->
-        if (childIndex in 0..numChildren-2) {
-            onSizeChanged(cardSize)
-            val oldHeightPx = childHeightsPx[childIndex]
-            childHeightsPx[childIndex] = newHeightPx
-            with(density) {
-                // Update the height by the difference in this child.
-                // Do separate calculations as dp can't be negative.
-                totalChildrenHeight -= oldHeightPx.toDp()
-                totalChildrenHeight += newHeightPx.toDp()
-            }
-        }
-    }
+    totalChildrenHeight = calculateBranchHeight()
 
     val surfaceColor = if (isExpanded) {
         MaterialTheme.colorScheme.surfaceVariant
@@ -233,9 +259,25 @@ fun TaxonCard(
         MaterialTheme.colorScheme.surface
     }
 
+    val borderStroke =
+        if (isHighlighted)
+            BorderStroke(2.dp, Color.White)
+        else
+            null
+
     val branchColor = MaterialTheme.colorScheme.onBackground
 
-    Column (modifier = modifier.onSizeChanged { cardSize = it }) {
+    Column (
+        modifier = modifier
+            .onSizeChanged { cardSize = it }
+            .animateContentSize(
+                animationSpec = tween(durationMillis = 100),
+                finishedListener = { startSize, endSize ->
+                    totalChildrenHeight = calculateBranchHeight()
+                    onSizeChanged(endSize)
+                }
+            )
+    ) {
         if (depth == 0) {
             Text(
                 stringResource(R.string.label_taxon_root),
@@ -248,11 +290,12 @@ fun TaxonCard(
         Surface(
             color = surfaceColor,
             shape = RoundedCornerShape(8.dp),
+            border = borderStroke,
+            onClick = toggleCardState,
             modifier = Modifier
                 .heightIn(min = cardHeight)
                 .widthIn(min = minCardWidth)
-                .width(IntrinsicSize.Min),
-            onClick = toggleCardState
+                .width(IntrinsicSize.Min)
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -282,7 +325,7 @@ fun TaxonCard(
                     }
                 }
 
-                if (hasChildren) {
+                if (canExpand) {
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = toggleCardState) {
                         Crossfade(isExpanded, label="expand_card_crossfade") {
@@ -303,38 +346,54 @@ fun TaxonCard(
             }
         }
 
-        AnimatedVisibility(visible = isExpanded) {
+        AnimatedVisibility(
+            visible = isExpanded && canExpand,
+            enter = fadeIn(tween(delayMillis = 150))
+                    + expandVertically(tween(durationMillis = 250)) { 0 },
+            exit = fadeOut(tween(durationMillis = 350))
+                    + shrinkVertically(tween(delayMillis = 50, durationMillis = 300)) { 0 }
+        ) {
             Row (modifier = Modifier.padding(start = 8.dp)) {
-                Column (modifier = Modifier.alpha(branchAlpha)) {
-                    if (showDebugBranchLines) {
+                Column (
+                    modifier = Modifier.alpha(branchAlpha),
+                    verticalArrangement = Arrangement.Top
+                ) {
+//                    if (showDebugBranchLines) {
+//                        VerticalDivider(
+//                            Modifier.height(paddingBeforeFirstChild),
+//                            color = preChildrenPaddingColor,
+//                            thickness = branchThickness
+//                        )
+//                        childHeightsPx.forEachIndexed { i, height ->
+//                            val heightDp = convertPxToDp(px = height).let {
+//                                if (i == numChildren-1) {
+//                                    (it - 1.dp) / 2
+//                                }
+//                                else {
+//                                    it
+//                                }
+//                            }
+//                            VerticalDivider(
+//                                modifier = Modifier.height(heightDp),
+//                                thickness = branchThickness,
+//                                color = branchColor
+//                            )
+//                            if (i < numChildren-1) {
+//                                VerticalDivider(
+//                                    Modifier.height(paddingBetweenChildren),
+//                                    color = betweenChildrenPaddingColor,
+//                                    thickness = branchThickness
+//                                )
+//                            }
+//                        }
+//                    }
+//                    else {
                         VerticalDivider(
-                            Modifier.height(paddingBeforeFirstChild),
-                            color = preChildrenPaddingColor,
-                            thickness = branchThickness
-                        )
-                        childHeightsPx.forEachIndexed { i, height ->
-                            val heightDp = convertPxToDp(px = height)
-                            VerticalDivider(
-                                modifier = Modifier.height(heightDp),
-                                thickness = branchThickness,
-                                color = branchColor
-                            )
-                            if (i < numChildren-1) {
-                                VerticalDivider(
-                                    Modifier.height(paddingBetweenChildren),
-                                    color = betweenChildrenPaddingColor,
-                                    thickness = branchThickness
-                                )
-                            }
-                        }
-                    }
-                    else {
-                        VerticalDivider(
-                            Modifier.height(totalChildrenHeight),
+                            Modifier.animateContentSize().height(totalChildrenHeight),
                             color = branchColor,
                             thickness = branchThickness
                         )
-                    }
+                //                    }
                 }
 
                 Column(
@@ -346,15 +405,33 @@ fun TaxonCard(
                             ChildBranchSymbol(
                                 branchWidth = childBranchIndent,
                                 thickness = branchThickness,
-                                alpha = branchAlpha
+                                alpha = branchAlpha,
+                                modifier = Modifier.animateContentSize(
+                                    animationSpec = tween(delayMillis = 200)
+                                )
                             )
                             if (subtaxon is IGenus) {
+                                val isGenusHighlighted
+                                    = (subtaxon.getName().lowercase() in highlightedTaxaNames)
+
                                 GenusListItem(
                                     subtaxon,
                                     height = cardHeight,
                                     showImage = false,
                                     onClick = { gotoGenus(subtaxon) },
-                                    modifier = Modifier.width(270.dp)
+                                    modifier = Modifier
+                                        .width(310.dp)
+                                        .then(
+                                            if (isGenusHighlighted) {
+                                                Modifier.border(
+                                                    2.dp,
+                                                    Color.White,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                )
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
                                 )
                             } else {
                                 TaxonCard(
@@ -365,12 +442,15 @@ fun TaxonCard(
                                     depth = depth+1,
                                     showDebugBranchLines = showDebugBranchLines,
                                     gotoGenus = gotoGenus,
-                                    updateExpansion = updateExpansion,
-                                    isTaxonExpanded = isTaxonExpanded,
+                                    updateExpansion = { taxon, expanded ->
+                                        totalChildrenHeight = calculateBranchHeight()
+                                        updateExpansion(taxon, expanded)
+                                    },
                                     onSizeChanged = {
-                                        Log.d("TaxonCard", "Update child \'${subtaxon.getName()}\' height")
                                         updateChildHeight(i, it.height.toFloat())
-                                    }
+                                    },
+                                    expandedTaxaNames = expandedTaxaNames,
+                                    highlightedTaxaNames = highlightedTaxaNames
                                 )
                             }
                         }
@@ -381,18 +461,40 @@ fun TaxonCard(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
+
+//    SideEffect {
+//        totalChildrenHeight = calculateBranchHeight()
+//        onSizeChanged(cardSize)
+//    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaxonomyScreenContent(
+    uiState: TaxonomyScreenUiState,
     taxaState: DataState<out ITaxonCollection>,
     showDebugBranchLines: Boolean = false,
     openNavDrawer: () -> Unit,
     gotoGenus: (IGenus) -> Unit,
     updateExpansion: (ITaxon, Boolean) -> Unit,
-    closeAllTaxa: () -> Unit
+    closeAllTaxa: () -> Unit,
+    updateSearchVisibility: () -> Unit,
+    updateSearchBarContent: (String) -> Unit,
+    submitSearch: () -> Unit
 ) {
+    val searchBarVisible = uiState.isSearchBarVisible
+
+    val textFieldColors = TextFieldDefaults.colors(
+        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+        focusedContainerColor = MaterialTheme.colorScheme.background,
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+        cursorColor = MaterialTheme.colorScheme.onSurface,
+        focusedIndicatorColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface,
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -403,8 +505,18 @@ fun TaxonomyScreenContent(
                     }
                 },
                 actions = {
+                    IconButton(onClick = updateSearchVisibility) {
+                        Crossfade(searchBarVisible, label="search_bar_button_crossfade") {
+                            if (!it) {
+                                Icon(Icons.Filled.Search, "show search")
+                            }
+                            else {
+                                Icon(Icons.Filled.SearchOff, "hide search")
+                            }
+                        }
+                    }
                     IconButton(onClick = closeAllTaxa) {
-                        Icon(Icons.Filled.CloseFullscreen, "close all taxa")
+                        Icon(Icons.Filled.CloseFullscreen, "collapse all taxa")
                     }
                 }
             )
@@ -412,59 +524,83 @@ fun TaxonomyScreenContent(
         contentWindowInsets = WindowInsets(top=80.dp)
     ) {
         pad ->
-        when (taxaState) {
-            is DataState.Failed -> {
-                NoDataPlaceholder()
+
+        Column (
+            modifier = Modifier.padding(pad)
+        ) {
+            AnimatedVisibility(
+                visible = searchBarVisible,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                TaxonomyScreenSearchBar(
+                    text = uiState.searchBoxTextState.textContent,
+                    updateSearchBarContent = updateSearchBarContent,
+                    submitSearch = submitSearch
+                )
             }
 
-            is DataState.Idle -> {
-                Text("Idle", color = MaterialTheme.colorScheme.onBackground)
-            }
+            when (taxaState) {
+                is DataState.Failed -> {
+                    NoDataPlaceholder(Modifier)
+                }
 
-            is DataState.LoadInProgress -> LoadingItemsPlaceholder()
-            is DataState.Success -> {
-                val collection = taxaState.data
-                // Callback to check if the taxon is currently expanded
-                val isTaxonExpanded =  { taxon: ITaxon -> collection.isExpanded(taxon) }
+                is DataState.Idle -> {
+                    Text("Idle", color = MaterialTheme.colorScheme.onBackground)
+                }
 
-                Box (
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(pad)
-                        .horizontalScroll(rememberScrollState())
-                ) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(
-                            top=16.dp,
-                            bottom=16.dp,
-                        ),
-                        modifier = Modifier.width(700.dp)
+                is DataState.LoadInProgress -> LoadingItemsPlaceholder()
+                is DataState.Success -> {
+                    val collection = taxaState.data
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
                     ) {
-                        items(collection.getRoots()) {
-                            TaxonCard(
-                                taxon = it,
-                                showDebugBranchLines = showDebugBranchLines,
-                                gotoGenus = gotoGenus,
-                                updateExpansion = updateExpansion,
-                                isTaxonExpanded = isTaxonExpanded,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                            )
-                            HorizontalDivider(
-                                Modifier
-                                    .height(2.dp)
-                                    .padding(vertical = 24.dp)
-                            )
-                            Spacer(Modifier.height(25.dp))
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(
+                                top = 16.dp,
+                                bottom = 16.dp,
+                            ),
+                            modifier = Modifier
+                                .width(700.dp)
+                                .fillMaxWidth()
+                        ) {
+//                            item {
+//                                Text(
+//                                    collection.getRoots().size.toString(),
+//                                    color = MaterialTheme.colorScheme.onBackground
+//                                )
+//                            }
+                            items(collection.getRoots()) {
+                                TaxonCard(
+                                    taxon = it,
+                                    showDebugBranchLines = showDebugBranchLines,
+                                    gotoGenus = gotoGenus,
+                                    updateExpansion = updateExpansion,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                    expandedTaxaNames = collection.getAllExpandedNames(),
+                                    highlightedTaxaNames = collection.getAllHighlightedNames()
+                                )
+                                HorizontalDivider(
+                                    Modifier
+                                        .height(2.dp)
+                                        .padding(vertical = 24.dp)
+                                )
+                                Spacer(Modifier.height(25.dp))
+                            }
+                            item {
+                                Spacer(Modifier.height(50.dp))
+                            }
                         }
-                        item {
-                            Spacer(Modifier.height(50.dp))
+                        if (taxaState.data.isEmpty()) {
+                            NoDataPlaceholder(modifier=Modifier.fillMaxWidth())
                         }
-                    }
-                    if (taxaState.data.isEmpty()) {
-                        NoDataPlaceholder()
                     }
                 }
             }
@@ -472,6 +608,114 @@ fun TaxonomyScreenContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaxonomyScreenSearchBar(
+    text: String,
+    updateSearchBarContent: (String) -> Unit,
+    submitSearch: () -> Unit
+) {
+    val clearSearchQuery = {
+        updateSearchBarContent("")
+    }
+
+    val textStyle = TextStyle(
+        fontSize = 18.sp,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+
+    val textFieldColors = TextFieldDefaults.colors(
+        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+        focusedContainerColor = MaterialTheme.colorScheme.background,
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+        cursorColor = MaterialTheme.colorScheme.onSurface,
+        selectionColors = TextSelectionColors(
+            handleColor = MaterialTheme.colorScheme.onSurface,
+            backgroundColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        focusedIndicatorColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface,
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    SearchBar(
+        inputField = {
+            BasicTextField(
+                value = text,
+                onValueChange = updateSearchBarContent,
+                textStyle = textStyle,
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(onSearch = {
+                    submitSearch()
+                }),
+                modifier = Modifier.padding(8.dp),
+                decorationBox = { innerTextField ->
+                    TextFieldDefaults.DecorationBox(
+                        value = text,
+                        innerTextField = {
+                            innerTextField()
+                        },
+                        colors = textFieldColors,
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Search,
+                                "search",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .padding(start = 8.dp)
+                            )
+                        },
+                        trailingIcon = {
+                            if (text.isNotEmpty()) {
+                                IconButton(
+                                    onClick = { clearSearchQuery() },
+                                    modifier = Modifier.padding(end=8.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        "clear search text",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        },
+                        enabled = true,
+                        singleLine = true,
+                        visualTransformation = VisualTransformation.None,
+                        interactionSource = interactionSource,
+                        container = {
+                            Container(
+                                enabled = true,
+                                isError = false,
+                                colors = textFieldColors,
+                                shape = RoundedCornerShape(24.dp),
+                                interactionSource = interactionSource
+                            )
+                        }
+                    )
+                }
+            )
+        },
+        expanded = false,
+        onExpandedChange = {},
+        shape = SearchBarDefaults.inputFieldShape,
+        colors = SearchBarDefaults.colors(
+            containerColor = MyGrey600
+        ),
+        tonalElevation = SearchBarDefaults.TonalElevation,
+        shadowElevation = SearchBarDefaults.ShadowElevation,
+        windowInsets = SearchBarDefaults.windowInsets
+    ) {
+
+    }
+}
 
 
 @Composable
@@ -481,6 +725,7 @@ fun TaxonomyScreen(
     gotoGenusByName: (String) -> Unit
 ) {
     val taxaState by remember { viewModel.getTaxonomyList() }
+    val uiState by remember { viewModel.getUiState() }
 
     val toastFlow = remember { viewModel.getToastFlow() }
 
@@ -493,6 +738,7 @@ fun TaxonomyScreen(
     }
 
     TaxonomyScreenContent(
+        uiState = uiState,
         taxaState = taxaState,
         openNavDrawer = openNavDrawer,
         gotoGenus = { genus ->
@@ -510,7 +756,22 @@ fun TaxonomyScreen(
                 TaxonomyScreenUiEvent.CloseAllExpandedTaxa
             )
         },
-        showDebugBranchLines = false
+        showDebugBranchLines = false,
+        updateSearchVisibility = {
+            viewModel.onEvent(
+                TaxonomyScreenUiEvent.ToggleSearchBarVisibility
+            )
+        },
+        updateSearchBarContent = {
+            viewModel.onEvent(
+                TaxonomyScreenUiEvent.UpdateSearchBoxText(it)
+            )
+        },
+        submitSearch = {
+            viewModel.onEvent(
+                TaxonomyScreenUiEvent.SubmitSearch
+            )
+        }
     )
 }
 
@@ -553,15 +814,29 @@ fun PreviewTaxonomyScreen() {
     taxaCollection.markAsExpanded(
         "Dinosauria", "Theropoda", "Plesiosauria", "Carcharodontosauridae"
     )
+    taxaCollection.markAsHighlighted(
+        "Carcharo"
+    )
+
+    val uiState = TaxonomyScreenUiState(
+        isSearchBarVisible = true,
+        searchBoxTextState = TextFieldState(
+            textContent = "diplodocidae"
+        )
+    )
 
     DinoDataTheme (darkTheme = true) {
         TaxonomyScreenContent(
-            DataState.Success(taxaCollection),
+            uiState = uiState,
+            taxaState = DataState.Success(taxaCollection),
             showDebugBranchLines = false,
             openNavDrawer = {},
             gotoGenus = {},
             updateExpansion = { _,_ -> },
-            closeAllTaxa = {}
+            closeAllTaxa = {},
+            updateSearchVisibility = {},
+            updateSearchBarContent = {},
+            submitSearch = {}
         )
     }
 }

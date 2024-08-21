@@ -71,7 +71,7 @@ class DetailedGenus(
     override fun getPreferredImageIndex(): Int = _prefs.getPreferredImageIndex()
 
     override fun getChildrenTaxa(): List<ITaxon> = genus.getChildrenTaxa()
-    override fun containsText(searchText: String): Boolean {
-        return genus.containsText(searchText)
-    }
+    override fun containsText(searchText: String): Boolean = genus.containsText(searchText)
+
+    override fun getParentTaxonName(): String? = genus.getParentTaxonName()
 }

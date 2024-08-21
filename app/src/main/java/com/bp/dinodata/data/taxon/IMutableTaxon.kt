@@ -7,18 +7,20 @@ import com.bp.dinodata.data.genus.IGenus
 interface IMutableTaxon: ITaxon {
     fun addChild(child: ITaxon): Boolean
     fun toTaxon(): ITaxon
+    fun setParent(lowerParentName: String)
 }
 
 data class MutableTaxon(
     private val name: String,
-    private val initialChildren: List<ITaxon> = listOf()
+    private val initialChildren: List<ITaxon> = listOf(),
+    private var parentName: String? = null
 ): IMutableTaxon {
     private val childrenByName: MutableMap<String, ITaxon> = initialChildren.associateBy { it.getName() }.toMutableMap()
 
     override fun getChildrenTaxa(): List<ITaxon> = Taxon.sortChildrenTaxa(
         childrenByName.values.toList()
     )
-    override fun getName(): String = name
+    override fun getName(): String = name.replaceFirstChar { it.uppercase() }
     override fun addChild(child: ITaxon): Boolean {
         val childName = child.getName()
 
@@ -30,6 +32,16 @@ data class MutableTaxon(
     }
 
     override fun toTaxon(): ITaxon {
-        return Taxon(name, childrenByName.values.toList())
+        return Taxon(
+            name = name,
+            initialChildren = childrenByName.values.toList(),
+            parentTaxonName = parentName
+        )
     }
+
+    override fun setParent(lowerParentName: String) {
+        parentName = lowerParentName
+    }
+
+    override fun getParentTaxonName(): String? = parentName
 }

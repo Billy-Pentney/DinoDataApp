@@ -16,4 +16,5 @@ interface ITaxonomyScreenViewModel {
     fun onEvent(event: TaxonomyScreenUiEvent)
 
     fun getToastFlow(): MutableSharedFlow<String>
+    fun getUiState(): State<TaxonomyScreenUiState>
 }

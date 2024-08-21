@@ -1,5 +1,6 @@
 package com.bp.dinodata.data.taxon
 
+import androidx.compose.ui.text.capitalize
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IHasName
 
@@ -23,6 +24,8 @@ interface ITaxon: IHasName {
         // Add one to include each node in its count
         return 1 + getChildrenTaxa().sumOf { it.getNumOfDescendants() }
     }
+
+    fun getParentTaxonName(): String?
 }
 
 
@@ -33,7 +36,8 @@ interface ITaxon: IHasName {
  * */
 data class Taxon(
     private val name: String,
-    private val initialChildren: List<ITaxon> = emptyList()
+    private val initialChildren: List<ITaxon> = emptyList(),
+    private val parentTaxonName: String? = null
 ): ITaxon {
 
     private val _children = Taxon.sortChildrenTaxa(initialChildren)
@@ -58,6 +62,8 @@ data class Taxon(
 
     // Sort the children so that taxa are grouped first, and genera are at the end
     override fun getChildrenTaxa(): List<ITaxon> = _children
-    override fun getName(): String = name
+    override fun getName(): String = name.replaceFirstChar { it.uppercase() }
+
+    override fun getParentTaxonName(): String? = parentTaxonName
 }
 

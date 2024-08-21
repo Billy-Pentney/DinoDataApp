@@ -50,4 +50,6 @@ class GenusWithPrefs(
     override fun containsText(searchText: String): Boolean {
         return genus.containsText(searchText)
     }
+
+    override fun getParentTaxonName(): String? = genus.getParentTaxonName()
 }

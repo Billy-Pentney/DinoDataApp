@@ -156,7 +156,7 @@ class GenusBuilder(
             return this
         }
 
-        val speciesBuilder = SpeciesBuilder("")
+        val speciesBuilder = SpeciesBuilder("", genusName = this.name)
         val species = mutableListOf<ISpecies>()
         for (speciesInfo in speciesData) {
             if (speciesInfo !is Map<*, *>) {

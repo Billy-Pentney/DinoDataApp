@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.taxon.ITaxonCollection
 import com.bp.dinodata.data.taxon.TaxonCollection
 import com.bp.dinodata.presentation.DataState
+import com.bp.dinodata.presentation.list_genus.TextFieldState
 import com.bp.dinodata.presentation.map
 import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class TaxonomyScreenUiState(
+    val searchBoxTextState: TextFieldState = TextFieldState(),
+    val isSearchBarVisible: Boolean = false
+)
+
 
 @HiltViewModel
 class TaxonomyScreenViewModel @Inject constructor(
@@ -25,6 +32,8 @@ class TaxonomyScreenViewModel @Inject constructor(
     private val taxonomyFlow: MutableState<DataState<out TaxonCollection>> = mutableStateOf(DataState.Idle())
 
     private val toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
+
+    private val uiState = mutableStateOf(TaxonomyScreenUiState())
 
     init {
         viewModelScope.launch {
@@ -46,12 +55,15 @@ class TaxonomyScreenViewModel @Inject constructor(
         }
     }
 
+    override fun getUiState(): State<TaxonomyScreenUiState> = uiState
+
     override fun onEvent(event: TaxonomyScreenUiEvent) {
+
         when (event) {
             is TaxonomyScreenUiEvent.UpdateTaxonExpansion -> {
                 // Set whether this taxon is expanded
                 taxonomyFlow.value = taxonomyFlow.value.map {
-                    it.copy(
+                    it.setExpansionState(
                         event.taxon.getName() to event.expanded
                     )
                 }
@@ -61,18 +73,63 @@ class TaxonomyScreenViewModel @Inject constructor(
                 val numExpandedBefore = getNumExpandedTaxa()
                 // Set whether this taxon is expanded
                 taxonomyFlow.value = taxonomyFlow.value.map {
-                    it.closeAllTaxa()
+                    it.collapseAllTaxa()
                 }
                 val numExpandedAfter = getNumExpandedTaxa()
                 val numClosed = numExpandedBefore - numExpandedAfter
-                viewModelScope.launch {
-                    toastFlow.emit("Closed $numClosed taxa")
-                }
+                emitToastMessage("Collapsed $numClosed taxa")
                 Log.d("TaxonomyScreenViewModel", "Showing $numExpandedAfter taxa expanded")
+            }
+
+            is TaxonomyScreenUiEvent.UpdateSearchBoxText -> {
+                uiState.value = uiState.value.copy(
+                    searchBoxTextState = uiState.value.searchBoxTextState.copy(
+                        textContent = event.text
+                    )
+                )
+                // Clear any highlighted genera
+                taxonomyFlow.value = taxonomyFlow.value.map {
+                    it.copy(highlighted = emptySet())
+                }
+            }
+
+            TaxonomyScreenUiEvent.ToggleSearchBarVisibility -> {
+                uiState.value = uiState.value.copy(
+                    isSearchBarVisible = !uiState.value.isSearchBarVisible
+                )
+            }
+
+            TaxonomyScreenUiEvent.SubmitSearch -> {
+                val currText = uiState.value.searchBoxTextState.textContent
+
+                taxonomyFlow.value = taxonomyFlow.value.map {
+                    // Get the line of names to the given node
+                    val taxaToExpand = it.getPathOfTaxaToName(currText)
+
+                    Log.d("TaxonomyScreenVM", "Got ${taxaToExpand.size} taxa in lineage: ${taxaToExpand.joinToString()}")
+
+                    if (taxaToExpand.isEmpty()) {
+                        emitToastMessage("Taxon \'${currText}\' not found!")
+                        it
+                    }
+                    else {
+                        emitToastMessage("Expanded ${taxaToExpand.size} taxa to show \'${currText}\'")
+                        // Mark all taxa on this line as expanded
+                        it.copy(
+                            expanded = taxaToExpand.toSet(),
+                            highlighted = mutableSetOf(currText.lowercase().trim())
+                        )
+                    }
+                }
             }
         }
     }
 
+    private fun emitToastMessage(message: String) {
+        viewModelScope.launch {
+            toastFlow.emit(message)
+        }
+    }
 
     override fun getTaxonomyList(): State<DataState<out ITaxonCollection>> = taxonomyFlow
 }

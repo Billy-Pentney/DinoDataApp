@@ -123,6 +123,7 @@ data class Genus(
             this.species.any { it.containsText(searchText) }
     }
 
+    override fun getParentTaxonName(): String? = taxonomy.lastOrNull()
 }
 
 

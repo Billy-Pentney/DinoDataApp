@@ -11,7 +11,8 @@ data class Species(
     private val name: String,
     private val discoveredBy: String? = null,
     private val discoveryYear: Int? = null,
-    private val isType: Boolean = false
+    private val isType: Boolean = false,
+    private val genusName: String? = null
 ): ISpecies {
     override fun getDiscoveryText(): String? {
         if (discoveryYear != null && discoveredBy != null) {
@@ -28,4 +29,6 @@ data class Species(
     }
 
     override fun getChildrenTaxa(): List<ITaxon> = emptyList()
+
+    override fun getParentTaxonName(): String? = genusName
 }

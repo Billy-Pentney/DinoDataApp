@@ -18,10 +18,22 @@ class SpeciesBuilder(
     name: String,
     private var discoveredBy: String? = null,
     private var discoveryYear: Int? = null,
-    private var isType: Boolean = false
+    private var isType: Boolean = false,
+    private var genusName: String? = null
 ): ISpeciesBuilder {
     private var _name = name
-    private val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
+    companion object {
+        private val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
+        /**
+         * Verifies that the given integer corresponds to a suitable year of discovery,
+         * within the last 300 years.
+         * */
+        fun isValidYear(year: Int): Boolean {
+            return year in 1700..currentYear
+        }
+    }
 
     override fun clear(): IBuilder<ISpecies> {
         discoveredBy = null
@@ -42,12 +54,10 @@ class SpeciesBuilder(
 
     override fun setYearOfDiscovery(text: String?): ISpeciesBuilder {
         text?.toIntOrNull()?.let { year ->
-            if (year in 1700..currentYear) {
+            if (isValidYear(year))
                 discoveryYear = year
-            }
-            else {
-                Log.i("SpeciesBuilder", "Attempt to set ")
-            }
+            else
+                Log.i("SpeciesBuilder", "Attempt to set invalid year \'$year\'")
         }
 
         return this
@@ -84,10 +94,11 @@ class SpeciesBuilder(
 
     override fun build(): ISpecies {
         return Species(
-            _name,
+            name = _name,
             discoveredBy = discoveredBy,
             discoveryYear = discoveryYear,
-            isType = isType
+            isType = isType,
+            genusName = genusName
         )
     }
 }
