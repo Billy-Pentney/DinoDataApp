@@ -12,12 +12,15 @@ import androidx.compose.animation.shrinkOut
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
@@ -33,6 +36,7 @@ import com.bp.dinodata.presentation.list_genus.ListGenusScreen
 import com.bp.dinodata.presentation.list_genus.ListGenusViewModel
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreen
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreenViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
@@ -54,10 +58,15 @@ fun MyNavigation(
         .setLaunchSingleTop(true)
         .build()
 
-    val visibleScreen: MutableState<String?> = remember { mutableStateOf(startRoute) }
 
-    val updateVisibleScreen = {
-        visibleScreen.value = navController.currentDestination?.route
+    // Monitor the currently visible screen
+    val currentBackStackEntryFlow = remember { navController.currentBackStackEntryFlow }
+    val visibleScreen: MutableState<String?> = remember { mutableStateOf(Screen.ListGenus.route) }
+
+    LaunchedEffect(null) {
+        currentBackStackEntryFlow.collectLatest {
+            visibleScreen.value = it.destination.route
+        }
     }
 
     MyNavigationDrawer(
@@ -70,7 +79,7 @@ fun MyNavigation(
                         Screen.About.route,
                         navOptions = optionsSingleTop
                     )
-                    updateVisibleScreen()
+//                    updateVisibleScreen()
                     closeDrawer()
                 }
                 Screen.ListGenus -> {
@@ -78,12 +87,12 @@ fun MyNavigation(
                         Screen.ListGenus.route,
                         navOptions = optionsSingleTop
                     )
-                    updateVisibleScreen()
+//                    updateVisibleScreen()
                     closeDrawer()
                 }
                 Screen.Taxonomy -> {
                     navController.navigate(Screen.Taxonomy.route)
-                    updateVisibleScreen()
+//                    updateVisibleScreen()
                     closeDrawer()
                 }
             }
@@ -106,7 +115,7 @@ fun MyNavigation(
                         val route = "${Screen.DetailGenus.route}/${genus}"
                         Log.d("NavHost", "Attempt to navigate to \'$route\'")
                         navController.navigate(route, optionsSingleTop)
-                        updateVisibleScreen()
+//                        updateVisibleScreen()
                     },
                     openNavDrawer = {
                         coroutineScope.launch { drawerState.open() }
@@ -140,7 +149,7 @@ fun MyNavigation(
                 AboutScreen(
                     navigateBack = {
                         navController.navigateUp()
-                        updateVisibleScreen()
+//                        updateVisibleScreen()
                     }
                 )
             }
@@ -155,7 +164,7 @@ fun MyNavigation(
                         val route = "${Screen.DetailGenus.route}/${genusName}"
                         Log.d("NavHost", "Attempt to navigate to \'$route\'")
                         navController.navigate(route, optionsSingleTop)
-                        updateVisibleScreen()
+//                        updateVisibleScreen()
                     }
                 )
             }

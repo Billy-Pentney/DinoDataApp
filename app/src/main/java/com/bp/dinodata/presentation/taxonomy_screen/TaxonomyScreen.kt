@@ -99,6 +99,7 @@ import com.bp.dinodata.presentation.list_genus.TextFieldState
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.NoDataPlaceholder
 import com.bp.dinodata.theme.DinoDataTheme
+import com.bp.dinodata.theme.HighlightYellow
 import com.bp.dinodata.theme.MyGrey600
 import kotlinx.coroutines.flow.MutableSharedFlow
 
@@ -138,7 +139,12 @@ fun convertDpToPx(dp: Dp): Float {
     return with (LocalDensity.current) { dp.toPx() }
 }
 
-const val MAX_TAXONOMY_DEPTH = 20
+object TaxonomyScreenUtils {
+    const val MAX_TAXONOMY_DEPTH = 20
+    val HIGHLIGHT_COLOR = HighlightYellow
+}
+
+
 
 
 @Composable
@@ -164,7 +170,7 @@ fun TaxonCard(
 
     var canExpand by remember { mutableStateOf(hasChildren) }
 
-    if (depth > MAX_TAXONOMY_DEPTH) {
+    if (depth > TaxonomyScreenUtils.MAX_TAXONOMY_DEPTH) {
         Log.e("TaxonCard", "Depth limit reached with taxon ${taxon.getName()}")
         canExpand = false
     }
@@ -425,7 +431,7 @@ fun TaxonCard(
                                             if (isGenusHighlighted) {
                                                 Modifier.border(
                                                     2.dp,
-                                                    Color.White,
+                                                    TaxonomyScreenUtils.HIGHLIGHT_COLOR,
                                                     shape = RoundedCornerShape(8.dp)
                                                 )
                                             } else {
