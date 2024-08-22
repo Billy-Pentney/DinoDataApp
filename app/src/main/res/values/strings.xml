@@ -418,6 +418,7 @@
 
     <string name="num_taxon_children">"num "</string>
     <string name="label_taxon_root">root</string>
+    <string name="title_navigation_drawer">Navigation</string>
 
     <plurals name="num_taxon_children">
         <item quantity="one">%d child</item>

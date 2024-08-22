@@ -79,7 +79,6 @@ fun MyNavigation(
                         Screen.About.route,
                         navOptions = optionsSingleTop
                     )
-//                    updateVisibleScreen()
                     closeDrawer()
                 }
                 Screen.ListGenus -> {
@@ -87,12 +86,10 @@ fun MyNavigation(
                         Screen.ListGenus.route,
                         navOptions = optionsSingleTop
                     )
-//                    updateVisibleScreen()
                     closeDrawer()
                 }
                 Screen.Taxonomy -> {
                     navController.navigate(Screen.Taxonomy.route)
-//                    updateVisibleScreen()
                     closeDrawer()
                 }
             }
@@ -115,7 +112,6 @@ fun MyNavigation(
                         val route = "${Screen.DetailGenus.route}/${genus}"
                         Log.d("NavHost", "Attempt to navigate to \'$route\'")
                         navController.navigate(route, optionsSingleTop)
-//                        updateVisibleScreen()
                     },
                     openNavDrawer = {
                         coroutineScope.launch { drawerState.open() }
@@ -149,7 +145,6 @@ fun MyNavigation(
                 AboutScreen(
                     navigateBack = {
                         navController.navigateUp()
-//                        updateVisibleScreen()
                     }
                 )
             }

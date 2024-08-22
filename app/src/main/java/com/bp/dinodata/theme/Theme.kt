@@ -19,7 +19,9 @@ private val DarkColorScheme = darkColorScheme(
     scrim = HighlightYellow,
     onSurfaceVariant = Color.White,
     secondary = MyGrey800,
-    onSecondary = Color.White
+    onSecondary = Color.White,
+    primaryContainer = MyGrey700,
+    secondaryContainer = MyGrey800
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -33,7 +35,9 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = MyGrey50,
     scrim = HighlightYellowLight,
     secondary = MyGrey600,
-    onSecondary = Color.White
+    onSecondary = Color.White,
+    primaryContainer = MyGrey400,
+    secondaryContainer = MyGrey100
 )
 
 @Composable
