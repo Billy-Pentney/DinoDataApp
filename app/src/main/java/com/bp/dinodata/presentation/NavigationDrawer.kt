@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,11 +37,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.theme.DinoDataTheme
+
+enum class NavDrawerItem {
+    CreatureList,
+    Taxonomy,
+    About
+}
 
 @Composable
 fun MyNavigationDrawer(
@@ -67,6 +75,17 @@ fun MyNavigationDrawer(
         Array(numItems) { MutableInteractionSource() }
     }
 
+    val currentSelectedItem by remember {
+        derivedStateOf {
+            when (currentNavRoute) {
+                Screen.ListGenus.route -> NavDrawerItem.CreatureList
+                Screen.Taxonomy.route  -> NavDrawerItem.Taxonomy
+                Screen.About.route     -> NavDrawerItem.About
+                else                   -> null
+            }
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         scrimColor = scrimColor,
@@ -88,7 +107,17 @@ fun MyNavigationDrawer(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     NavigationDrawerItem(
-                        label = { Text(text = stringResource(R.string.title_creature_list)) },
+                        label = {
+                            Text(
+                                text = stringResource(R.string.title_creature_list),
+                                fontWeight = if (currentSelectedItem == NavDrawerItem.CreatureList) {
+                                    FontWeight.Bold
+                                }
+                                else {
+                                    FontWeight.Normal
+                                }
+                            )
+                        },
                         icon = {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.List,
@@ -96,7 +125,7 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = currentNavRoute == Screen.ListGenus.route,
+                        selected = currentSelectedItem == NavDrawerItem.CreatureList,
                         onClick = {
                             Log.d("NavDrawer", "Go to ${Screen.ListGenus}!")
                             navigateTo(Screen.ListGenus)
@@ -105,7 +134,15 @@ fun MyNavigationDrawer(
                         interactionSource = interactionSources[0]
                     )
                     NavigationDrawerItem(
-                        label = { Text(text = stringResource(R.string.screen_title_taxonomy)) },
+                        label = {
+                            Text(text = stringResource(R.string.screen_title_taxonomy),
+                                fontWeight = if (currentSelectedItem == NavDrawerItem.Taxonomy) {
+                                    FontWeight.Bold
+                                }
+                                else {
+                                    FontWeight.Normal
+                                }
+                            ) },
                         icon = {
                             Icon(
                                 painterResource(id = R.drawable.icon_filled_taxon_tree),
@@ -113,16 +150,22 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = currentNavRoute == Screen.Taxonomy.route,
+                        selected = currentSelectedItem == NavDrawerItem.Taxonomy,
                         onClick = {
-                            Log.d("NavDrawer", "Go to  ${Screen.Taxonomy}!")
+                            Log.d("NavDrawer", "Go to ${Screen.Taxonomy}!")
                             navigateTo(Screen.Taxonomy)
                         },
                         colors = colors,
                         interactionSource = interactionSources[1]
                     )
                     NavigationDrawerItem(
-                        label = { Text(text = stringResource(R.string.screen_title_about)) },
+                        label = { Text(text = stringResource(R.string.screen_title_about),
+                            fontWeight = if (currentSelectedItem == NavDrawerItem.About) {
+                                FontWeight.Bold
+                            }
+                            else {
+                                FontWeight.Normal
+                            }) },
                         icon = {
                             Icon(
                                 imageVector = Icons.Outlined.Info,
@@ -130,9 +173,9 @@ fun MyNavigationDrawer(
                             )
                         },
                         shape = RoundedCornerShape(8.dp),
-                        selected = currentNavRoute == Screen.About.route,
+                        selected = currentSelectedItem == NavDrawerItem.About,
                         onClick = {
-                            Log.d("NavDrawer", "Go to  ${Screen.About}!")
+                            Log.d("NavDrawer", "Go to ${Screen.About}!")
                             navigateTo(Screen.About)
                         },
                         colors = colors,
@@ -153,7 +196,7 @@ fun MyNavigationDrawer(
 fun PreviewNavigationDrawer() {
     val state = remember { mutableStateOf(Screen.ListGenus.route) }
 
-    DinoDataTheme (darkTheme = false) {
+    DinoDataTheme (darkTheme = true) {
         MyNavigationDrawer(
             drawerState = DrawerState(DrawerValue.Open),
             screenRouteState = state,

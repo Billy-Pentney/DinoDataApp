@@ -134,7 +134,7 @@ fun GenusListItem(
                 Column (
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
-                ){
+                ) {
                     if (isFavourite) {
                         Row (
                             modifier = Modifier
@@ -154,7 +154,8 @@ fun GenusListItem(
                             Text(
                                 stringResource(R.string.label_favourite),
                                 fontSize = 11.sp,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
                                 maxLines = 1,
                                 lineHeight = 12.sp
                             )
@@ -218,7 +219,7 @@ fun PreviewGenusListItem() {
         genus, LocalPrefs(_color = null)
     )
 
-    DinoDataTheme {
+    DinoDataTheme (darkTheme = true) {
         Column (verticalArrangement = Arrangement.spacedBy(4.dp)) {
             GenusListItem(genus = genusWithPrefs)
             GenusListItem(genus = genusWithPrefs2)
