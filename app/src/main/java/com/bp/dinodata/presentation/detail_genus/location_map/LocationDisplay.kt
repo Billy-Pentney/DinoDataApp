@@ -57,7 +57,8 @@ fun LocationAtlas(
     locations: Iterable<String>,
     modifier: Modifier = Modifier,
     initialZoom: Float = 1f,
-    initialOffset: Offset = Offset.Zero
+    initialOffset: Offset = Offset.Zero,
+    showLabelsFor: Iterable<String> = emptyList()
 ) {
     val onTapIconColor = remember { Color.Red }
     val defaultIconSize = remember { 26.dp }
@@ -109,7 +110,9 @@ fun LocationAtlas(
                     continue
                 }
 
-                val tooltipState = rememberTooltipState()
+                val tooltipState = rememberTooltipState(
+                    initialIsVisible = locationName in showLabelsFor
+                )
 
                 // Compute the position of this marker within the map image
                 val xDp = (markerPos.getX() * sizeDp.first.value).dp - iconX
@@ -172,14 +175,16 @@ fun LocationAtlas(
 @Preview(widthDp = 800, heightDp = 1000)
 @Composable
 fun PreviewLocationAtlas() {
+    val locations = AtlasMarkers.getKeysForRegion(
+        AtlasMarkers.ASIA
+    )
     DinoDataTheme (darkTheme = true) {
         Surface (modifier = Modifier.fillMaxWidth().padding(32.dp)) {
             LocationAtlas(
-                locations = AtlasMarkers.getKeysForRegion(
-                    AtlasMarkers.EUROPE
-                ),
+                locations = locations,
                 initialZoom = 1f,
-                initialOffset = Offset(0f, 0f)
+                initialOffset = Offset(0f, 0f),
+                showLabelsFor = listOf("Kyrgyzstan")
             )
         }
     }

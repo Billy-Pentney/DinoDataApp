@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.detail_genus.location_map
 
+import androidx.compose.ui.graphics.Color
 import com.bp.dinodata.R
 
 
@@ -80,7 +81,10 @@ object AtlasMarkers {
         ASIA,
         "Mongolia" to Marker(0.75f, 0.3f, R.string.location_mongolia),
         "Kazakhstan" to Marker(0.67f, 0.29f, R.string.location_kazakhstan),
-        "Uzbekistan" to Marker(0.64f, 0.33f, R.string.location_uzbekistan),
+        "Uzbekistan" to Marker(0.65f, 0.33f, R.string.location_uzbekistan),
+        "Turmenistan" to Marker(0.635f, 0.35f, R.string.location_turkmenistan),
+        "Kyrgyzstan" to Marker(0.68f, 0.33f, R.string.location_kyrgyzstan),
+        "Afghanistan" to Marker(0.653f, 0.385f, R.string.location_afghanistan),
         "Pakistan" to Marker(0.665f, 0.4f, R.string.location_pakistan),
         "India" to Marker(0.685f, 0.435f, R.string.location_india),
         "Laos" to Marker(0.745f, 0.44f, R.string.location_laos),
