@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.list_genus
 import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.IHasSearchQuery
+import com.bp.dinodata.data.search.ISearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
 
 interface IListGenusSearchUiState: IHasSearchQuery {
@@ -16,6 +17,8 @@ interface IListGenusSearchUiState: IHasSearchQuery {
 
     fun getFirstVisibleItemIndex(): Int
     fun getFirstVisibleItemOffset(): Int
+
+    fun getSearch(): ISearch<IGenus>
 }
 
 interface IMutableSearchBarUiState: IListGenusSearchUiState {

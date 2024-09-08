@@ -1,7 +1,6 @@
 package com.bp.dinodata.data.search
 
 import com.bp.dinodata.data.filters.IFilter
-import com.bp.dinodata.data.search.terms.ISearchTerm
 
 interface IConvertToFilter<T> {
     fun toFilter(): IFilter<T>
@@ -17,7 +16,3 @@ interface IHasSearchQuery {
 
 interface ISearch<T>: IConvertToFilter<T>, IFilter<T>, IHasSearchQuery
 
-interface IMutableSearch<T>: ISearch<T> {
-    fun removeTerm(term: ISearchTerm<in T>): ISearch<T>
-    fun getCompletedTerms(): List<ISearchTerm<in T>>
-}

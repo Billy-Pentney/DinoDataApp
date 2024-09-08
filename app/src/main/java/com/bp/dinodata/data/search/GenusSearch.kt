@@ -1,7 +1,10 @@
 package com.bp.dinodata.data.search
 
+import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.enum_readers.DietConverter
 import com.bp.dinodata.data.enum_readers.EpochConverter
+import com.bp.dinodata.data.enum_readers.TimePeriods
+import com.bp.dinodata.data.filters.BlankFilter
 import com.bp.dinodata.data.filters.FilterBuilderImpl
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.IGenus
@@ -24,6 +27,9 @@ data class GenusSearch(
     private val possibleDiets: List<String> = DietConverter.getListOfOptions(),
     private val possibleTimePeriods: List<String> = EpochConverter.getListOfOptions()
 ): IMutableSearch<IGenus> {
+
+    private val filter = this.toFilter()
+
     override fun getFullQuery(): String {
         return getCompletedTerms().joinToString(" ") {
             it.toOriginalText()
@@ -62,7 +68,46 @@ data class GenusSearch(
 //    private val searchResults: List<List<IGenus>>? = null
 //
     override fun acceptsItem(item: IGenus): Boolean {
-        return this.toFilter().acceptsItem(item)
+        return this.filter.acceptsItem(item)
+    }
+
+//    override fun updateQuery(
+//        textContent: String,
+//        terms: List<ISearchTerm<IGenus>>,
+//        locations: List<String>,
+//        taxa: List<String>
+//    ): IMutableSearch<IGenus> {
+//        val termBuilder = SearchTermBuilder(
+//            taxaList = taxa,
+//            locations = locations,
+//            possibleDiets = DietConverter.getListOfOptions(),
+//            possibleTimePeriods = EpochConverter.getListOfOptions()
+//        )
+//        return this.copy(
+//            currentTerm = termBuilder.fromText(textContent),
+//            terms = terms
+//        )
+//    }
+}
+
+class BlankSearch<T>: IMutableSearch<T> {
+    override fun getFullQuery(): String = ""
+    override fun getQuery(): String = ""
+    override fun getSuggestedSuffixes(): List<String> = emptyList()
+    override fun getAutofillSuggestion(): String = ""
+    override fun isQueryEmpty(): Boolean = true
+    override fun removeTerm(term: ISearchTerm<in T>): IMutableSearch<T> = this
+    override fun getCompletedTerms(): List<ISearchTerm<in T>> = emptyList()
+
+    override fun toFilter(): IFilter<T> = BlankFilter()
+    override fun acceptsItem(item: T): Boolean {
+        // Vacuously true, we accept all items
+        return true
+    }
+
+    override fun <R:T> applyTo(list: Iterable<R>): List<T> {
+        // Copy the list
+        return list.toList()
     }
 }
 

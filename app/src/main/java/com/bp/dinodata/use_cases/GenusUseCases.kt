@@ -2,9 +2,11 @@ package com.bp.dinodata.use_cases
 
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
+import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.genus.GenusWithPrefs
+import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
-import com.bp.dinodata.data.taxon.ITaxonCollection
+import com.bp.dinodata.data.search.ISearch
 import com.bp.dinodata.data.taxon.TaxonCollection
 import com.bp.dinodata.data.taxon.TaxonCollectionBuilder
 import com.bp.dinodata.presentation.DataState
@@ -13,6 +15,8 @@ import com.bp.dinodata.repo.ILocalPreferencesRepository
 import com.bp.dinodata.repo.ITaxonomyRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 
 class GenusUseCases(
@@ -65,6 +69,20 @@ class GenusUseCases(
             genera?.let { collectionBuilder.addGenera(it) }
             val taxaCollection = collectionBuilder.build()
             DataState.Success(taxaCollection)
+        }
+    }
+
+    /**
+     * Apply the given search to the list of genera, returning a DataState which encapsulates
+     * the result of the search if successful, or indicates failure otherwise.
+     * @param search A search which can filter genus objects.
+     * @return A DataState, containing the results of the search.
+     */
+    suspend fun applyGenusSearch(search: IFilter<IGenus>): DataState<List<IGenus>> {
+        val genera = genusRepository.getAllGeneraFlow().first()
+        return when (genera) {
+            null -> DataState.Failed("No genera loaded")
+            else -> DataState.Success(search.applyTo(genera))
         }
     }
 

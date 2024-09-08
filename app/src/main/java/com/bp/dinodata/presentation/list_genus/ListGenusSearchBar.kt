@@ -36,6 +36,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,7 @@ import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.MyGrey600
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -181,6 +183,14 @@ fun ListGenusSearchBar(
         )
     ) }
 
+    val coroutineScope = rememberCoroutineScope()
+    val searchTextUpdateFlow = remember { MutableSharedFlow<TextFieldValue>() }
+
+    LaunchedEffect(null) {
+        searchTextUpdateFlow.collectLatest {
+            updateSearchQuery(it)
+        }
+    }
 
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
@@ -235,7 +245,10 @@ fun ListGenusSearchBar(
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = {
-                        updateSearchQuery(it)
+                        textFieldValue = it
+                        coroutineScope.launch {
+                            searchTextUpdateFlow.emit(it)
+                        }
                     },
                     decorationBox = { innerTextField ->
                         TextFieldDefaults.DecorationBox(

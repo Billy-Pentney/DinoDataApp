@@ -296,23 +296,6 @@ fun SearchPage(
     val searchResults = uiState.getSearchResultsAsList()
 
     val scrollState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(uiState) {
-        // On open/recompose, animate to the correct position
-        coroutineScope.launch {
-            scrollState.animateScrollToItem(
-                uiState.getFirstVisibleItemIndex(),
-                uiState.getFirstVisibleItemOffset()
-            )
-        }
-    }
-
-    DisposableEffect(key1 = null) {
-        onDispose {
-            updateScrollState(scrollState)
-        }
-    }
 
     Column (
         modifier = modifier,

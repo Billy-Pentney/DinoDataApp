@@ -5,6 +5,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.terms.ISearchTerm
 
+/**
+ * A collection of user-triggered events on the List-Genus page.
+ * A response to this events should be provided by implementations of IListGenusViewModel.
+ */
 sealed class ListGenusPageUiEvent {
 
     data class UpdateSearchQuery(

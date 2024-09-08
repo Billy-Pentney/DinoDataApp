@@ -5,8 +5,11 @@ import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
+import com.bp.dinodata.data.search.BlankSearch
 import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.search.GenusSearchBuilder
+import com.bp.dinodata.data.search.IMutableSearch
+import com.bp.dinodata.data.search.ISearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
@@ -30,7 +33,7 @@ data class ListGenusUiState(
     private val contentMode: ListGenusContentMode = ListGenusContentMode.Pager,
     private val firstVisibleItem: Int = 0,
     private val firstVisibleItemOffset: Int = 0,
-    private val search: GenusSearch = GenusSearch(),
+    private val search: IMutableSearch<IGenus> = BlankSearch(),
     val pageSelectionVisible: Boolean = true,
     private val selectedPageIndex: Int = 0,
     private val textFieldState: TextFieldState = TextFieldState(hintContent = DEFAULT_HINT_TEXT),
@@ -74,6 +77,8 @@ data class ListGenusUiState(
     override fun getFirstVisibleItemIndex(): Int = firstVisibleItem
     override fun getFirstVisibleItemOffset(): Int = firstVisibleItemOffset
 
+    override fun getSearch(): ISearch<IGenus> = search
+
     /**
      * Update the SearchBar TextFieldState based on the given search. This involves setting
      * whether the hint (auto-fill suggestion) is visible, and indicating if the user
@@ -84,7 +89,7 @@ data class ListGenusUiState(
      * search.
      */
     private fun makeNewTextFieldState(
-        newSearch: GenusSearch = search
+        newSearch: IMutableSearch<IGenus> = search
     ): TextFieldState {
         val newQuery = newSearch.getQuery()
         val hasCompletedSearchTerms = newSearch.getCompletedTerms().isNotEmpty()
@@ -126,6 +131,7 @@ data class ListGenusUiState(
         locations: List<String>?,
         taxa: List<String>?
     ): ListGenusUiState {
+
         val newSearch = GenusSearchBuilder(
             query = this.textFieldState.textContent,
             terms = search.getCompletedTerms(),
