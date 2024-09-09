@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -49,12 +50,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -83,7 +84,6 @@ import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.ResultsByLetter
 import com.bp.dinodata.data.genus.DebugGenusFactory
-import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
@@ -242,45 +242,101 @@ fun ShowSearchOrGeneraPager(
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit
 ) {
-    Crossfade(
-        targetState = uiState.getContentMode(),
-        label = "search_or_page_select"
-    ) {
-        when (it) {
-            ListGenusContentMode.Search -> {
-                SearchPage(
-                    uiState = uiState,
-                    updateSearchQuery = updateSearchQuery,
-                    runSearch = runSearch,
-                    clearSearchQuery = clearSearchQuery,
-                    navigateToGenus = navigateToGenus,
-                    outerPadding = outerPadding,
-                    prefillSearchSuggestion = prefillSearchSuggestion,
-                    updateScrollState = updateScrollState,
-                    removeSearchTerm = removeSearchTerm,
-                    modifier = Modifier.fillMaxSize(),
-                    onSearchBarFocusChanged = onSearchBarFocusChanged
-                )
-            }
-            ListGenusContentMode.Pager -> {
-                HorizontalPagerOfGenera(
-                    currentPageIndex = uiState.getCurrentPagerIndex(),
-                    pageKeys = uiState.getPagerKeys(),
-                    getPageByIndex = { page -> uiState.getPageByIndex(page) ?: emptyList() },
-                    switchToPageByIndex = switchToPageByIndex,
-                    outerPadding = outerPadding,
-                    spacing = spacing,
-                    navigateToGenus = navigateToGenus,
-                    modifier = Modifier.fillMaxSize(),
-                    updateScrollState = updateScrollState
-                )
+    Column {
+        Crossfade(
+            targetState = uiState.getContentMode(),
+            label = "search_or_page_select"
+        ) {
+            when (it) {
+                ListGenusContentMode.Search -> {
+                    GeneraSearchContent(
+                        uiState = uiState,
+                        updateSearchQuery = updateSearchQuery,
+                        runSearch = runSearch,
+                        clearSearchQuery = clearSearchQuery,
+                        navigateToGenus = navigateToGenus,
+                        outerPadding = outerPadding,
+                        prefillSearchSuggestion = prefillSearchSuggestion,
+                        removeSearchTerm = removeSearchTerm,
+                        onSearchBarFocusChanged = onSearchBarFocusChanged,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                ListGenusContentMode.Pager -> {
+                    GeneraCarousel(
+                        currentPageIndex = uiState.getCurrentPagerIndex(),
+                        pageKeys = uiState.getPagerKeys(),
+                        getPageByIndex = { page -> uiState.getPageByIndex(page) ?: emptyList() },
+                        switchToPageByIndex = switchToPageByIndex,
+                        outerPadding = outerPadding,
+                        spacing = spacing,
+                        navigateToGenus = navigateToGenus,
+                        modifier = Modifier.fillMaxSize(),
+                        updateScrollState = updateScrollState
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun SearchPage(
+fun SearchBarHeader(
+    searchData: DataState<out List<IGenus>>,
+    textFieldState: TextFieldState,
+    completedSearchTerms: List<ISearchTerm<in IGenus>>,
+    updateSearchQuery: (TextFieldValue) -> Unit,
+    runSearch: () -> Unit,
+    clearSearchQuery: () -> Unit,
+    outerPadding: Dp,
+    prefillSearchSuggestion: () -> Unit,
+    removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
+    onSearchBarFocusChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var belowSearchBarText by remember { mutableStateOf("") }
+
+    belowSearchBarText = when (searchData) {
+        is DataState.Success -> {
+            stringResource(R.string.text_showing_X_creatures, searchData.data.size)
+        }
+        else -> {
+            stringResource(R.string.status_searching)
+        }
+    }
+
+    Surface (
+        shadowElevation = 20.dp,
+        modifier = modifier
+    ) {
+        Column {
+            ListGenusSearchBar(
+                updateSearchQuery = updateSearchQuery,
+                clearSearchQuery = clearSearchQuery,
+                tryAcceptSearchSuggestion = prefillSearchSuggestion,
+                modifier = Modifier.padding(horizontal = outerPadding),
+                onSearchTermTap = removeSearchTerm,
+                searchTextFieldState = textFieldState,
+                completedSearchTerms = completedSearchTerms,
+                runSearch = runSearch,
+                onSearchBarFocusChanged = onSearchBarFocusChanged
+            )
+            AnimatedVisibility(visible = belowSearchBarText.isNotEmpty()) {
+                DividerTextRow(
+                    text = belowSearchBarText,
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = outerPadding),
+                    dividerPadding = PaddingValues(horizontal = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun GeneraSearchContent(
     uiState: IListGenusSearchUiState,
     updateSearchQuery: (TextFieldValue) -> Unit,
     runSearch: () -> Unit,
@@ -288,46 +344,76 @@ fun SearchPage(
     navigateToGenus: (String) -> Unit,
     outerPadding: Dp,
     prefillSearchSuggestion: () -> Unit,
-    updateScrollState: (LazyListState) -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val searchResults = uiState.getSearchResultsAsList()
+    val searchResultState = uiState.getSearchResultState()
+    val searchResults =
+        if (searchResultState is DataState.Success) {
+            searchResultState.data
+        }
+        else {
+            emptyList()
+        }
+
+    val searchLoaded = searchResultState is DataState.Success
+
+    val belowSearchBarText =
+        when (searchResultState) {
+            is DataState.Success -> {
+                stringResource(R.string.text_showing_X_creatures, searchResultState.data.size)
+            }
+            else -> {
+                stringResource(R.string.status_searching)
+            }
+        }
 
     val scrollState = rememberLazyListState()
+
+    LaunchedEffect(uiState) {
+        scrollState.scrollToItem(
+            uiState.getFirstVisibleItemIndex(),
+            uiState.getFirstVisibleItemOffset()
+        )
+    }
 
     Column (
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Surface (shadowElevation = 4.dp) {
-            Column {
-                ListGenusSearchBar(
-                    updateSearchQuery = updateSearchQuery,
-                    clearSearchQuery = clearSearchQuery,
-                    tryAcceptSearchSuggestion = prefillSearchSuggestion,
-                    modifier = Modifier.padding(horizontal = outerPadding),
-                    onSearchTermTap = removeSearchTerm,
-                    searchTextFieldState = uiState.getSearchTextFieldState(),
-                    completedSearchTerms = uiState.getCompletedSearchTerms(),
-                    runSearch = runSearch,
-                    onSearchBarFocusChanged = onSearchBarFocusChanged
-                )
-                DividerTextRow(
-                    text = stringResource(R.string.text_showing_X_creatures, searchResults.size),
-                    modifier = Modifier.padding(vertical = 12.dp, horizontal = outerPadding),
-                    dividerPadding = PaddingValues(horizontal = 8.dp)
-                )
-            }
-        }
-        LazyListOfGenera(
-            searchResults,
-            contentPadding = PaddingValues(outerPadding),
-            navigateToGenus = navigateToGenus,
-            showCreatureCountAtBottom = false,
-            scrollState = scrollState
+        SearchBarHeader(
+            searchData = searchResultState,
+            textFieldState = uiState.getSearchTextFieldState(),
+            completedSearchTerms = uiState.getCompletedSearchTerms(),
+            updateSearchQuery = updateSearchQuery,
+            runSearch = runSearch,
+            clearSearchQuery = clearSearchQuery,
+            outerPadding = outerPadding,
+            prefillSearchSuggestion = prefillSearchSuggestion,
+            removeSearchTerm = removeSearchTerm,
+            onSearchBarFocusChanged = onSearchBarFocusChanged
         )
+
+//        Crossfade(targetState = searchResultState, label="search_results_crossfade") {
+//            when (it) {
+//                is DataState.Success -> {
+                    LazyListOfGenera(
+                        searchResults,
+                        contentPadding = PaddingValues(outerPadding),
+                        navigateToGenus = navigateToGenus,
+                        showCreatureCountAtBottom = false,
+                        scrollState = scrollState
+                    )
+//                }
+//                is DataState.LoadInProgress -> {
+//                    LoadingItemsPlaceholder()
+//                }
+//                else -> {
+//                    NoDataPlaceholder()
+//                }
+//            }
+//        }
     }
 }
 
@@ -454,7 +540,7 @@ fun PageSelectorRow(
 }
 
 @Composable
-fun HorizontalPagerOfGenera(
+fun GeneraCarousel(
     currentPageIndex: Int,
     getPageByIndex: (Int) -> List<IGenus>,
     pageKeys: List<String>,
@@ -590,17 +676,16 @@ fun LazyListOfGenera(
     updateScrollState: ((LazyListState) -> Unit)? = null,
     showCreatureCountAtBottom: Boolean = true
 ) {
-    if (updateScrollState != null) {
-        DisposableEffect(key1 = null) {
-            onDispose {
-                updateScrollState(scrollState)
-            }
-        }
-    }
+//    if (updateScrollState != null) {
+//        DisposableEffect(key1 = null) {
+//            onDispose {
+//                updateScrollState(scrollState)
+//            }
+//        }
+//    }
 
     val numElements = generaList?.size ?: 0
-
-
+    
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(verticalSpacing),
         state = scrollState,
@@ -722,11 +807,11 @@ fun PreviewListGenus() {
                 allPageData = DataState.Success(generaGrouped),
                 searchResults = DataState.Success(genera),
                 selectedPageIndex = 0,
-                contentMode = ListGenusContentMode.Pager,
+                contentMode = ListGenusContentMode.Search,
                 search = GenusSearchBuilder(
                     query = "taxon:ab",
-                    locations = listOf("USA", "canada"),
-                    taxa = listOf("abelisauridae", "brachiosauridae")
+                    possibleLocations = listOf("USA", "canada"),
+                    possibleTaxa = listOf("abelisauridae", "brachiosauridae")
                 ).build(),
             ),
             updateSearchQuery = {},

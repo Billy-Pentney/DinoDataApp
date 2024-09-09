@@ -351,11 +351,11 @@ fun ListGenusSearchBar(
 @Preview
 @Composable
 fun PreviewSearchBar() {
+    val search = GenusSearchBuilder(query = "abs diet:carnivore+omnivore loc").build()
     val uiState = ListGenusUiState(
-        contentMode = ListGenusContentMode.Search
-    ).updateSearchQuery("abs diet:carnivore+omnivore loc")
-        .makeNewSearch()
-        .runSearch()
+        contentMode = ListGenusContentMode.Search,
+        search = search
+    ).runSearch()
 
     DinoDataTheme {
         Surface {

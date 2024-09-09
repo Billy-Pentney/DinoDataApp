@@ -10,15 +10,17 @@ class GenusSearchBuilder(
     query: String,
     terms: List<ISearchTerm<in IGenus>> = emptyList(),
     private var capSensitive: Boolean = false,
-    private val locations: List<String> = emptyList(),
-    private val taxa: List<String> = emptyList(),
+    private val possibleGeneraNames: List<String> = emptyList(),
+    private val possibleLocations: List<String> = emptyList(),
+    private val possibleTaxa: List<String> = emptyList(),
     private val possibleDiets: List<String> = DietConverter.getListOfOptions(),
     private val possibleTimePeriods: List<String> = EpochConverter.getListOfOptions()
 ) {
     private val searchTermBuilder = SearchTermBuilder(
-        taxaList = taxa,
+        generaNames = possibleGeneraNames,
+        possibleTaxa = possibleTaxa,
         possibleDiets = possibleDiets,
-        locations = locations,
+        locations = possibleLocations,
         possibleTimePeriods = possibleTimePeriods
     )
 
@@ -88,8 +90,8 @@ class GenusSearchBuilder(
         return GenusSearch(
             currentTerm = currentTerm,
             terms = searchTerms,
-            locations = locations,
-            taxa = taxa,
+            locations = possibleLocations,
+            taxa = possibleTaxa,
             possibleTimePeriods = possibleTimePeriods,
             possibleDiets = possibleDiets
         )

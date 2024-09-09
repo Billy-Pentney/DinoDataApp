@@ -1,10 +1,7 @@
 package com.bp.dinodata.presentation.detail_genus
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,14 +54,12 @@ import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.Formation
 import com.bp.dinodata.presentation.utils.ThemeConverter
-import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.genus.DebugGenusFactory
 import com.bp.dinodata.data.genus.DetailedGenus
 import com.bp.dinodata.data.genus.GenusWithImages
 import com.bp.dinodata.data.genus.IDetailedGenus
-import com.bp.dinodata.data.genus.IHasFormationInfo
 import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureDietAndMeasurements
@@ -134,7 +130,9 @@ fun LabelContentRow(
             fontWeight = labelFontWeight,
             fontSize = labelFontSize
         )
-        Spacer(modifier = Modifier.weight(1f).widthIn(min=50.dp))
+        Spacer(modifier = Modifier
+            .weight(1f)
+            .widthIn(min = 50.dp))
         valueContent.invoke()
     }
 }
@@ -143,11 +141,11 @@ fun LabelContentRow(
 @Composable
 fun GenusDetailScreenContent(
     uiState: DetailScreenUiState,
+    dialogState: State<DetailScreenDialogState>,
     modifier: Modifier = Modifier,
     onEvent: (DetailGenusUiEvent) -> Unit
 ) {
     val genus = uiState.getGenusData()
-    val visibleDialogState by remember { mutableStateOf(uiState.dialogState) }
 
     Crossfade(genus, label="crossfade_genus_null") {
         if (it == null) {
@@ -155,10 +153,11 @@ fun GenusDetailScreenContent(
         }
         else {
             ShowGenusDetail(
-                uiState = uiState,
                 genus = it,
                 onEvent = onEvent,
-                visibleDialogState = visibleDialogState,
+                visibleDialogState = dialogState,
+                isPreferencesCardExpanded = uiState.preferencesCardExpanded,
+                canPlayPronunciationAudio = uiState.canPlayPronunciationAudio,
                 modifier = modifier
             )
         }
@@ -167,8 +166,9 @@ fun GenusDetailScreenContent(
 
 @Composable
 fun ShowGenusDetail(
-    uiState: DetailScreenUiState,
-    visibleDialogState: DetailScreenDialogState,
+    isPreferencesCardExpanded: Boolean,
+    visibleDialogState: State<DetailScreenDialogState>,
+    canPlayPronunciationAudio: Boolean,
     genus: IDetailedGenus,
     onEvent: (DetailGenusUiEvent) -> Unit,
     modifier: Modifier = Modifier
@@ -192,43 +192,45 @@ fun ShowGenusDetail(
         )
     }
 
-    val selectedColor by remember { mutableStateOf(genus.getSelectedColorName()) }
+    val initiallySelectedColor = genus.getSelectedColorName()
+    var selectedColor by remember { mutableStateOf(initiallySelectedColor) }
     val colorScheme by remember { derivedStateOf { ThemeConverter.getTheme(selectedColor) } }
-    var visibleDialog by remember { mutableStateOf(visibleDialogState) }
-    var preferencesControlsExpanded by remember { mutableStateOf(uiState.preferencesCardExpanded) }
+    var preferencesControlsExpanded by remember { mutableStateOf(isPreferencesCardExpanded) }
 
-    // Color-Picker Dialog Pop-up
-    AnimatedVisibility (
-        visibleDialog == DetailScreenDialogState.ColorPickerDialog,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        ColorPickerDialog(
-            initiallySelectedColor = selectedColor,
-            onColorPicked = { onEvent(DetailGenusUiEvent.SelectColor(it)) },
-            onClose = {
-                visibleDialog = DetailScreenDialogState.NoDialog
-                onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
-            }
-        )
+    val currentDialogState by remember { visibleDialogState }
+    val colorPickerDialogVisible = remember {
+        derivedStateOf { currentDialogState == DetailScreenDialogState.ColorPickerDialog }
     }
 
-    // Image-View Dialog Pop-up
-    AnimatedVisibility (
-        visibleDialog == DetailScreenDialogState.ImageView,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        EnlargedImageDialog(
-            genus,
-            onHide = {
-                visibleDialog = DetailScreenDialogState.NoDialog
-                onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+    Crossfade(targetState = currentDialogState, label="crossfade_detail_dialog") {
+        when (it) {
+            DetailScreenDialogState.ColorPickerDialog -> {
+                ColorPickerDialog(
+                    isVisibleState = colorPickerDialogVisible,
+                    initiallySelectedColor = selectedColor,
+                    onColorPicked = { color ->
+                        // Record the new colour in the UI
+                        selectedColor = color
+                    },
+                    onClose = {
+                        // Save the new colour and close the dialog
+                        onEvent(DetailGenusUiEvent.SelectColor(selectedColor))
+                        onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+                    }
+                )
             }
-        )
+            DetailScreenDialogState.ImageView -> {
+                EnlargedImageDialog(
+                    genus,
+                    onHide = {
+                        onEvent(DetailGenusUiEvent.ShowColorSelectDialog(false))
+                    }
+                )
+            }
+            else -> {}
+        }
+
     }
-
-
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -243,19 +245,13 @@ fun ShowGenusDetail(
                 modifier = Modifier.height(cardHeight),
                 visibleImageIndex = genus.getPreferredImageIndex(),
                 showLargeImageDialog = {
-                    visibleDialog = DetailScreenDialogState.ImageView
                     onEvent(DetailGenusUiEvent.ShowLargeImageDialog(true))
                 },
                 innerPadding = innerPadding,
-                canPlayPronunciation = uiState.canPlayPronunciationAudio,
+                canPlayPronunciation = canPlayPronunciationAudio,
                 isFavourite = genus.isUserFavourite(),
                 colorScheme = colorScheme ?: MaterialTheme.colorScheme,
                 setColorPickerDialogVisibility = {
-                    visibleDialog = if (it) {
-                        DetailScreenDialogState.ColorPickerDialog
-                    } else {
-                        DetailScreenDialogState.NoDialog
-                    }
                     onEvent(DetailGenusUiEvent.ShowColorSelectDialog(visible = it))
                 },
                 toggleItemAsFavourite = {
@@ -420,41 +416,6 @@ fun UpdateGenusLocalPreferencesButtons(
 }
 
 
-//@Preview(
-//    widthDp = 300,
-//    heightDp = 500,
-//    name = "Light"
-//)
-//@Composable
-//fun PreviewGenusDetail() {
-//    val acro = GenusBuilder("Acrocanthosaurus")
-//        .setDiet("Carnivorous")
-//        .splitTimePeriodAndYears("Early Cretaceous, 113-110 mya")
-////        .setNamePronunciation("'ACK-row-CAN-tho-SORE-us'")
-//        .setNameMeaning("high-spined lizard")
-//        .setLength("11-11.5 metres")
-//        .setWeight("4.4 tonnes")
-//        .setCreatureType("large theropod")
-//        .setTaxonomy(listOf("Dinosauria", "Saurischia", "Theropoda", "Carcharodontosauridae"))
-//        .build()
-//
-//    val acroWithImages = GenusWithImages(acro)
-//
-//    val uiState = DetailScreenUiState(
-//        genusName = acro.getName(),
-//        genusData = DataState.Success(DetailedGenus(acroWithImages))
-//    )
-//
-//    DinoDataTheme(darkTheme = false) {
-//        Surface (color = MaterialTheme.colorScheme.background) {
-//            GenusDetailScreenContent(
-//                uiState = uiState,
-//                onEvent = {}
-//            )
-//        }
-//    }
-//}
-
 @Preview(widthDp = 400, heightDp = 2000, name = "Dark")
 @Composable
 fun PreviewGenusDetailDark() {
@@ -507,11 +468,13 @@ fun PreviewGenusDetailDark() {
         dialogState = DetailScreenDialogState.NoDialog,
         preferencesCardExpanded = true
     )
+    val dialogState = remember { mutableStateOf(DetailScreenDialogState.NoDialog) }
 
     DinoDataTheme(darkTheme = true) {
         Surface (color = MaterialTheme.colorScheme.background) {
             GenusDetailScreenContent(
                 uiState = uiState,
+                dialogState = dialogState,
                 onEvent = {}
             )
         }

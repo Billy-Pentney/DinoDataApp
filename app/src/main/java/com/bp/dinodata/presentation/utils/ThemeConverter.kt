@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.utils
 
+import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
@@ -22,7 +23,11 @@ import com.bp.dinodata.theme.violet
 import com.bp.dinodata.theme.yellow
 
 
+
+
 object ThemeConverter: ISearchTypeConverter<String> {
+
+    val DefaultColor = ColorReference.NONE
 
     private val redTheme = darkColorScheme(
         surface = red
@@ -87,37 +92,69 @@ object ThemeConverter: ISearchTypeConverter<String> {
         surface = steelBlue
     )
 
-    private val stringToTheme: Map<String, ColorScheme?> = mapOf(
-        "RED" to redTheme,
-        "ORANGE" to orangeTheme,
-        "YELLOW" to yellowTheme,
-        "GREEN" to greenTheme,
-        "CYAN" to cyanTheme,
-        "BLUE" to blueTheme,
-        "INDIGO" to indigoTheme,
-        "VIOLET" to violetTheme,
-        "PINK" to pinkTheme,
-        "BROWN" to brownTheme,
-        "WHITE" to whiteTheme,
-        "BLACK" to blackTheme,
-        "BURGUNDY" to burgundyTheme,
-        "LIME" to limeTheme,
-        "STEEL" to steelBlueTheme,
-        "NONE" to null
+    /** Represents the list of valid colours which can be used to theme genera. */
+    enum class ColorReference {
+        RED,
+        ORANGE,
+        YELLOW,
+        GREEN,
+        BLUE,
+        CYAN,
+        VIOLET,
+        BURGUNDY,
+        INDIGO,
+        PINK,
+        BROWN,
+        WHITE,
+        BLACK,
+        LIME,
+        STEEL,
+        NONE
+    }
+
+    private val colorNameToSchemeMap: Map<String, ColorScheme?> = mapOf(
+        ColorReference.RED.name to redTheme,
+        ColorReference.ORANGE.name to orangeTheme,
+        ColorReference.YELLOW.name to yellowTheme,
+        ColorReference.GREEN.name to greenTheme,
+        ColorReference.BLUE.name to blueTheme,
+        ColorReference.INDIGO.name to indigoTheme,
+        ColorReference.BURGUNDY.name to burgundyTheme,
+        ColorReference.CYAN.name to cyanTheme,
+        ColorReference.WHITE.name to whiteTheme,
+        ColorReference.BLACK.name to blackTheme,
+        ColorReference.BROWN.name to brownTheme,
+        ColorReference.PINK.name to pinkTheme,
+        ColorReference.VIOLET.name to violetTheme,
+        ColorReference.STEEL.name to steelBlueTheme,
+        ColorReference.LIME.name to limeTheme,
+        ColorReference.NONE.name to null
     )
 
-    val listOfColors = stringToTheme.keys.toList()
+    val listOfColors = colorNameToSchemeMap.keys.toList()
 
-    override fun getListOfOptions(): List<String> {
-        return listOfColors
+    override fun getListOfOptions(): List<String> = listOfColors
+
+    fun convertColorNameToColor(name: String?): ColorReference? {
+        for (color in ColorReference.entries){
+            Log.d("ThemeConverter", "Color name ${color.name}, vs. $name")
+        }
+        return ColorReference.entries.firstOrNull { name?.uppercase() == it.name }
+    }
+
+    /** Get the list of all colours, excluding the 'None' default color. */
+    fun getNonNullColours(): List<String> {
+        return listOfColors.dropLast(1)
     }
 
     fun getTheme(name: String?): ColorScheme? {
-        return stringToTheme[name?.uppercase()]
+        val colorRef = convertColorNameToColor(name)?.name
+        val theme = colorNameToSchemeMap[colorRef]
+        return theme
     }
 
-    fun getColor(colorName: String?): Color? {
-        return stringToTheme[colorName?.uppercase()]?.surface
+    fun getPrimaryColor(colorName: String?): Color? {
+        return getTheme(colorName)?.surface
     }
 
     override fun matchType(text: String): String? {

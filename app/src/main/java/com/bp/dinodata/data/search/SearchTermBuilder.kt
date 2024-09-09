@@ -14,7 +14,8 @@ import com.bp.dinodata.data.search.terms.TimeEraSearchTerm
 import com.bp.dinodata.data.search.terms.EpochSearchTerm
 
 class SearchTermBuilder(
-    private val taxaList: List<String>,
+    private val generaNames: List<String>,
+    private val possibleTaxa: List<String>,
     private val possibleDiets: List<String>,
     private val possibleTimePeriods: List<String>,
     val locations: List<String>
@@ -40,16 +41,24 @@ class SearchTermBuilder(
     fun fromText(termText: String): ISearchTerm<in IGenus> {
         val splits = termText.trim().split(":")
         if (splits.size != 2) {
-            return BasicSearchTerm(termText, searchKeywords = PREFIX_COLON_LIST)
+            return makeBasicSearchTerm(termText)
         }
         return fromKeyValuePair(splits[0], splits[1])
+    }
+
+    private fun makeBasicSearchTerm(text: String): ISearchTerm<in IGenus> {
+        return BasicSearchTerm(
+            text,
+            // Recommend suggestions from the valid keyword and from the list of genera
+            searchKeywords = PREFIX_COLON_LIST + generaNames
+        )
     }
 
     fun fromKeyValuePair(key: String, values: String): ISearchTerm<in IGenus> {
         // If here, then we have a term of the form "X:Y"
         val termText = "$key:$values"
         return when (key) {
-            TAXON_PREFIX     -> TaxonNameSearchTerm(termText, taxaList)
+            TAXON_PREFIX     -> TaxonNameSearchTerm(termText, possibleTaxa)
             TYPE_PREFIX      -> CreatureTypeSearchTerm(termText)
             DIET_PREFIX      -> DietSearchTerm(termText)
             PERIOD_PREFIX    -> EpochSearchTerm(termText)
@@ -59,7 +68,7 @@ class SearchTermBuilder(
             ERA_PREFIX       -> TimeEraSearchTerm(termText)
             else -> {
                 Log.d("SearchConstructor", "Unknown query filter \'$termText\'")
-                BasicSearchTerm(termText)
+                makeBasicSearchTerm(termText)
             }
         }
     }

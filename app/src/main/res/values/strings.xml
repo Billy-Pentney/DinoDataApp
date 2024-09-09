@@ -419,6 +419,10 @@
     <string name="num_taxon_children">"num "</string>
     <string name="label_taxon_root">root</string>
     <string name="title_navigation_drawer">Navigation</string>
+    <string name="status_searching">Searching…</string>
+    <string name="dialog_title_color_selection">Color-Selection</string>
+
+    <string name="desc_choose_a_color_for_genus">Choose a color for this genus</string>
 
     <plurals name="num_taxon_children">
         <item quantity="one">%d child</item>

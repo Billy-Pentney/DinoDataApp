@@ -8,22 +8,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.genus.DetailedGenus
-import com.bp.dinodata.data.genus.IGenusWithImages
-import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bp.dinodata.presentation.DataState
-import com.bp.dinodata.presentation.map
 import com.bp.dinodata.repo.AudioPlayStatus
 import com.bp.dinodata.use_cases.AudioPronunciationUseCases
 import com.bp.dinodata.use_cases.GenusDetailUseCases
-import com.bp.dinodata.use_cases.GenusUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -51,14 +45,16 @@ class DetailGenusViewModel @Inject constructor(
         DetailScreenUiState(currentGenusName)
     )
 
+    private var _dialogState: MutableState<DetailScreenDialogState> = mutableStateOf(
+        DetailScreenDialogState.NoDialog
+    )
+
     private var toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
 
     init {
         viewModelScope.launch {
             _genusDetail.collectLatest {
-                _uiState.value = _uiState.value.copy(
-                    genusData = it
-                )
+                _uiState.value = _uiState.value.copy(genusData = it)
             }
         }
     }
@@ -74,17 +70,12 @@ class DetailGenusViewModel @Inject constructor(
             DetailGenusUiEvent.PlayNamePronunciation -> playPronunciationFile()
             is DetailGenusUiEvent.SelectColor -> {
                 viewModelScope.launch {
-                    genusUseCases.updateColor(
-                        currentGenusName,
-                        event.colorName
-                    )
+                    genusUseCases.updateColor(currentGenusName, event.colorName)
                 }
             }
             is DetailGenusUiEvent.ShowColorSelectDialog -> {
                 if (event.visible) {
-                    _uiState.value = _uiState.value.copy(
-                        dialogState = DetailScreenDialogState.ColorPickerDialog
-                    )
+                    _dialogState.value = DetailScreenDialogState.ColorPickerDialog
                 }
                 else {
                     hideDialog()
@@ -92,9 +83,7 @@ class DetailGenusViewModel @Inject constructor(
             }
             is DetailGenusUiEvent.ShowLargeImageDialog -> {
                 if (event.visible) {
-                    _uiState.value = _uiState.value.copy(
-                        dialogState = DetailScreenDialogState.ImageView
-                    )
+                    _dialogState.value = DetailScreenDialogState.ImageView
                 }
                 else {
                     hideDialog()
@@ -123,11 +112,10 @@ class DetailGenusViewModel @Inject constructor(
     }
 
     fun getUiState(): State<DetailScreenUiState> = _uiState
+    fun getDialogState(): State<DetailScreenDialogState> = _dialogState
 
     private fun hideDialog() {
-        _uiState.value = _uiState.value.copy(
-            dialogState = DetailScreenDialogState.NoDialog
-        )
+        _dialogState.value = DetailScreenDialogState.NoDialog
     }
 
     /**

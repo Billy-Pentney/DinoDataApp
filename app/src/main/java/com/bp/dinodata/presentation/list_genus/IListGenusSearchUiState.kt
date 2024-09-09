@@ -5,6 +5,7 @@ import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.IHasSearchQuery
 import com.bp.dinodata.data.search.ISearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
+import com.bp.dinodata.presentation.DataState
 
 interface IListGenusSearchUiState: IHasSearchQuery {
     fun isSearchBarVisible(): Boolean
@@ -19,12 +20,15 @@ interface IListGenusSearchUiState: IHasSearchQuery {
     fun getFirstVisibleItemOffset(): Int
 
     fun getSearch(): ISearch<IGenus>
+
+    fun getSearchResultState(): DataState<out List<IGenus>>
+    fun updateSearch(newSearch: ISearch<IGenus>): ListGenusUiState
 }
 
 interface IMutableSearchBarUiState: IListGenusSearchUiState {
-    fun updateSearchQuery(
-        newQuery: String,
-        selection: TextRange = TextRange(newQuery.length)
+    fun updateSearchTextState(
+        newQueryText: String,
+        selection: TextRange = TextRange(newQueryText.length)
     ): IListGenusSearchUiState
 
     /**
@@ -36,11 +40,6 @@ interface IMutableSearchBarUiState: IListGenusSearchUiState {
 
     /** Attempt to drop the given term from the search, while retaining all others */
     fun removeSearchTerm(term: ISearchTerm<in IGenus>): IListGenusSearchUiState
-
-    fun makeNewSearch(
-        locations: List<String>? = null,
-        taxa: List<String>? = null
-    ): IListGenusSearchUiState
 
     /** Discard the text content of the Search-Bar, but keep all existing search terms. */
     fun clearSearchTextField(): IListGenusSearchUiState

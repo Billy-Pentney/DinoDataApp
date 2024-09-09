@@ -21,4 +21,6 @@ interface IGenusRepository {
      */
     fun getLocationsFlow(): Flow<List<String>>
     fun getAllTaxaFlow(): Flow<List<String>>
+
+    suspend fun getLocations(): List<String>
 }

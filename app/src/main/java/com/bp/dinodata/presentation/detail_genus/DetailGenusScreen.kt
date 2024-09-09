@@ -22,7 +22,8 @@ fun DetailGenusScreen(
     detailGenusViewModel: DetailGenusViewModel
 ) {
     val uiState by remember { detailGenusViewModel.getUiState() }
-    val dataState = uiState.genusData
+    val dialogState = remember { detailGenusViewModel.getDialogState() }
+    val genusData = uiState.genusData
 
     val context = LocalContext.current
 
@@ -37,7 +38,7 @@ fun DetailGenusScreen(
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         Crossfade(
-            targetState = dataState,
+            targetState = genusData,
             label = "GenusDetailCrossfade"
         ) {
             when (it) {
@@ -47,6 +48,7 @@ fun DetailGenusScreen(
                 is DataState.Success -> {
                     GenusDetailScreenContent(
                         uiState = uiState,
+                        dialogState = dialogState,
                         modifier = Modifier
                             .padding(padding)
                             .padding(horizontal = 8.dp),

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenusWithPrefs
+import com.bp.dinodata.data.search.BlankSearch
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
 import com.bp.dinodata.use_cases.GenusUseCases
@@ -72,8 +73,7 @@ class ListGenusViewModel @Inject constructor(
         viewModelScope.launch {
             _searchTextFieldValueFlow.collectLatest {
                 Log.d("ListGenusViewModel", "Got search \'${it.text}\'")
-                makeSearch(it.text, it.selection)
-                applySearch()
+                makeSearch(it.text, it.selection, applyAfter=true)
             }
         }
 
@@ -133,23 +133,20 @@ class ListGenusViewModel @Inject constructor(
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
                 if (_uiState.value.hasSuggestions()) {
                     val suggestedText = _uiState.value.getAutofillSuggestion()
-                    makeSearch(suggestedText, TextRange(suggestedText.length))
-                    applySearch()
+                    // Also move the cursor to the end of the suggestion
+                    makeSearch(suggestedText, TextRange(suggestedText.length), applyAfter = true)
                 }
                 else {
                     _uiState.value = _uiState.value.copy(
-                        textFieldState = _uiState.value.getSearchTextFieldState().copy(
+                        searchBarTextFieldState = _uiState.value.getSearchTextFieldState().copy(
                             isFocused = false
                         )
                     )
                 }
             }
             is ListGenusPageUiEvent.RemoveSearchTerm -> {
-                _uiState.value = _uiState.value.removeSearchTerm(event.term)
-                    .makeNewSearch(
-                        locations = _locationsFlow.value,
-                        taxa = _taxaFlow.value
-                    )
+                val newSearch = _uiState.value.getSearch().withoutTerm(event.term)
+                _uiState.value = _uiState.value.updateSearch(newSearch)
                 applySearch()
             }
             is ListGenusPageUiEvent.UpdateScrollState -> {
@@ -179,7 +176,7 @@ class ListGenusViewModel @Inject constructor(
             is ListGenusPageUiEvent.FocusSearchBar -> {
                 // Update the UI to reflect the fact that the search bar is/isn't focused
                 _uiState.value = _uiState.value.copy(
-                    textFieldState = _uiState.value.getSearchTextFieldState().copy(
+                    searchBarTextFieldState = _uiState.value.getSearchTextFieldState().copy(
                         isFocused = event.focused,
                         isHintVisible = event.focused
                     )
@@ -188,12 +185,21 @@ class ListGenusViewModel @Inject constructor(
         }
     }
 
-    private fun makeSearch(newQuery: String, newTextSelection: TextRange) {
-        _uiState.value = _uiState.value.updateSearchQuery(newQuery, newTextSelection)
-        _uiState.value = _uiState.value.makeNewSearch(
-            locations = _locationsFlow.value,
-            taxa = _taxaFlow.value
-        )
+    private fun makeSearch(newQuery: String, newTextSelection: TextRange, applyAfter: Boolean=false) {
+        _uiState.value = _uiState.value.updateSearchTextState(newQuery, newTextSelection)
+
+        viewModelScope.launch {
+            val newSearch = genusUseCases.makeNewGenusSearch(
+                newQuery,
+                _uiState.value.getSearch()
+            )
+
+            _uiState.value = _uiState.value.updateSearch(newSearch)
+
+            if (applyAfter) {
+                applySearch()
+            }
+        }
     }
 
     private fun applySearch(resetScroll: Boolean = true) {
@@ -219,7 +225,7 @@ class ListGenusViewModel @Inject constructor(
             // If any text is present, clear it, but leave the bar open
             _uiState.value = _uiState.value
                 .clearSearchTextField()
-                .makeNewSearch()
+                .updateSearch(BlankSearch())
                 .runSearch()
         }
         else {

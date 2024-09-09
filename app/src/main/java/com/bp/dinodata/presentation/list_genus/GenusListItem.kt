@@ -75,7 +75,7 @@ fun GenusListItem(
 
     val colorTint =
         if (genus is ILocalPrefs) {
-            ThemeConverter.getColor(genus.getSelectedColorName())
+            ThemeConverter.getPrimaryColor(genus.getSelectedColorName())
         }
         else {
             null

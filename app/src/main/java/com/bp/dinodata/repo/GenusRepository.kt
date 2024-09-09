@@ -11,6 +11,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -81,19 +82,6 @@ class GenusRepository @Inject constructor(
         genusName: String,
         onFailure: () -> Unit = {}
     ): Flow<IGenus?> {
-
-//        val retrieveFromMap = flow {
-//            // If we already have this genus data in the map, load it
-//            if (genusName in generaByName.keys) {
-//                emit(generaByName[genusName])
-//            }
-//            // If no device network connection found, instantly fail
-//            else if (!hasNetConnectivity) {
-//                Log.d(TAG, "Cannot retrieve genus data. No network connection")
-//                emit(null)
-//            }
-//        }
-
         val firebaseFlow = genusCollection
             .document(genusName)
             .snapshots().map { snapshot ->
@@ -110,16 +98,6 @@ class GenusRepository @Inject constructor(
             }
 
         return firebaseFlow
-
-//        return retrieveFromMap.map { localCopy ->
-//            // Use the local copy if we have it; otherwise retrieve the firebase copy
-//            if (localCopy != null || !hasNetConnectivity) {
-//                localCopy
-//            }
-//            else {
-//                firebaseFlow.lastOrNull()
-//            }
-//        }
     }
 
     /**
@@ -151,6 +129,10 @@ class GenusRepository @Inject constructor(
                 GenusWithImages(genusData, genusImages)
             }
         }
+    }
+
+    override suspend fun getLocations(): List<String> {
+        return getLocationsFlow().first()
     }
 }
 

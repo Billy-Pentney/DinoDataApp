@@ -52,7 +52,7 @@ data class GenusSearch(
     }
 
     override fun getCompletedTerms(): List<ISearchTerm<in IGenus>> = terms
-    override fun removeTerm(term: ISearchTerm<in IGenus>): GenusSearch {
+    override fun withoutTerm(term: ISearchTerm<in IGenus>): GenusSearch {
         val newTerms = terms.toMutableList()
         newTerms.remove(term)
         return this.copy(terms = newTerms)
@@ -88,6 +88,17 @@ data class GenusSearch(
 //            terms = terms
 //        )
 //    }
+
+    override fun withoutQuery(): ISearch<IGenus> {
+        return GenusSearch(
+            terms,
+            // No query text - use the default blank term
+            taxa = taxa,
+            locations = locations,
+            possibleTimePeriods = possibleTimePeriods,
+            possibleDiets = possibleDiets
+        )
+    }
 }
 
 class BlankSearch<T>: IMutableSearch<T> {
@@ -96,7 +107,7 @@ class BlankSearch<T>: IMutableSearch<T> {
     override fun getSuggestedSuffixes(): List<String> = emptyList()
     override fun getAutofillSuggestion(): String = ""
     override fun isQueryEmpty(): Boolean = true
-    override fun removeTerm(term: ISearchTerm<in T>): IMutableSearch<T> = this
+    override fun withoutTerm(term: ISearchTerm<in T>): IMutableSearch<T> = this
     override fun getCompletedTerms(): List<ISearchTerm<in T>> = emptyList()
 
     override fun toFilter(): IFilter<T> = BlankFilter()
@@ -109,5 +120,7 @@ class BlankSearch<T>: IMutableSearch<T> {
         // Copy the list
         return list.toList()
     }
+
+    override fun withoutQuery(): ISearch<T> = this
 }
 
