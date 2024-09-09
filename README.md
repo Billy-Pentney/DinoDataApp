@@ -8,7 +8,7 @@ Data was scraped from the [Natural-History-Museum](nhm.ac.uk) website and [Wikip
 User interface was developed using Jetpack Compose.
 
 ## Data
-Creatures are described at the genus-level (e.g. "Tyrannosaurus", rather than "Tyrannosaurus rex"), and each entry contains the following fields:
+Creatures are described at the genus-level (e.g. "*Tyrannosaurus*", rather than "*Tyrannosaurus rex*"), and each entry contains the following fields:
 
 * **Etymology** - includes meaning (translation); pronunciation (written and audible via Text-to-Speech audio)
 * **Diet** - carnivore/piscivore/omnivore/herbivore/unknown
