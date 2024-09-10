@@ -12,7 +12,6 @@ abstract class ListBasedSearchTerm(
     private val imageIconVector: ImageVector? = null
 ): ISearchTerm<IGenus> {
     protected var queryArguments = listOf<String>()
-    protected val filter = this.toFilter()
 
     init {
         // Isolate the key from the values
@@ -27,6 +26,9 @@ abstract class ListBasedSearchTerm(
             Log.e("ListBasedSearchTerm", "No values found in text \'$originalText\'")
         }
     }
+
+    // This must be constructed *after* the query-arguments are parsed
+    protected val filter = this.toFilter()
 
     override fun toString(): String {
         val type = getType().toString()

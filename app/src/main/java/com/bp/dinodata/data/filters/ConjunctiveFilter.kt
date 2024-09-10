@@ -9,6 +9,11 @@ class ConjunctiveFilter<T>(
 ): ICompositeFilter<T> {
     private val _filters = filters.toMutableList()
 
+    val size: Int
+        get() = _filters.size
+
+    constructor(vararg filters: IFilter<in T>): this(filters.toList())
+
     override fun acceptsItem(item: T): Boolean {
         // Accept if and only if ALL the filters accept
         return _filters.fold(true) { state, filter ->

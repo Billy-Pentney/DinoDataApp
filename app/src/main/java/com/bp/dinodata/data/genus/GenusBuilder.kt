@@ -180,13 +180,23 @@ class GenusBuilder(
         return this
     }
 
+    override fun setDiet(diet: Diet): IGenusBuilder {
+        this.diet = diet
+        return this
+    }
+
     override fun setCreatureType(type: String?): IGenusBuilder {
         this.type = type?.let { CreatureTypeConverter.matchType(it) } ?: CreatureType.Other
         return this
     }
 
+    override fun setCreatureType(type: CreatureType): IGenusBuilder {
+        this.type = type
+        return this
+    }
+
     override fun setYearsLived(timeRange: String?): IGenusBuilder {
-        Log.i("GenusBuilder", "Setting years-lived to \'$timeRange\'")
+//        Log.i("GenusBuilder", "Setting years-lived to \'$timeRange\'")
 //        yearsLived = timeRange
         return this
     }

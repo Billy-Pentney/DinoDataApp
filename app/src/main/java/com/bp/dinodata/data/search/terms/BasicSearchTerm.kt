@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.bp.dinodata.data.DataParsing
 import com.bp.dinodata.data.filters.IFilter
 import com.bp.dinodata.data.filters.TextFilter
+import com.bp.dinodata.data.filters.TextFilterWithRegex
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IHasName
 
@@ -15,7 +16,7 @@ class BasicSearchTerm(
     private val filter = this.toFilter()
 
     override fun getType(): SearchTermType = SearchTermType.Text
-    override fun toFilter(): IFilter<IHasName> = TextFilter(query, isCapitalSensitive)
+    override fun toFilter(): IFilter<IHasName> = TextFilterWithRegex(query)
 
     override fun generateSearchSuggestions(): List<String> {
         return DataParsing.getLongestPotentialSuffixes(query, searchKeywords)

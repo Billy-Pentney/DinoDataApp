@@ -19,6 +19,31 @@ class TextFilter(
     }
 }
 
+class TextFilterWithRegex(
+    private val queryText: String,
+    private val acceptPartialMatches: Boolean = true
+): IFilter<IHasName> {
+
+    private var regexStr: String = queryText
+        // Escape any regex wildcards
+        .replace(".", "\\.")
+        // Substitute our wildcard with the regex wildcard
+        .replace("*", ".*")
+
+    private val regexPattern: Regex = regexStr.toRegex()
+
+    override fun acceptsItem(item: IHasName): Boolean {
+        val itemName = item.getName().lowercase()
+        return if (acceptPartialMatches) {
+            // Accept any string which includes the target pattern
+            regexPattern.find(itemName) != null
+        } else {
+            // Only accept string which are an exact match for the full pattern
+            regexPattern.matches(itemName)
+        }
+    }
+}
+
 
 
 
