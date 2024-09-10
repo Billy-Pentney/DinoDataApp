@@ -190,25 +190,22 @@ fun ListGenusSearchBar(
         isFocused = searchTextFieldState.isFocused
     }
 
-
-//    LaunchedEffect(null) {
-//        if (searchTextFieldState.isFocused) {
-//            // Take focus of the search bar when it is first opened
-//            isFocused = true
-//            searchTextFocus.requestFocus()
-//        } else {
-//            isFocused = false
-//            focusManager.clearFocus()
-//        }
-//    }
+    LaunchedEffect(null) {
+        if (searchTextFieldState.isFocused) {
+            // Take focus of the search bar when it is first opened
+            isFocused = true
+            searchTextFocus.requestFocus()
+        } else {
+            isFocused = false
+            focusManager.clearFocus()
+        }
+    }
 
     val textChangeFlow = remember { MutableSharedFlow<TextFieldValue>() }
     LaunchedEffect(textFieldValue) {
         textChangeFlow.collect {
             Log.d("SearchBar", "Got \'${it.text}\'")
-            if (searchTextFieldState.getTextContent() != textFieldValue.text) {
-                updateSearchQuery(it)
-            }
+            updateSearchQuery(it)
         }
     }
 

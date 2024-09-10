@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,9 +30,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -50,9 +46,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -270,6 +266,7 @@ fun ShowSearchOrGeneraPager(
                         prefillSearchSuggestion = prefillSearchSuggestion,
                         removeSearchTerm = removeSearchTerm,
                         onSearchBarFocusChanged = onSearchBarFocusChanged,
+                        updateScrollState = updateScrollState,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -373,6 +370,7 @@ fun GeneraSearchContent(
     prefillSearchSuggestion: () -> Unit,
     removeSearchTerm: (ISearchTerm<in IGenus>) -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit,
+    updateScrollState: (LazyListState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val searchResultState = uiState.getSearchResultState()
@@ -384,15 +382,14 @@ fun GeneraSearchContent(
         searchResultsList = searchResultState.data
     }
     
-    val scrollState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberLazyListState(
+        initialFirstVisibleItemScrollOffset = uiState.getFirstVisibleItemOffset(),
+        initialFirstVisibleItemIndex = uiState.getFirstVisibleItemIndex()
+    )
 
-    SideEffect {
-        coroutineScope.launch {
-            scrollState.scrollToItem(
-                uiState.getFirstVisibleItemIndex(),
-                uiState.getFirstVisibleItemOffset()
-            )
+    DisposableEffect(null) {
+        onDispose {
+            updateScrollState(scrollState)
         }
     }
 
@@ -429,6 +426,9 @@ fun GeneraSearchContent(
         }
     }
 }
+
+
+
 
 
 @Composable
@@ -591,7 +591,6 @@ fun GeneraCarousel(
         }
     }
 
-
     // Monitoring nested scroll within the page
     var persistScrollY by remember { mutableFloatStateOf(0f) }
     val nestedScrollConnection = remember {
@@ -640,41 +639,6 @@ fun GeneraCarousel(
     }
 }
 
-@Composable
-fun ListOfGenera(
-    generaList: List<IGenus>?,
-    outerPadding: Dp,
-    navigateToGenus: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    verticalSpacing: Dp = 8.dp,
-    scrollState: ScrollState = rememberScrollState(),
-) {
-    val numElements = generaList?.size ?: 0
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(verticalSpacing),
-        modifier = modifier
-            .verticalScroll(scrollState)
-            .fillMaxWidth()
-    ) {
-        generaList?.forEach { genus ->
-            GenusListItem(
-                genus = genus,
-                onClick = { navigateToGenus(genus.getName()) }
-            )
-        }
-        DividerTextRow(
-            text = stringResource(R.string.text_showing_X_creatures, numElements),
-            modifier = Modifier
-                .padding(horizontal = 4.dp + outerPadding)
-                .padding(top = 8.dp),
-            dividerPadding = PaddingValues(horizontal = 8.dp)
-        )
-        Spacer(Modifier.height(40.dp))
-    }
-}
-
-
 
 
 
@@ -689,13 +653,13 @@ fun LazyListOfGenera(
     updateScrollState: ((LazyListState) -> Unit)? = null,
     showCreatureCountAtBottom: Boolean = true
 ) {
-//    if (updateScrollState != null) {
-//        DisposableEffect(key1 = null) {
-//            onDispose {
-//                updateScrollState(scrollState)
-//            }
-//        }
-//    }
+    if (updateScrollState != null) {
+        DisposableEffect(key1 = null) {
+            onDispose {
+                updateScrollState(scrollState)
+            }
+        }
+    }
 
     val numElements = generaList?.size ?: 0
     

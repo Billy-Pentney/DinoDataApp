@@ -33,7 +33,7 @@ class ListGenusViewModel @Inject constructor(
         = genusUseCases.getGenusWithPrefsByLetterFlow()
         .stateIn(viewModelScope, SharingStarted.Lazily, DataState.LoadInProgress())
 
-    private val _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
+    private val pagerUiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
     private val contentMode: MutableState<ListGenusContentMode> = mutableStateOf(ListGenusContentMode.Pager)
     private val searchUiState: MutableState<ListGenusSearchUiState> = mutableStateOf(
         ListGenusSearchUiState()
@@ -48,7 +48,7 @@ class ListGenusViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _listOfGeneraByLetter.collectLatest {
-                _uiState.value = _uiState.value.copy(
+                pagerUiState.value = pagerUiState.value.copy(
                     allPageData = it
                 )
                 applySearch(resetScroll = false)
@@ -107,7 +107,7 @@ class ListGenusViewModel @Inject constructor(
     override fun getContentModeState(): State<ListGenusContentMode> = contentMode
     override fun getSearchUiState(): State<IListGenusSearchUiState> = searchUiState
 
-    override fun getUiState(): State<ListGenusUiState> = _uiState
+    override fun getUiState(): State<ListGenusUiState> = pagerUiState
 
     override fun onUiEvent(event: ListGenusPageUiEvent) {
         viewModelScope.launch {
@@ -124,9 +124,15 @@ class ListGenusViewModel @Inject constructor(
                 }
             }
 
-            ListGenusPageUiEvent.RunSearch -> applySearch()
-            ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearOrHideSearch()
-            ListGenusPageUiEvent.RefreshFeed -> refreshFeed()
+            ListGenusPageUiEvent.RunSearch -> {
+                applySearch()
+            }
+            ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> {
+                clearOrHideSearch()
+            }
+            ListGenusPageUiEvent.RefreshFeed -> {
+                refreshFeed()
+            }
 
             is ListGenusPageUiEvent.ToggleSearchBar -> {
                 contentMode.value =
@@ -136,7 +142,7 @@ class ListGenusViewModel @Inject constructor(
                     }
             }
             is ListGenusPageUiEvent.SwitchToPage -> {
-                _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
+                pagerUiState.value = pagerUiState.value.copy(selectedPageIndex = event.pageIndex)
             }
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
                 if (searchUiState.value.hasSuggestions()) {
@@ -169,10 +175,20 @@ class ListGenusViewModel @Inject constructor(
                 applySearch()
             }
             is ListGenusPageUiEvent.UpdateScrollState -> {
-                _uiState.value = _uiState.value.copy(
-                    firstVisibleItem = event.state.firstVisibleItemIndex,
-                    firstVisibleItemOffset = event.state.firstVisibleItemScrollOffset
-                )
+                when (contentMode.value) {
+                    ListGenusContentMode.Pager -> {
+                        pagerUiState.value = pagerUiState.value.copy(
+                            firstVisibleItem = event.state.firstVisibleItemIndex,
+                            firstVisibleItemOffset = event.state.firstVisibleItemScrollOffset
+                        )
+                    }
+                    ListGenusContentMode.Search -> {
+                        searchUiState.value = searchUiState.value.copy(
+                            firstVisibleItem = event.state.firstVisibleItemIndex,
+                            firstVisibleItemOffset = event.state.firstVisibleItemScrollOffset
+                        )
+                    }
+                }
             }
 
             ListGenusPageUiEvent.NavigateUp -> {
@@ -223,7 +239,7 @@ class ListGenusViewModel @Inject constructor(
 
     private fun refreshFeed() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
+            pagerUiState.value = pagerUiState.value.copy(
                 allPageData = _listOfGeneraByLetter.value
             )
             applySearch()
