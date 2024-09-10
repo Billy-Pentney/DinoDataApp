@@ -84,7 +84,7 @@ class TaxonomyScreenViewModel @Inject constructor(
             is TaxonomyScreenUiEvent.UpdateSearchBoxText -> {
                 uiState.value = uiState.value.copy(
                     searchBoxTextState = uiState.value.searchBoxTextState.copy(
-                        textContent = event.text
+                        text = event.text
                     )
                 )
                 // Clear any highlighted genera
@@ -100,7 +100,7 @@ class TaxonomyScreenViewModel @Inject constructor(
             }
 
             TaxonomyScreenUiEvent.SubmitSearch -> {
-                val currText = uiState.value.searchBoxTextState.textContent
+                val currText = uiState.value.searchBoxTextState.getTextContent()
 
                 taxonomyFlow.value = taxonomyFlow.value.map {
                     // Get the line of names to the given node

@@ -81,6 +81,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -541,7 +542,7 @@ fun TaxonomyScreenContent(
                     .padding(8.dp)
             ) {
                 TaxonomyScreenSearchBar(
-                    text = uiState.searchBoxTextState.textContent,
+                    text = uiState.searchBoxTextState.getTextContent(),
                     updateSearchBarContent = updateSearchBarContent,
                     submitSearch = submitSearch
                 )
@@ -827,7 +828,7 @@ fun PreviewTaxonomyScreen() {
     val uiState = TaxonomyScreenUiState(
         isSearchBarVisible = true,
         searchBoxTextState = TextFieldState(
-            textContent = "diplodocidae"
+            text = "diplodocidae"
         )
     )
 

@@ -51,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -91,6 +92,7 @@ import com.bp.dinodata.data.genus.LocalPrefs
 import com.bp.dinodata.data.search.GenusSearchBuilder
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
+import com.bp.dinodata.presentation.map
 import com.bp.dinodata.presentation.utils.DividerTextRow
 import com.bp.dinodata.presentation.utils.LoadingItemsPlaceholder
 import com.bp.dinodata.presentation.utils.MissingDataPlaceholder
@@ -105,6 +107,8 @@ import kotlin.math.max
 @Composable
 fun ListGenusScreenContent(
     uiState: IListGenusUiState,
+    searchUiState: IListGenusSearchUiState,
+    contentMode: ListGenusContentMode,
     navigateToGenus: (String) -> Unit = {},
     spacing: Dp = 8.dp,
     outerPadding: Dp = 12.dp,
@@ -120,7 +124,10 @@ fun ListGenusScreenContent(
     openNavDrawer: () -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit
 ) {
-    val searchBarVisible = uiState.isSearchBarVisible()
+    var dataState by remember { mutableStateOf(uiState.getDataState()) }
+    dataState = uiState.getDataState()
+
+    val searchBarVisible = contentMode == ListGenusContentMode.Search
 
     Scaffold(
         topBar = {
@@ -190,7 +197,7 @@ fun ListGenusScreenContent(
         }
     ) { pad ->
         Crossfade (
-            uiState.getDataState(),
+            dataState,
             label="listCrossfade",
             modifier = Modifier.padding(pad)
         ) {
@@ -198,6 +205,8 @@ fun ListGenusScreenContent(
                 is DataState.Success -> {
                     ShowSearchOrGeneraPager(
                         uiState = uiState,
+                        searchUiState = searchUiState,
+                        contentMode = contentMode,
                         spacing = spacing,
                         outerPadding = outerPadding,
                         navigateToGenus = navigateToGenus,
@@ -230,6 +239,8 @@ fun ListGenusScreenContent(
 @Composable
 fun ShowSearchOrGeneraPager(
     uiState: IListGenusUiState,
+    searchUiState: IListGenusSearchUiState,
+    contentMode: ListGenusContentMode,
     spacing: Dp,
     outerPadding: Dp,
     navigateToGenus: (String) -> Unit,
@@ -244,13 +255,13 @@ fun ShowSearchOrGeneraPager(
 ) {
     Column {
         Crossfade(
-            targetState = uiState.getContentMode(),
+            targetState = contentMode,
             label = "search_or_page_select"
         ) {
             when (it) {
                 ListGenusContentMode.Search -> {
                     GeneraSearchContent(
-                        uiState = uiState,
+                        uiState = searchUiState,
                         updateSearchQuery = updateSearchQuery,
                         runSearch = runSearch,
                         clearSearchQuery = clearSearchQuery,
@@ -283,7 +294,7 @@ fun ShowSearchOrGeneraPager(
 
 @Composable
 fun SearchBarHeader(
-    searchData: DataState<out List<IGenus>>,
+    numResultsDataState: DataState<out Int>,
     textFieldState: TextFieldState,
     completedSearchTerms: List<ISearchTerm<in IGenus>>,
     updateSearchQuery: (TextFieldValue) -> Unit,
@@ -295,16 +306,22 @@ fun SearchBarHeader(
     onSearchBarFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Store the number of genera returned by the search
+    var numResults by remember { mutableIntStateOf(0) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    isLoading = numResultsDataState is DataState.LoadInProgress
+
+    // Store the text indicating the current search state
     var belowSearchBarText by remember { mutableStateOf("") }
 
-    belowSearchBarText = when (searchData) {
-        is DataState.Success -> {
-            stringResource(R.string.text_showing_X_creatures, searchData.data.size)
+    numResults =
+        if (numResultsDataState is DataState.Success) {
+            numResultsDataState.data
         }
-        else -> {
-            stringResource(R.string.status_searching)
+        else {
+            0
         }
-    }
 
     Surface (
         shadowElevation = 20.dp,
@@ -322,12 +339,22 @@ fun SearchBarHeader(
                 runSearch = runSearch,
                 onSearchBarFocusChanged = onSearchBarFocusChanged
             )
-            AnimatedVisibility(visible = belowSearchBarText.isNotEmpty()) {
-                DividerTextRow(
-                    text = belowSearchBarText,
-                    modifier = Modifier.padding(vertical = 12.dp, horizontal = outerPadding),
-                    dividerPadding = PaddingValues(horizontal = 8.dp)
-                )
+
+            Crossfade(isLoading, label="search_header_status_text") {
+                if (!it) {
+                    DividerTextRow(
+                        text = stringResource(R.string.text_showing_X_creatures, numResults),
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = outerPadding),
+                        dividerPadding = PaddingValues(horizontal = 8.dp)
+                    )
+                }
+                else {
+                    DividerTextRow(
+                        text = stringResource(R.string.status_searching),
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = outerPadding),
+                        dividerPadding = PaddingValues(horizontal = 8.dp)
+                    )
+                }
             }
         }
     }
@@ -349,33 +376,24 @@ fun GeneraSearchContent(
     modifier: Modifier = Modifier
 ) {
     val searchResultState = uiState.getSearchResultState()
-    val searchResults =
-        if (searchResultState is DataState.Success) {
-            searchResultState.data
-        }
-        else {
-            emptyList()
-        }
+    val isLoaded = searchResultState is DataState.Success
 
-    val searchLoaded = searchResultState is DataState.Success
+    var searchResultsList by remember { mutableStateOf(emptyList<IGenus>()) }
 
-    val belowSearchBarText =
-        when (searchResultState) {
-            is DataState.Success -> {
-                stringResource(R.string.text_showing_X_creatures, searchResultState.data.size)
-            }
-            else -> {
-                stringResource(R.string.status_searching)
-            }
-        }
-
+    if (searchResultState is DataState.Success) {
+        searchResultsList = searchResultState.data
+    }
+    
     val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState) {
-        scrollState.scrollToItem(
-            uiState.getFirstVisibleItemIndex(),
-            uiState.getFirstVisibleItemOffset()
-        )
+    SideEffect {
+        coroutineScope.launch {
+            scrollState.scrollToItem(
+                uiState.getFirstVisibleItemIndex(),
+                uiState.getFirstVisibleItemOffset()
+            )
+        }
     }
 
     Column (
@@ -383,7 +401,7 @@ fun GeneraSearchContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SearchBarHeader(
-            searchData = searchResultState,
+            numResultsDataState = searchResultState.map { it.size },
             textFieldState = uiState.getSearchTextFieldState(),
             completedSearchTerms = uiState.getCompletedSearchTerms(),
             updateSearchQuery = updateSearchQuery,
@@ -395,25 +413,20 @@ fun GeneraSearchContent(
             onSearchBarFocusChanged = onSearchBarFocusChanged
         )
 
-//        Crossfade(targetState = searchResultState, label="search_results_crossfade") {
-//            when (it) {
-//                is DataState.Success -> {
-                    LazyListOfGenera(
-                        searchResults,
-                        contentPadding = PaddingValues(outerPadding),
-                        navigateToGenus = navigateToGenus,
-                        showCreatureCountAtBottom = false,
-                        scrollState = scrollState
-                    )
-//                }
-//                is DataState.LoadInProgress -> {
-//                    LoadingItemsPlaceholder()
-//                }
-//                else -> {
-//                    NoDataPlaceholder()
-//                }
-//            }
-//        }
+        Crossfade(targetState = isLoaded, label="search_results_crossfade") {
+            if (it) {
+                LazyListOfGenera(
+                    searchResultsList,
+                    contentPadding = PaddingValues(outerPadding),
+                    navigateToGenus = navigateToGenus,
+                    showCreatureCountAtBottom = false,
+                    scrollState = scrollState
+                )
+            }
+            else {
+                LoadingItemsPlaceholder()
+            }
+        }
     }
 }
 
@@ -728,7 +741,8 @@ fun ListGenusScreen(
     openNavDrawer: () -> Unit
 ) {
     val uiState by remember { listGenusViewModel.getUiState() }
-    val contentMode by remember { derivedStateOf { uiState.getContentMode() } }
+    val contentMode by remember { listGenusViewModel.getContentModeState() }
+    val searchUiState by remember { listGenusViewModel.getSearchUiState() }
     val toastFlow = remember { listGenusViewModel.getToastFlow() }
 
     val context = LocalContext.current
@@ -746,6 +760,8 @@ fun ListGenusScreen(
 
     ListGenusScreenContent(
         uiState = uiState,
+        searchUiState = searchUiState,
+        contentMode = contentMode,
         navigateToGenus = navigateToGenus,
         switchToPageByIndex = { index ->
             listGenusViewModel.onUiEvent(ListGenusPageUiEvent.SwitchToPage(index))
@@ -805,15 +821,17 @@ fun PreviewListGenus() {
         ListGenusScreenContent(
             uiState = ListGenusUiState(
                 allPageData = DataState.Success(generaGrouped),
-                searchResults = DataState.Success(genera),
                 selectedPageIndex = 0,
-                contentMode = ListGenusContentMode.Search,
+            ),
+            searchUiState = ListGenusSearchUiState(
                 search = GenusSearchBuilder(
                     query = "taxon:ab",
                     possibleLocations = listOf("USA", "canada"),
                     possibleTaxa = listOf("abelisauridae", "brachiosauridae")
                 ).build(),
+                searchResults = DataState.Success(genera),
             ),
+            contentMode = ListGenusContentMode.Search,
             updateSearchQuery = {},
             clearSearchQuery = {},
             updateScrollState = {},

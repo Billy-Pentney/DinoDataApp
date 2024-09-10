@@ -131,8 +131,15 @@ class GenusRepository @Inject constructor(
         }
     }
 
+    private var locationsList: List<String> = emptyList()
+
     override suspend fun getLocations(): List<String> {
-        return getLocationsFlow().first()
+        if (locationsList.isNotEmpty()) {
+            return locationsList
+        }
+        return getLocationsFlow().first().also {
+            locationsList = it
+        }
     }
 }
 

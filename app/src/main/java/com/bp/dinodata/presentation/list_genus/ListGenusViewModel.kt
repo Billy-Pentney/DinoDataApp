@@ -32,12 +32,12 @@ class ListGenusViewModel @Inject constructor(
     private val _listOfGeneraByLetter: StateFlow<DataState<IResultsByLetter<IGenusWithPrefs>>>
         = genusUseCases.getGenusWithPrefsByLetterFlow()
         .stateIn(viewModelScope, SharingStarted.Lazily, DataState.LoadInProgress())
-    private val _locationsFlow: StateFlow<List<String>> = genusUseCases.getGenusLocationsFlow()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-    private val _taxaFlow: StateFlow<List<String>> = genusUseCases.getGenusTaxaFlow()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _uiState: MutableState<ListGenusUiState> = mutableStateOf(ListGenusUiState())
+    private val contentMode: MutableState<ListGenusContentMode> = mutableStateOf(ListGenusContentMode.Pager)
+    private val searchUiState: MutableState<ListGenusSearchUiState> = mutableStateOf(
+        ListGenusSearchUiState()
+    )
 
     private val _uiEventFlow: MutableSharedFlow<ListGenusPageUiEvent> = MutableSharedFlow()
     private val toastFlow: MutableSharedFlow<String> = MutableSharedFlow()
@@ -69,9 +69,9 @@ class ListGenusViewModel @Inject constructor(
             }
         }
 
-        // Listen for search-box update events
+        // Listen for changes to the contents of the Search-Box
         viewModelScope.launch {
-            _searchTextFieldValueFlow.collectLatest {
+            _searchTextFieldValueFlow.collect {
                 Log.d("ListGenusViewModel", "Got search \'${it.text}\'")
                 makeSearch(it.text, it.selection, applyAfter=true)
             }
@@ -79,26 +79,33 @@ class ListGenusViewModel @Inject constructor(
 
         // Listen for Search events
         viewModelScope.launch {
-            _applySearchFlow.collectLatest { resetScroll ->
-                _uiState.value = _uiState.value.copy(
+            _applySearchFlow.collect { resetScroll ->
+                searchUiState.value = searchUiState.value.copy(
                     searchResults = DataState.LoadInProgress()
                 )
 
-                val filteredGenera = genusUseCases.applyGenusSearch(_uiState.value.getSearch())
+                val currentSearch = searchUiState.value.getSearch()
+                val filteredGenera = genusUseCases.applyGenusSearch(currentSearch)
 
-                val firstVisibleItemIndex = if (resetScroll) 0 else _uiState.value.getFirstVisibleItemIndex()
-                val firstVisibleItemOffset = if (resetScroll) 0 else _uiState.value.getFirstVisibleItemOffset()
+                val firstVisibleItemIndex =
+                    if (resetScroll) 0 else searchUiState.value.getFirstVisibleItemIndex()
+                val firstVisibleItemOffset =
+                    if (resetScroll) 0 else searchUiState.value.getFirstVisibleItemOffset()
 
                 Log.d("ListGenusViewModel","New search results: ${filteredGenera.map { it.size }}")
 
-                _uiState.value = _uiState.value.copy(
-                    searchResults = filteredGenera,
-                    firstVisibleItem = firstVisibleItemIndex,
-                    firstVisibleItemOffset = firstVisibleItemOffset
-                )
+                searchUiState.value = searchUiState.value
+                    .copy(
+                        searchResults = filteredGenera,
+                        firstVisibleItem = firstVisibleItemIndex,
+                        firstVisibleItemOffset = firstVisibleItemOffset
+                    )
             }
         }
     }
+
+    override fun getContentModeState(): State<ListGenusContentMode> = contentMode
+    override fun getSearchUiState(): State<IListGenusSearchUiState> = searchUiState
 
     override fun getUiState(): State<ListGenusUiState> = _uiState
 
@@ -112,41 +119,53 @@ class ListGenusViewModel @Inject constructor(
         when (event) {
             is ListGenusPageUiEvent.UpdateSearchQuery -> {
                 viewModelScope.launch {
-                    _searchTextFieldValueFlow.emit(event.state)
+                    searchUiState.value = searchUiState.value.updateSearchTextState(event.textValue.text, event.textValue.selection)
+                    _searchTextFieldValueFlow.emit(event.textValue)
                 }
             }
+
             ListGenusPageUiEvent.RunSearch -> applySearch()
             ListGenusPageUiEvent.ClearSearchQueryOrHideBar -> clearOrHideSearch()
             ListGenusPageUiEvent.RefreshFeed -> refreshFeed()
 
             is ListGenusPageUiEvent.ToggleSearchBar -> {
-                _uiState.value = _uiState.value.copy(
-                    contentMode = when {
+                contentMode.value =
+                    when {
                         event.visible -> ListGenusContentMode.Search
                         else          -> ListGenusContentMode.Pager
                     }
-                )
             }
             is ListGenusPageUiEvent.SwitchToPage -> {
                 _uiState.value = _uiState.value.copy(selectedPageIndex = event.pageIndex)
             }
             is ListGenusPageUiEvent.AcceptSearchSuggestion -> {
-                if (_uiState.value.hasSuggestions()) {
-                    val suggestedText = _uiState.value.getAutofillSuggestion()
-                    // Also move the cursor to the end of the suggestion
-                    makeSearch(suggestedText, TextRange(suggestedText.length), applyAfter = true)
+                if (searchUiState.value.hasSuggestions()) {
+                    val suggestedText = searchUiState.value.getAutofillSuggestion()
+                    viewModelScope.launch {
+                        searchUiState.value = searchUiState.value.updateSearchTextState(
+                            suggestedText,
+                            TextRange(suggestedText.length)
+                        )
+                        _searchTextFieldValueFlow.emit(
+                            TextFieldValue(
+                                text = suggestedText,
+                                // Move the cursor to the end of the search bar
+                                selection = TextRange(suggestedText.length)
+                            )
+                        )
+                    }
                 }
                 else {
-                    _uiState.value = _uiState.value.copy(
-                        searchBarTextFieldState = _uiState.value.getSearchTextFieldState().copy(
+                    searchUiState.value = searchUiState.value.copy(
+                        searchBarTextFieldState = searchUiState.value.getSearchTextFieldState().copy(
                             isFocused = false
                         )
                     )
                 }
             }
             is ListGenusPageUiEvent.RemoveSearchTerm -> {
-                val newSearch = _uiState.value.getSearch().withoutTerm(event.term)
-                _uiState.value = _uiState.value.updateSearch(newSearch)
+                val newSearch = searchUiState.value.getSearch().withoutTerm(event.term)
+                searchUiState.value = searchUiState.value.updateSearch(newSearch)
                 applySearch()
             }
             is ListGenusPageUiEvent.UpdateScrollState -> {
@@ -157,7 +176,7 @@ class ListGenusViewModel @Inject constructor(
             }
 
             ListGenusPageUiEvent.NavigateUp -> {
-                if (_uiState.value.getFullQuery().isNotEmpty()) {
+                if (searchUiState.value.getFullQuery().isNotEmpty()) {
                     // If there's any text
                     handleEvent(ListGenusPageUiEvent.ClearSearchQueryOrHideBar)
                 }
@@ -175,8 +194,8 @@ class ListGenusViewModel @Inject constructor(
 
             is ListGenusPageUiEvent.FocusSearchBar -> {
                 // Update the UI to reflect the fact that the search bar is/isn't focused
-                _uiState.value = _uiState.value.copy(
-                    searchBarTextFieldState = _uiState.value.getSearchTextFieldState().copy(
+                searchUiState.value = searchUiState.value.copy(
+                    searchBarTextFieldState = searchUiState.value.getSearchTextFieldState().copy(
                         isFocused = event.focused,
                         isHintVisible = event.focused
                     )
@@ -186,16 +205,10 @@ class ListGenusViewModel @Inject constructor(
     }
 
     private fun makeSearch(newQuery: String, newTextSelection: TextRange, applyAfter: Boolean=false) {
-        _uiState.value = _uiState.value.updateSearchTextState(newQuery, newTextSelection)
-
         viewModelScope.launch {
-            val newSearch = genusUseCases.makeNewGenusSearch(
-                newQuery,
-                _uiState.value.getSearch()
-            )
-
-            _uiState.value = _uiState.value.updateSearch(newSearch)
-
+            val oldSearch = searchUiState.value.getSearch()
+            val newSearch = genusUseCases.makeNewGenusSearch(newQuery, oldSearch)
+            searchUiState.value = searchUiState.value.updateSearch(newSearch)
             if (applyAfter) {
                 applySearch()
             }
@@ -221,16 +234,15 @@ class ListGenusViewModel @Inject constructor(
     override fun getToastFlow(): Flow<String> = toastFlow
 
     private fun clearOrHideSearch() {
-        if (!_uiState.value.isQueryEmpty()) {
+        if (!searchUiState.value.isQueryEmpty()) {
             // If any text is present, clear it, but leave the bar open
-            _uiState.value = _uiState.value
-                .clearSearchTextField()
+            searchUiState.value = searchUiState.value
                 .updateSearch(BlankSearch())
-                .runSearch()
+            applySearch(true)
         }
         else {
             // Otherwise, hide the search bar
-            _uiState.value = _uiState.value.hideSearchBar()
+            contentMode.value = ListGenusContentMode.Pager
         }
     }
 

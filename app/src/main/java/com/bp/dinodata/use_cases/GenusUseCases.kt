@@ -14,10 +14,14 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
 import com.bp.dinodata.repo.ITaxonomyRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class GenusUseCases(
     private val genusRepository: IGenusRepository,
@@ -79,9 +83,11 @@ class GenusUseCases(
      * @return A DataState, representing the results of the search.
      */
     suspend fun applyGenusSearch(search: IFilter<IGenus>): DataState<List<IGenus>> {
-        val generaWithPreferences = getGenusWithPrefsFlow().first()
+        val generaWithPreferences = getGenusWithPrefsFlow().stateIn(
+            CoroutineScope(Dispatchers.IO)
+        ).value
         return when (generaWithPreferences) {
-            null -> DataState.Failed("No genera loaded")
+            null -> DataState.Failed("No genera were available")
             else -> DataState.Success(search.applyTo(generaWithPreferences))
         }
     }
@@ -90,14 +96,11 @@ class GenusUseCases(
         newSearchText: String,
         currSearch: ISearch<IGenus>? = null
     ): ISearch<IGenus> {
-        val locations = genusRepository.getLocationsFlow().first()
-        val taxa = taxonRepository.getAllTaxonNames()
-
         val newSearch = GenusSearchBuilder(
             query = newSearchText,
             terms = currSearch?.getCompletedTerms() ?: emptyList(),
-            possibleLocations = locations,
-            possibleTaxa = taxa
+            possibleLocations = genusRepository.getLocations(),
+            possibleTaxa = taxonRepository.getAllTaxonNames()
         ).build()
 
         return newSearch

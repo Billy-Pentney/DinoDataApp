@@ -12,4 +12,8 @@ interface IListGenusViewModel {
 
     /** Get a flow which emits text to be shown as Toast messages. */
     fun getToastFlow(): Flow<String>
+
+    fun getContentModeState(): State<ListGenusContentMode>
+
+    fun getSearchUiState(): State<IListGenusSearchUiState>
 }

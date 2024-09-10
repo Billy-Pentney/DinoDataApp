@@ -1,9 +1,5 @@
 package com.bp.dinodata.data.search
 
-import com.bp.dinodata.data.Diet
-import com.bp.dinodata.data.enum_readers.DietConverter
-import com.bp.dinodata.data.enum_readers.EpochConverter
-import com.bp.dinodata.data.enum_readers.TimePeriods
 import com.bp.dinodata.data.filters.BlankFilter
 import com.bp.dinodata.data.filters.FilterBuilderImpl
 import com.bp.dinodata.data.filters.IFilter
@@ -12,20 +8,12 @@ import com.bp.dinodata.data.search.terms.BasicSearchTerm
 import com.bp.dinodata.data.search.terms.ISearchTerm
 
 /**
- *
- * @param locations A list of all unique locations across all genus data; this list is used
- * to generate suggested suffixes if the search filters by location.
- * @param taxa A list of all unique taxa found across the genus data; this list is used
- * to generate suggested suffixes if the search filters by taxon.
+ * Describes a collection of SearchTerms (filters) which can be applied to a list of Genus objects.
  */
 data class GenusSearch(
     private var terms: List<ISearchTerm<in IGenus>> = emptyList(),
     private val currentTerm: ISearchTerm<in IGenus> = BasicSearchTerm(""),
-    private var capSensitive: Boolean = false,
-    private val locations: List<String> = emptyList(),
-    private val taxa: List<String> = emptyList(),
-    private val possibleDiets: List<String> = DietConverter.getListOfOptions(),
-    private val possibleTimePeriods: List<String> = EpochConverter.getListOfOptions()
+    private var capSensitive: Boolean = false
 ): IMutableSearch<IGenus> {
 
     private val filter = this.toFilter()
@@ -90,14 +78,7 @@ data class GenusSearch(
 //    }
 
     override fun withoutQuery(): ISearch<IGenus> {
-        return GenusSearch(
-            terms,
-            // No query text - use the default blank term
-            taxa = taxa,
-            locations = locations,
-            possibleTimePeriods = possibleTimePeriods,
-            possibleDiets = possibleDiets
-        )
+        return GenusSearch(terms)
     }
 }
 

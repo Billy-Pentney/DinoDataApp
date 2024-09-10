@@ -12,7 +12,7 @@ import com.bp.dinodata.data.search.terms.ISearchTerm
 sealed class ListGenusPageUiEvent {
 
     data class UpdateSearchQuery(
-        val state: TextFieldValue,
+        val textValue: TextFieldValue,
         val capSensitive: Boolean = false,
         val alsoRunSearch: Boolean = false
     ) : ListGenusPageUiEvent()
