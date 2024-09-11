@@ -38,6 +38,9 @@ class SearchTermBuilder(
         private val PREFIX_COLON_LIST = PREFIX_LIST.map { "$it:" }
     }
 
+    // Recommend suggestions from the valid keyword and from the list of genera
+    private val basicQuerySuggestions = PREFIX_COLON_LIST + generaNames
+
     fun fromText(termText: String): ISearchTerm<in IGenus> {
         val splits = termText.trim().split(":")
         if (splits.size != 2) {
@@ -49,8 +52,7 @@ class SearchTermBuilder(
     private fun makeBasicSearchTerm(text: String): ISearchTerm<in IGenus> {
         return BasicSearchTerm(
             text,
-            // Recommend suggestions from the valid keyword and from the list of genera
-            searchKeywords = PREFIX_COLON_LIST + generaNames
+            searchKeywords = basicQuerySuggestions
         )
     }
 

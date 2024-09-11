@@ -12,8 +12,7 @@ import com.bp.dinodata.data.search.terms.ISearchTerm
  */
 data class GenusSearch(
     private var terms: List<ISearchTerm<in IGenus>> = emptyList(),
-    private val currentTerm: ISearchTerm<in IGenus> = BasicSearchTerm(""),
-    private var capSensitive: Boolean = false
+    private val currentTerm: ISearchTerm<in IGenus> = BasicSearchTerm("")
 ): IMutableSearch<IGenus> {
 
     private val filter = this.toFilter()
@@ -52,9 +51,6 @@ data class GenusSearch(
         return FilterBuilderImpl(filters).build()
     }
 
-    // TODO - make the search store the partial results after each filter, thus avoiding the full recalculation
-//    private val searchResults: List<List<IGenus>>? = null
-//
     override fun acceptsItem(item: IGenus): Boolean {
         return this.filter.acceptsItem(item)
     }
@@ -82,6 +78,10 @@ data class GenusSearch(
     }
 }
 
+
+/**
+ * A generic search with no query and no terms. It accepts all items of the given type.
+ * */
 class BlankSearch<T>: IMutableSearch<T> {
     override fun getFullQuery(): String = ""
     override fun getQuery(): String = ""

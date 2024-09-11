@@ -14,12 +14,11 @@ import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.repo.IGenusRepository
 import com.bp.dinodata.repo.ILocalPreferencesRepository
 import com.bp.dinodata.repo.ITaxonomyRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -28,14 +27,6 @@ class GenusUseCases(
     private val localPrefRepository: ILocalPreferencesRepository,
     private val taxonRepository: ITaxonomyRepository
 ) {
-    fun getGenusLocationsFlow(): Flow<List<String>> {
-        return genusRepository.getLocationsFlow()
-    }
-
-    fun getGenusTaxaFlow(): Flow<List<String>> {
-        return genusRepository.getAllTaxaFlow()
-    }
-
     suspend fun getAllColors(): List<String> {
         return localPrefRepository.getAllColors().map { it.name }
     }
@@ -96,10 +87,12 @@ class GenusUseCases(
         newSearchText: String,
         currSearch: ISearch<IGenus>? = null
     ): ISearch<IGenus> {
+
         val newSearch = GenusSearchBuilder(
             query = newSearchText,
             terms = currSearch?.getCompletedTerms() ?: emptyList(),
             possibleLocations = genusRepository.getLocations(),
+            possibleGeneraNames = genusRepository.getAllGeneraNames(),
             possibleTaxa = taxonRepository.getAllTaxonNames()
         ).build()
 

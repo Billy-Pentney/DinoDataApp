@@ -3,28 +3,13 @@ package com.bp.dinodata.repo
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
-
-interface ITaxonomyRepository {
-    /**
-     * Get a flow which provides a map from a child taxon name (e.g. "Brachiosauridae") to the name
-     * of the parent taxon to which the child belongs (e.g. "Sauropoda")
-     * */
-    fun getTaxonToParentMapFlow(): Flow<Map<String, String>>
-
-    /**
-     * Get a flow which provides a list of all unique taxon names (clades, orders, families).
-     */
-    fun getAllTaxonNamesFlow(): Flow<List<String>>
-
-    suspend fun getTaxonToParentMap(): Map<String, String>
-    suspend fun getAllTaxonNames(): List<String>
-}
 
 class TaxonomyRepository @Inject constructor(
     private val taxonomyCollection: CollectionReference
@@ -57,8 +42,17 @@ class TaxonomyRepository @Inject constructor(
             }
     }
 
+    private var taxonNamesFlow: StateFlow<List<String>>? = null
+
     override suspend fun getAllTaxonNames(): List<String> {
-        return getAllTaxonNamesFlow().first()
+        return if (taxonNamesFlow == null) {
+            getAllTaxonNamesFlow()
+                .stateIn(CoroutineScope(Dispatchers.IO))
+                .also { taxonNamesFlow = it }
+                .value
+        } else {
+            taxonNamesFlow!!.value
+        }
     }
 
     override suspend fun getTaxonToParentMap(): Map<String, String> {

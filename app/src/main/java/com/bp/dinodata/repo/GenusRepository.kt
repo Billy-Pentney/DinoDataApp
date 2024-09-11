@@ -9,10 +9,15 @@ import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 class GenusRepository @Inject constructor(
@@ -139,6 +144,20 @@ class GenusRepository @Inject constructor(
         }
         return getLocationsFlow().first().also {
             locationsList = it
+        }
+    }
+
+    private var generaNamesFlow: StateFlow<List<String>>? = null
+
+    override suspend fun getAllGeneraNames(): List<String> {
+        return if (generaNamesFlow == null) {
+            getAllGeneraFlow()
+                .map { list -> list?.map { it.getName().lowercase() } ?: emptyList() }
+                .stateIn(CoroutineScope(Dispatchers.IO))
+                .also { generaNamesFlow = it }
+                .value
+        } else {
+            generaNamesFlow!!.value
         }
     }
 }

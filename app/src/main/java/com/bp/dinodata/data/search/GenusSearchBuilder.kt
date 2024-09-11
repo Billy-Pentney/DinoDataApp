@@ -9,7 +9,6 @@ import com.bp.dinodata.data.search.terms.ISearchTerm
 class GenusSearchBuilder(
     query: String,
     terms: List<ISearchTerm<in IGenus>> = emptyList(),
-    private var capSensitive: Boolean = false,
     private val possibleGeneraNames: List<String> = emptyList(),
     private val possibleLocations: List<String> = emptyList(),
     private val possibleTaxa: List<String> = emptyList(),

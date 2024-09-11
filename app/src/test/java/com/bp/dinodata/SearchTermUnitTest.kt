@@ -3,17 +3,13 @@ package com.bp.dinodata
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.filters.ConjunctiveFilter
-import com.bp.dinodata.data.filters.CreatureTypeFilter
-import com.bp.dinodata.data.genus.DebugGenusFactory
 import com.bp.dinodata.data.genus.Genus
-import com.bp.dinodata.data.genus.GenusBuilder
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.terms.BasicSearchTerm
 import com.bp.dinodata.data.search.terms.CreatureTypeSearchTerm
 import com.bp.dinodata.data.search.terms.DietSearchTerm
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.runner.RunWith
 
 
 class SearchTermUnitTest {
