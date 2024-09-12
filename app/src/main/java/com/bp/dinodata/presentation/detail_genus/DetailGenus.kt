@@ -470,7 +470,7 @@ fun PreviewGenusDetailDark() {
     )
     val dialogState = remember { mutableStateOf(DetailScreenDialogState.NoDialog) }
 
-    DinoDataTheme(darkTheme = true) {
+    DinoDataTheme(darkTheme = false) {
         Surface (color = MaterialTheme.colorScheme.background) {
             GenusDetailScreenContent(
                 uiState = uiState,

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -63,7 +64,10 @@ fun CreatureNameMeaningAndType(
                                 modifier = Modifier
                                     .height(18.dp)
                                     .alpha(0.5f),
-                                colorFilter = ColorFilter.tint(Color.White, BlendMode.SrcIn)
+                                colorFilter = ColorFilter.tint(
+                                    MaterialTheme.colorScheme.onBackground,
+                                    BlendMode.SrcIn
+                                )
                             )
                         }
                         Text(typeName)

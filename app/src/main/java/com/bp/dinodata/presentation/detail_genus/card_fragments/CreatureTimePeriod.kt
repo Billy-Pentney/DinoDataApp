@@ -36,28 +36,28 @@ fun CreatureTimePeriod(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        LabelContentRow(
-            label = stringResource(R.string.label_time_period),
-            valueContent = {
-                val firstPeriod = timePeriods.firstOrNull()
-                val lastPeriod = timePeriods.lastOrNull()
-
-                if (firstPeriod == lastPeriod) {
-                    // Show the singleton
-                    TimePeriodIcon(firstPeriod)
-                } else {
-                    // Show the range from the first to the last
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TimePeriodIcon(firstPeriod)
-                        Text(" / ")
-                        TimePeriodIcon(lastPeriod)
-                    }
-                }
-            },
-            leadingIcon = {
-                Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
-            }
-        )
+//        LabelContentRow(
+//            label = stringResource(R.string.label_time_period),
+//            valueContent = {
+//                val firstPeriod = timePeriods.firstOrNull()
+//                val lastPeriod = timePeriods.lastOrNull()
+//
+//                if (firstPeriod == lastPeriod) {
+//                    // Show the singleton
+//                    TimePeriodIcon(firstPeriod)
+//                } else {
+//                    // Show the range from the first to the last
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        TimePeriodIcon(firstPeriod)
+//                        Text(" / ")
+//                        TimePeriodIcon(lastPeriod)
+//                    }
+//                }
+//            },
+//            leadingIcon = {
+//                Icon(Icons.Filled.CalendarMonth, null, modifier = iconModifier)
+//            }
+//        )
         LabelAttributeRow(
             label = stringResource(R.string.label_years_lived),
             value = yearsLived,

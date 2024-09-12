@@ -1,27 +1,32 @@
 package com.bp.dinodata.data.quantities
 
+import com.bp.dinodata.data.time_period.intervals.DecimalFormatter
+
+/**
+ * Representation of an (inclusive) range of length values from lowerValue to upperValue in
+ * the given units.
+ * @see Length for an exact length quantity.
+ * */
 data class LengthRange(
     val lowerValue: Float,
     val upperValue: Float,
-    private val unit: Units.Length
+    private val unit: LengthUnits
 ): ILengthRange {
 
-    override fun convert(to: Units.Length): ILengthRange {
-        if (to == this.getUnit()) {
+    override fun convert(newUnits: LengthUnits): ILengthRange {
+        if (newUnits == this.getUnit()) {
             return this
         }
-        val lowerConv = Length.make(lowerValue, unit).convert(to).getValue()
-        val upperConv = Length.make(upperValue, unit).convert(to).getValue()
+        val lowerConv = Length.make(lowerValue, unit).convert(newUnits).getValue()
+        val upperConv = Length.make(upperValue, unit).convert(newUnits).getValue()
         return LengthRange(lowerConv, upperConv, unit)
     }
 
-//    class MetreRange(min: Float, max: Float): LengthRange(min, max, Units.Length.Metres)
-//    class CentimetreRange(min: Float, max: Float): LengthRange(min, max, Units.Length.Centimetres)
-//    class FeetRange(min: Float, max: Float): LengthRange(min, max, Units.Length.Feet)
-
     override fun toString(): String {
-        return "${lowerValue}-${upperValue} ${this.unit.toString().lowercase()}"
+        val range = DecimalFormatter.formatRange(lowerValue, upperValue)
+        val units = unit.toString().lowercase()
+        return "$range $units"
     }
 
-    override fun getUnit(): Units.Length = this.unit
+    override fun getUnit(): LengthUnits = this.unit
 }

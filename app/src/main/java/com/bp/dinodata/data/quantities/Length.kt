@@ -1,67 +1,78 @@
 package com.bp.dinodata.data.quantities
 
 import android.util.Log
+import com.bp.dinodata.data.time_period.intervals.DecimalFormatter
 
+/**
+ * A representation of an exact length quantity with the given units, for example
+ * Length(4.5, Metres) represents "4.5 metres".
+ * @see LengthRange for an interval of lengths
+ * @see Mass
+ * */
 sealed class Length(
     valueIn: Float,
-    private val unit: Units.Length
+    private val unit: LengthUnits
 ): ILength {
 
     private var value = valueIn.coerceAtLeast(0f)
 
-    class Metres(value: Float) : Length(value, Units.Length.Metres) {
-        override fun convert(to: Units.Length): ILength {
-            return when (to) {
-                Units.Length.Metres -> this
-                Units.Length.Centimetres -> Centimetres(getValue() * 100f)
-                Units.Length.Feet -> Feet(getValue() * UnitConversions.FT_PER_METRE)
+    class Metres(value: Float) : Length(value, LengthUnits.Metres) {
+        override fun convert(newUnits: LengthUnits): ILength {
+            return when (newUnits) {
+                LengthUnits.Metres -> this
+                LengthUnits.Centimetres -> Centimetres(getValue() * 100f)
+                LengthUnits.Feet -> Feet(getValue() * LengthUnitConstants.FT_PER_METRE)
             }
         }
     }
 
-    class Centimetres(value: Float) : Length(value, Units.Length.Centimetres) {
-        override fun convert(to: Units.Length): ILength {
-            return when (to) {
-                Units.Length.Metres -> Metres(getValue() / 100f)
-                Units.Length.Centimetres -> this
-                Units.Length.Feet -> Feet(getValue() / UnitConversions.CM_PER_FT)
+    class Centimetres(value: Float) : Length(value, LengthUnits.Centimetres) {
+        override fun convert(newUnits: LengthUnits): ILength {
+            return when (newUnits) {
+                LengthUnits.Metres -> Metres(getValue() / 100f)
+                LengthUnits.Centimetres -> this
+                LengthUnits.Feet -> Feet(getValue() / LengthUnitConstants.CM_PER_FT)
             }
         }
     }
 
-    class Feet(value: Float) : Length(value, Units.Length.Feet) {
-        override fun convert(to: Units.Length): ILength {
-            return when (to) {
-                Units.Length.Metres -> Metres(getValue() / UnitConversions.FT_PER_METRE)
-                Units.Length.Centimetres -> Centimetres(getValue() * UnitConversions.CM_PER_FT)
-                Units.Length.Feet -> this
+    class Feet(value: Float) : Length(value, LengthUnits.Feet) {
+        override fun convert(newUnits: LengthUnits): ILength {
+            return when (newUnits) {
+                LengthUnits.Metres -> Metres(getValue() / LengthUnitConstants.FT_PER_METRE)
+                LengthUnits.Centimetres -> Centimetres(getValue() * LengthUnitConstants.CM_PER_FT)
+                LengthUnits.Feet -> this
             }
         }
     }
 
-    override fun toString(): String = "${this.value} ${this.unit.toString().lowercase()}"
+    override fun toString(): String {
+        val formattedValue = DecimalFormatter.formatFloat(value)
+        val units = unit.toString().lowercase()
+        return "$formattedValue $units"
+    }
 
-    override fun getUnit(): Units.Length = this.unit
+    override fun getUnit(): LengthUnits = this.unit
 
     override fun getValue(): Float = value
 
     companion object {
         val UnitsMap = mapOf(
-            "metres" to Units.Length.Metres,
-            "cm" to Units.Length.Centimetres,
-            "ft" to Units.Length.Feet,
-            "m" to Units.Length.Metres
+            "metres" to LengthUnits.Metres,
+            "cm" to LengthUnits.Centimetres,
+            "ft" to LengthUnits.Feet,
+            "m" to LengthUnits.Metres
         )
 
-        fun make(value: Float, unit: Units.Length): ILength {
+        fun make(value: Float, unit: LengthUnits): ILength {
             return when (unit) {
-                Units.Length.Metres -> Metres(value)
-                Units.Length.Centimetres -> Centimetres(value)
-                Units.Length.Feet -> Feet(value)
+                LengthUnits.Metres -> Metres(value)
+                LengthUnits.Centimetres -> Centimetres(value)
+                LengthUnits.Feet -> Feet(value)
             }
         }
 
-        fun tryMake(lengthValue: String, units: Units.Length): IDescribesLength? {
+        fun tryMake(lengthValue: String, units: LengthUnits): IDescribesLength? {
             try {
                 if ("-" in lengthValue) {
                     // Parse a range e.g. "98.1-100"

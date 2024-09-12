@@ -16,7 +16,7 @@ data class TimeMarker(
     }
 
     override fun toString(): String {
-        val myaString = TimeFormatter.formatFloat(mya)
+        val myaString = DecimalFormatter.formatFloat(mya)
         return "~$myaString $MYA_UNITS"
     }
 

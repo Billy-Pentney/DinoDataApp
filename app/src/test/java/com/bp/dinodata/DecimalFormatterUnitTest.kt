@@ -1,7 +1,6 @@
 package com.bp.dinodata
 
-import com.bp.dinodata.data.genus.GenusBuilder
-import com.bp.dinodata.data.time_period.intervals.TimeFormatter
+import com.bp.dinodata.data.time_period.intervals.DecimalFormatter
 import com.bp.dinodata.data.time_period.intervals.TimeInterval
 import com.bp.dinodata.data.time_period.intervals.TimeMarker
 import org.junit.Test
@@ -11,13 +10,13 @@ import org.junit.Assert.*
 /**
  * Verifies that the GenusBuilder extracts the correct information to build a correct Genus object. *
  */
-class TimeFormatterUnitTest {
+class DecimalFormatterUnitTest {
     @Test
     fun format_floatAbove() {
         val inputValue = 123.1f
         val expected = "123.1"
 
-        val actual = TimeFormatter.formatFloat(inputValue)
+        val actual = DecimalFormatter.formatFloat(inputValue)
         assertEquals(expected, actual)
     }
 
@@ -26,7 +25,7 @@ class TimeFormatterUnitTest {
         val inputValue = 77.000f
         val expected = "77"
 
-        val actual = TimeFormatter.formatFloat(inputValue)
+        val actual = DecimalFormatter.formatFloat(inputValue)
         assertEquals(expected, actual)
     }
 
@@ -35,7 +34,7 @@ class TimeFormatterUnitTest {
         val inputValue = 76.8f
         val expected = "76.8"
 
-        val actual = TimeFormatter.formatFloat(inputValue)
+        val actual = DecimalFormatter.formatFloat(inputValue)
         assertEquals(expected, actual)
     }
 

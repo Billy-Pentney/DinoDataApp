@@ -1,7 +1,7 @@
 package com.bp.dinodata.data.quantities
 
 
-interface IWeightRange: IDescribesWeight
+interface IMassRange: IDescribesMass
 
 interface ILengthRange: IDescribesLength
 

@@ -51,7 +51,7 @@ fun SpeciesListItem(
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
+            defaultElevation = 2.dp
         )
     ) {
         Column(
@@ -77,7 +77,7 @@ fun SpeciesListItem(
                         fontWeight = FontWeight.Bold,
                         maxLines=1,
                         modifier = Modifier
-                            .shadow(4.dp)
+                            .shadow(1.dp)
                             .background(
                                 color = typeSpecies500,
                                 shape = RoundedCornerShape(4.dp)

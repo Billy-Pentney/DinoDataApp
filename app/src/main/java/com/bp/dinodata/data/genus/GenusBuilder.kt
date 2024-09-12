@@ -10,9 +10,9 @@ import com.bp.dinodata.data.MyBuilderUtils
 import com.bp.dinodata.data.enum_readers.EpochConverter
 import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.data.quantities.IDescribesLength
-import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.data.quantities.IDescribesMass
 import com.bp.dinodata.data.quantities.Length
-import com.bp.dinodata.data.quantities.Weight
+import com.bp.dinodata.data.quantities.Mass
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.epochs.IProvidesEpoch
 import com.bp.dinodata.data.time_period.intervals.TimeInterval
@@ -26,7 +26,7 @@ class GenusBuilder(
     private var diet: Diet = Diet.Unknown,
     private var timePeriods: MutableList<IDisplayableTimePeriod> = mutableListOf(),
     private var length: IDescribesLength? = null,
-    private var weight: IDescribesWeight? = null,
+    private var weight: IDescribesMass? = null,
     private var type: CreatureType = CreatureType.Other,
     private var taxonomy: List<String> = emptyList(),
     private var locations: List<String> = emptyList(),
@@ -281,16 +281,16 @@ class GenusBuilder(
         if (weight == null)
             return this
 
-        for (entry in Weight.UnitsMap) {
+        for (entry in Mass.UnitsMap) {
             val unitStr = entry.key
             val units = entry.value
 
             if (weight.endsWith(unitStr, ignoreCase = true)) {
                 // Drop the units from the end
                 val valueOnly = weight.substringBefore(unitStr).trim()
-                val maybeWeight = Weight.tryMake(valueOnly, units)
-                if (maybeWeight != null) {
-                    this.weight = maybeWeight
+                val maybeMass = Mass.tryMake(valueOnly, units)
+                if (maybeMass != null) {
+                    this.weight = maybeMass
                     return this
                 }
             }

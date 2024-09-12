@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,11 +47,16 @@ fun CreatureFormations(formations: List<IFormation>, iconModifier: Modifier) {
             Card (
                 shape = RoundedCornerShape(8.dp),
                 modifier=Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(2.dp)
+                elevation = CardDefaults.cardElevation(2.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(12.dp).fillMaxWidth()
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .fillMaxWidth()
                 ) {
                     Text(
                         it.getName(),

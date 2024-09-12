@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
-import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.data.quantities.IDescribesMass
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
@@ -17,7 +17,7 @@ interface IHasTaxonomy {
 
 interface IHasMeasurements {
     fun getLength(): IDescribesLength?
-    fun getWeight(): IDescribesWeight?
+    fun getWeight(): IDescribesMass?
 }
 
 interface IHasName {
@@ -74,7 +74,7 @@ data class Genus(
     private val nameMeaning: String? = null,
     private val namePronunciation: String? = null,
     private val length: IDescribesLength? = null,
-    private val weight: IDescribesWeight? = null,
+    private val weight: IDescribesMass? = null,
     private val taxonomy: List<String> = emptyList(),
     private val locations: List<String> = emptyList(),
     private val formations: List<String> = emptyList(),
@@ -102,7 +102,7 @@ data class Genus(
     override fun getCreatureType(): CreatureType = type
     override fun getDiet(): Diet = diet
     override fun getLength(): IDescribesLength? = length
-    override fun getWeight(): IDescribesWeight? = weight
+    override fun getWeight(): IDescribesMass? = weight
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 

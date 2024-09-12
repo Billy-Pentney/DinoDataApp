@@ -1,7 +1,6 @@
 package com.bp.dinodata.data.time_period.intervals
 
 import com.bp.dinodata.data.time_period.intervals.TimeMarker.Companion.MYA_UNITS
-import kotlin.math.roundToInt
 
 /**
  * Represents an interval of time in the units of Millions-of-Years-Ago (MYA).
@@ -29,8 +28,8 @@ data class TimeInterval(
 
     override fun toString(): String {
         // Get the minimal strings (i.e. if they are integers, without the decimal)
-        val fromStr = TimeFormatter.formatFloat(from)
-        val toStr = TimeFormatter.formatFloat(to)
+        val fromStr = DecimalFormatter.formatFloat(from)
+        val toStr = DecimalFormatter.formatFloat(to)
         return "$fromStr-$toStr $MYA_UNITS"
     }
 

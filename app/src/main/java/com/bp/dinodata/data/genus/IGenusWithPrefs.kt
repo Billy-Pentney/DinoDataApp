@@ -3,7 +3,7 @@ package com.bp.dinodata.data.genus
 import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
-import com.bp.dinodata.data.quantities.IDescribesWeight
+import com.bp.dinodata.data.quantities.IDescribesMass
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
@@ -20,7 +20,7 @@ class GenusWithPrefs(
     override fun getListOfTaxonomy(): List<String> = genus.getListOfTaxonomy()
     override fun getTaxonomyAsPrintableTree(): String = genus.getTaxonomyAsPrintableTree()
     override fun getLength(): IDescribesLength? = genus.getLength()
-    override fun getWeight(): IDescribesWeight? = genus.getWeight()
+    override fun getWeight(): IDescribesMass? = genus.getWeight()
     override fun getNameMeaning(): String? = genus.getNameMeaning()
     override fun getNamePronunciation(): String? = genus.getNamePronunciation()
     override fun getName(): String = genus.getName()
