@@ -6,7 +6,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.CreatureType
 
 @Composable
-fun convertCreatureTypeToString(type: CreatureType): String? {
+fun convertCreatureTypeToString(type: CreatureType): String {
     return when (type) {
         CreatureType.LargeTheropod -> stringResource(R.string.type_large_theropod)
         CreatureType.SmallTheropod -> stringResource(R.string.type_small_theropod)
@@ -36,6 +36,6 @@ fun convertCreatureTypeToString(type: CreatureType): String? {
         CreatureType.Serpent -> stringResource(R.string.type_serpent)
         CreatureType.Ichthyosaur -> stringResource(R.string.type_ichthyosaur)
         CreatureType.Mosasaur -> stringResource(R.string.type_mosasaur)
-        CreatureType.SpinedSynapsid -> stringResource(R.string.type_synapsid_spined)
+        CreatureType.SynapsidWithSail -> stringResource(R.string.type_synapsid_spined)
     }
 }

@@ -159,7 +159,6 @@ fun MyNavigation(
                         val route = "${Screen.DetailGenus.route}/${genusName}"
                         Log.d("NavHost", "Attempt to navigate to \'$route\'")
                         navController.navigate(route, optionsSingleTop)
-//                        updateVisibleScreen()
                     }
                 )
             }

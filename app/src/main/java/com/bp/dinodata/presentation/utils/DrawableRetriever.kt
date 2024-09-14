@@ -4,10 +4,7 @@ import com.bp.dinodata.R
 import com.bp.dinodata.data.CreatureType
 
 
-fun convertCreatureTypeToSilhouette(
-    type: CreatureType,
-//    quality: SilhouetteQuality = SilhouetteQuality.x64
-): Int? {
+fun convertCreatureTypeToSilhouette(type: CreatureType): Int {
     return when (type) {
         CreatureType.Ceratopsian        -> R.drawable.type_ceratopsian
         CreatureType.LargeTheropod      -> R.drawable.type_carcharo
@@ -33,10 +30,10 @@ fun convertCreatureTypeToSilhouette(
         CreatureType.Mosasaur           -> R.drawable.type_mosasaur
         CreatureType.Ichthyosaur        -> R.drawable.type_ichthyosaur
         CreatureType.Synapsid           -> R.drawable.type_synapsid
-        CreatureType.SpinedSynapsid     -> R.drawable.type_synapsid_spined
-        //        CreatureType.Aquatic -> TODO()
-        //        CreatureType.Cenezoic -> TODO()
+        CreatureType.SynapsidWithSail     -> R.drawable.type_synapsid_spined
+        CreatureType.Aquatic,
+        CreatureType.Euornithopod,
+        CreatureType.Cenezoic,
         CreatureType.Other              -> R.drawable.type_unknown
-        else                            -> null
     }
 }
