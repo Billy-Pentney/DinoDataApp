@@ -27,14 +27,19 @@ fun ShowTaxonomicTree(
     modifier: Modifier,
     internalCardPadding: PaddingValues = PaddingValues(16.dp)
 ) {
-    var rootToLeafPath: List<String> by remember { mutableStateOf(emptyList()) }
+    var genusTaxonomyList by remember { mutableStateOf(emptyList<String>()) }
+    genusTaxonomyList = genus.getListOfTaxonomy()
+
+    // Store an ordered list of all non-leaf taxa to which this genus belongs.
+    // These values should be from least-to-most specific.
+    var nonTerminalTaxa: List<String> by remember { mutableStateOf(emptyList()) }
+    // Store the name of the leaf (i.e. the genus name)
     var leafName: String by remember { mutableStateOf("") }
 
-    LaunchedEffect(genus) {
-        val taxonomy = genus.getListOfTaxonomy()
-        val taxonBuilder = TaxonTreeBuilder(taxonomy)
+    LaunchedEffect(genusTaxonomyList) {
+        val taxonBuilder = TaxonTreeBuilder(genusTaxonomyList)
         val taxonTree = taxonBuilder.getPrintableTree(genus = genus.getName())
-        rootToLeafPath = taxonTree.dropLast(1)
+        nonTerminalTaxa = taxonTree.dropLast(1)
         leafName = taxonTree.last()
     }
 
@@ -54,10 +59,10 @@ fun ShowTaxonomicTree(
         ) {
             item {
                 Column {
-                    Text(
-                        rootToLeafPath.joinToString("\n"),
-//                        lineHeight = 18.sp
-                    )
+                    // Show the non-terminal taxa
+                    if (nonTerminalTaxa.isNotEmpty()) {
+                        Text(nonTerminalTaxa.joinToString("\n"))
+                    }
                     Text(
                         leafName,
                         fontWeight = FontWeight.Bold,

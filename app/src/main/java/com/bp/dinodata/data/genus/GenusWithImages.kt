@@ -7,6 +7,7 @@ import com.bp.dinodata.data.MultiImageUrlData
 import com.bp.dinodata.data.SingleImageUrlData
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesMass
+import com.bp.dinodata.data.quantities.IQuantity
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
@@ -36,6 +37,8 @@ class GenusWithImages(
     override fun getTaxonomyAsPrintableTree(): String = genus.getTaxonomyAsPrintableTree()
     override fun getLength(): IDescribesLength? = genus.getLength()
     override fun getWeight(): IDescribesMass? = genus.getWeight()
+    override fun getAllMeasurements(): List<IQuantity> = genus.getAllMeasurements()
+
     override fun getNameMeaning(): String? = genus.getNameMeaning()
     override fun getNamePronunciation(): String? = genus.getNamePronunciation()
     override fun getName(): String = genus.getName()

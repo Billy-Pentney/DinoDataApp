@@ -39,7 +39,12 @@ class TaxonTreeBuilder(
         }
 
         if (genus != null) {
-            tree.add("$currentIndent $FINAL_CHILD $genus")
+            if (tree.isNotEmpty()) {
+                tree.add("$currentIndent $FINAL_CHILD $genus")
+            }
+            else {
+                tree.add(genus)
+            }
         }
 
         return tree

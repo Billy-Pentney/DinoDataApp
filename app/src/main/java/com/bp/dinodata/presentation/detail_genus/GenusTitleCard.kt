@@ -7,7 +7,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.IGenusWithImages
-import com.bp.dinodata.data.genus.ILocalPrefs
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
@@ -252,7 +250,7 @@ fun GenusTitleCardAndControls(
                 },
                 isFavourite = isUserFavourited,
                 modifier = Modifier.padding(vertical = 8.dp),
-                hideButtons = {
+                hideControlsAction = {
                     showControls(false)
                 }
             )

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -107,6 +108,8 @@ fun HorizontalChronologyBar(
 
     var barSize by remember { mutableStateOf(IntSize.Zero) }
     var barSizeDp by remember { mutableStateOf(Pair(0.dp, 0.dp)) }
+
+    val highlightedIntervalColor = Color(0x88FFFFFF)
 
     with(LocalDensity.current) {
         val xDp = barSize.width.toDp()
@@ -253,7 +256,7 @@ fun HorizontalChronologyBar(
                                         .weight(intervalWeight)
                                         .height(barHeight / 2)
                                         .offset(y = barHeight * 0.75f)
-                                        .background(Color(0x88FFFFFF))
+                                        .background(highlightedIntervalColor)
                                 )
                                 TimePeriodMarker(markerWidth, barHeight * 2)
                             }
@@ -306,7 +309,7 @@ fun HorizontalChronologyBar(
 
                         Box(
                             modifier = Modifier
-                                .background(Color.White)
+                                .background(MaterialTheme.colorScheme.onSurface)
                                 .width(1.dp)
                                 .height(vBarHeight)
                         )

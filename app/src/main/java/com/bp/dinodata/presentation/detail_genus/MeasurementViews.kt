@@ -2,6 +2,7 @@ package com.bp.dinodata.presentation.detail_genus
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,9 +38,10 @@ import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
 fun GenericMeasurementComposable(
-    weight: IQuantity,
+    quantity: IQuantity,
     modifier: Modifier = Modifier,
-    icon: (@Composable () -> Unit)? = null
+    icon: (@Composable () -> Unit)? = null,
+    iconName: String? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -53,43 +56,23 @@ fun GenericMeasurementComposable(
                 .padding(12.dp)
                 .fillMaxWidth()
         ) {
-            icon?.invoke()
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                icon?.invoke()
+                iconName?.let {
+                    Text(
+                        iconName,
+                        modifier = Modifier.alpha(0.8f),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
             Text(
-                weight.toString(),
+                quantity.toString(),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.alpha(0.75f),
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
-    }
-}
-
-@Composable
-fun LengthComposable(
-    length: IDescribesLength,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondary
-        ),
-        modifier = modifier
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth()
-        ) {
-            Icon(
-                painterResource(id = R.drawable.icon_filled_ruler),
-                null
-            )
-            Text(
-                length.toString(),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.alpha(0.75f),
+                modifier = Modifier.alpha(0.6f),
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -104,24 +87,26 @@ fun QuantityComposable(
     when (quantity) {
         is IDescribesLength ->
             GenericMeasurementComposable(
-                weight = quantity,
+                quantity = quantity,
                 modifier=modifier,
                 icon = {
                     Icon(
                         painterResource(id = R.drawable.icon_filled_ruler), null
                     )
-                }
+                },
+                iconName = stringResource(id = R.string.label_length)
             )
         is IDescribesMass ->
             GenericMeasurementComposable(
-                weight = quantity,
+                quantity = quantity,
                 modifier = modifier,
                 icon = {
                     Icon(
                         painterResource(id = R.drawable.icon_filled_weight),
                         null
                     )
-                }
+                },
+                iconName = stringResource(R.string.label_mass)
             )
         else -> Text("No data")
     }

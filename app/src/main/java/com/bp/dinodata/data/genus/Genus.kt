@@ -5,6 +5,7 @@ import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.Diet
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesMass
+import com.bp.dinodata.data.quantities.IQuantity
 import com.bp.dinodata.data.taxon.ITaxon
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.intervals.ITimeInterval
@@ -15,9 +16,11 @@ interface IHasTaxonomy {
     fun getTaxonomyAsPrintableTree(): String
 }
 
+/** Describes a class which can provide length and weight measurements */
 interface IHasMeasurements {
     fun getLength(): IDescribesLength?
     fun getWeight(): IDescribesMass?
+    fun getAllMeasurements(): List<IQuantity>
 }
 
 interface IHasName {
@@ -42,6 +45,8 @@ interface IHasSpeciesInfo {
     fun hasSpeciesInfo(): Boolean
 }
 
+/** Describes a class which has additional information about its name origin (etymology)
+ *  and pronunciation */
 interface IAdditionalNameInfo {
     fun getNameMeaning(): String?
     fun getNamePronunciation(): String?
@@ -59,10 +64,11 @@ interface IDisplayableCreature: IHasName, IHasDiet, IHasCreatureType
 
 
 
-
 interface IGenus: IHasTaxonomy, IHasMeasurements, IAdditionalNameInfo,
     IDisplayableCreature, IHasTimePeriodInfo, IHasLocationInfo, IHasSpeciesInfo,
     IHasFormationInfo, ITaxon, ITextSearchable
+
+
 
 @Immutable
 data class Genus(
@@ -103,6 +109,8 @@ data class Genus(
     override fun getDiet(): Diet = diet
     override fun getLength(): IDescribesLength? = length
     override fun getWeight(): IDescribesMass? = weight
+    override fun getAllMeasurements(): List<IQuantity> = listOfNotNull(length, weight)
+
     override fun getNameMeaning(): String? = nameMeaning?.let { "\'$it\'" }
     override fun getNamePronunciation(): String? = namePronunciation?.let { "\'$it\'" }
 

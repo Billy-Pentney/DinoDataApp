@@ -96,7 +96,7 @@ class DetailGenusViewModel @Inject constructor(
             }
             is DetailGenusUiEvent.SetPreferencesCardExpansion -> {
                 _uiState.value = _uiState.value.copy(
-                    preferencesCardExpanded = event.expanded
+                    preferencesControlsVisible = event.expanded
                 )
             }
             is DetailGenusUiEvent.UpdateVisibleImageIndex -> {

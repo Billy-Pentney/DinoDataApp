@@ -26,7 +26,10 @@ import com.bp.dinodata.data.IFormation
 import com.bp.dinodata.presentation.detail_genus.LabelContentRow
 
 @Composable
-fun CreatureFormations(formations: List<IFormation>, iconModifier: Modifier) {
+fun CreatureFormations(
+    formations: List<IFormation>,
+    iconModifier: Modifier
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)

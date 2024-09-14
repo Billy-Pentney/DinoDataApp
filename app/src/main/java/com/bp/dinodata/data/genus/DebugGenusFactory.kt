@@ -58,9 +58,9 @@ object DebugGenusFactory {
         .setDiet(Diet.Herbivore)
         .setTimePeriod("Early Cretaceous")
         .setNamePronunciation("'sty-RAK-oh-SORE-us'")
-        .setNameMeaning("spiked lizard")
+        .setNameMeaning("spiked lizard from some mythical place in the world")
         .setLength("5 metres")
-        .setWeight("1 tonnes")
+        .setWeight("1-1.5 tonnes")
         .setCreatureType(CreatureType.Ceratopsian)
         .setStartMya("75.5")
         .setEndMya("74.5")
@@ -87,7 +87,7 @@ object DebugGenusFactory {
         Ankylosaurus,
         Triceratops,
         Styracosaurus,
-        Raptor,
+        Velociraptor,
         Pteranodon,
         Diplodocus,
         Acrocanthosaurus
@@ -102,7 +102,7 @@ object DebugGenusFactory {
             GenusFactoryKey.Ankylosaurus -> ankylo
             GenusFactoryKey.Triceratops -> trike
             GenusFactoryKey.Styracosaurus -> styraco
-            GenusFactoryKey.Raptor -> raptor
+            GenusFactoryKey.Velociraptor -> raptor
             GenusFactoryKey.Pteranodon -> ptero
             GenusFactoryKey.Diplodocus -> dipl
             GenusFactoryKey.Acrocanthosaurus -> acro

@@ -33,7 +33,7 @@ data class DetailScreenUiState(
 //    val colorSelectDialogVisible: Boolean = false,
     val dialogState: DetailScreenDialogState = DetailScreenDialogState.NoDialog,
     val canPlayPronunciationAudio: Boolean = true,
-    val preferencesCardExpanded: Boolean = false,
+    val preferencesControlsVisible: Boolean = false,
     val listOfColors: List<String> = emptyList(),
     private val currentImageIndex: Int = 0
 ): IDetailScreenUiState {
