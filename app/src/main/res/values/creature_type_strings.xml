@@ -20,11 +20,74 @@
     </string>
 
     <string name="class_synapsid_description">
-      Prehistoric synapsids, often called "mammal-like reptiles," were the dominant land vertebrates before dinosaurs, flourishing in the late Paleozoic era. They had a single temporal opening in the skull behind the eyes, a key trait that later evolved into the mammalian jaw structure. Synapsids varied greatly in size and form, with some being herbivores, while others, like the carnivorous Gorgonopsids, were apex predators. Many early synapsids, such as Edaphosaurus and Dimetrodon, laid the groundwork for mammalian evolution by developing differentiated teeth and other mammal-like characteristics.
+        Prehistoric synapsids, often called "mammal-like reptiles", were the dominant land vertebrates before dinosaurs, flourishing in the late Paleozoic era. They had a single temporal opening in the skull behind the eyes, a key trait that later evolved into the mammalian jaw structure. Synapsids varied greatly in size and form, with some being herbivores, while others, like the carnivorous Gorgonopsids, were apex predators. Many early synapsids, such as Edaphosaurus and Dimetrodon, laid the groundwork for mammalian evolution by developing differentiated teeth and other mammal-like characteristics.
     </string>
 
     <string name="class_sailed_synapsid_description">
-       A subset of synapsids, including Dimetrodon and Edaphosaurus, which are notable for the large, spiny sails on their backs. These sails were formed by elongated vertebral spines connected by skin, possibly used for thermoregulation, display, or species recognition. Dimetrodon, a carnivorous predator, was one of the most famous sail-backed synapsids, known for its serrated teeth adapted for cutting meat. These sail-backed synapsids lived during the Permian period, long before dinosaurs, and played a key role in early vertebrate evolution.
+        A subset of synapsids, including Dimetrodon and Edaphosaurus, which are notable for the large, spiny sails on their backs. These sails were formed by elongated vertebral spines connected by skin, possibly used for thermoregulation, display, or species recognition. Dimetrodon, a carnivorous predator, was one of the most famous sail-backed synapsids, known for its serrated teeth adapted for cutting meat. These sail-backed synapsids lived during the Permian period, long before dinosaurs, and played a key role in early vertebrate evolution.
     </string>
+
+    <string name="class_ankylosaur_description">
+        Ankylosaurs were herbivorous, heavily armored dinosaurs from the Cretaceous period, characterized by their low, wide bodies and extensive bony plating. They had large, fused bony structures, or osteoderms, covering their bodies for protection against predators. Ankylosaurs, such as Ankylosaurus and Euoplocephalus, are also known for their clubbed tails, which were likely used as defensive weapons. These quadrupedal dinosaurs were slow-moving, but their heavy armor made them difficult targets for predators like theropods.
+    </string>
+
+    <string name="class_sauropod_description">
+        Sauropods were massive, long-necked herbivorous dinosaurs that lived from the Jurassic to the Cretaceous period. They are best known for their enormous size, long tails, and small heads. Famous sauropods include Brachiosaurus, Diplodocus, and Apatosaurus. Sauropods had pillar-like legs to support their great weight and often grazed on high vegetation using their long necks. They were the largest land animals to ever live, with some species growing over 100 feet long. Despite their size, sauropods were gentle giants, relying on size and herding behavior for protection.
+    </string>
+
+    <string name="class_hadrosaur_description">
+        Hadrosaurs, also known as "duck-billed dinosaurs", were herbivorous dinosaurs from the Late Cretaceous, famous for their flat, broad beaks. These dinosaurs, such as Edmontosaurus and Parasaurolophus, were efficient grazers, feeding on low-growing plants. Many hadrosaurs also had elaborate cranial crests, likely used for communication or display. Hadrosaurs were highly adaptable and thrived in diverse environments, often traveling in large herds for protection. Their ability to walk on both two and four legs made them versatile in movement and foraging.
+    </string>
+
+    <string name="class_pachycephalosaurid_description">
+        Pachycephalosaurids were herbivorous or omnivorous dinosaurs from the Late Cretaceous, known for their thick, dome-shaped skulls. Species like Pachycephalosaurus had skulls up to 25 cm thick, which may have been used for head-butting in intraspecies combat or display. These bipedal dinosaurs had relatively small bodies with long legs, making them swift runners. Their large, domed heads were likely reinforced to withstand impacts, though the exact purpose of their headbutting behavior remains debated.
+    </string>
+
+    <string name="class_ornithomimid_description">
+        Ornithomimids, often referred to as "ostrich-mimic" dinosaurs, were fast, bipedal theropods that thrived during the Late Cretaceous. Species like Gallimimus and Struthiomimus had long legs, slender bodies, and toothless beaks, resembling modern ostriches. These dinosaurs were likely omnivorous, feeding on plants, small animals, and insects. Their speed and agility made them adept at evading predators, and they are believed to have been social, possibly living in groups for protection.
+    </string>
+
+    <string name="class_spinosaurid_description">
+        Spinosaurids were large, semi-aquatic theropods from the Cretaceous period, known for their elongated snouts and adaptations for hunting aquatic prey. Species like Spinosaurus had distinctive sail-like structures along their backs, formed by elongated vertebrae, while others, such as Baryonyx and Suchomimus, lacked such sails. These theropods had crocodile-like jaws filled with conical teeth, ideal for catching fish, and were among the few dinosaurs specialized for both land and water environments. Spinosaurids likely spent significant time near or in water, hunting fish as well as terrestrial prey.
+    </string>
+
+    <string name="class_tyrannosaurid_description">
+        Tyrannosaurids were large, carnivorous theropods that dominated the Late Cretaceous period, most famously represented by Tyrannosaurus rex. These bipedal predators had massive skulls, powerful jaws, and teeth designed for crushing bone. Tyrannosaurids also featured strong, muscular hind limbs and relatively short arms with two fingers. Despite their small arms, their powerful bite and keen senses made them apex predators in their ecosystems. Tyrannosaurids were widespread across North America and Asia, with species like Tarbosaurus and Albertosaurus sharing similar adaptations for hunting large prey.
+    </string>
+
+    <string name="class_therizinosaurid_description">
+        Therizinosaurids were unusual, herbivorous theropods from the Late Cretaceous, known for their large claws, long necks, and wide, bulky bodies. Species like Therizinosaurus had massive, scythe-like claws on their forelimbs, which may have been used for gathering vegetation or defense. Unlike most theropods, therizinosaurids were likely plant-eaters, with beaked mouths and leaf-shaped teeth suited for browsing. They were bipedal, with robust hind legs and a body structure that set them apart from their carnivorous relatives.
+    </string>
+
+    <string name="class_dromaeosaurid_description">
+        Dromaeosaurids, often called "raptors", were small to medium-sized, agile theropods known for their speed, intelligence, and sharp, sickle-shaped claws on their second toes. Species like Velociraptor and Deinonychus were fast, bipedal hunters, using their claws to slash or grip prey. Many dromaeosaurids had feathers, indicating a close relationship with modern birds. They were likely pack hunters, using their agility and sharp senses to take down prey, and may have hunted in coordinated groups, giving them an advantage over larger animals.
+    </string>
+
+    <string name="class_mosasaur_description">
+        Mosasaurs were large, predatory marine reptiles that dominated the oceans during the Late Cretaceous period. These streamlined, elongated creatures had powerful tails, paddle-like limbs, and jaws filled with sharp, conical teeth for catching fish, squid, and marine reptiles. Species like Mosasaurus and Tylosaurus could grow over 15 meters long and were apex predators in marine ecosystems. Adapted to a fully aquatic lifestyle, mosasaurs likely hunted near the ocean surface, using their powerful tails for swift propulsion through the water.
+    </string>
+
+    <string name="class_iguanodontian_description">
+        Iguanodontians were large, herbivorous dinosaurs from the Late Jurassic to the Early Cretaceous, recognized for their robust build and specialized thumb spikes. Species like Iguanodon were capable of both bipedal and quadrupedal movement, using their strong hind legs for speed and their forelimbs for foraging. Their broad, beaked mouths and grinding teeth allowed them to process tough vegetation. Iguanodontians were precursors to hadrosaurs and often traveled in herds, relying on their numbers for protection from predators.
+    </string>
+
+    <string name="class_plesiosaur_description">
+        Plesiosaurs were marine reptiles that thrived during the Jurassic and Cretaceous periods, known for their distinctive long necks, broad bodies, and paddle-like limbs. Species like Elasmosaurus had extremely elongated necks, while other plesiosaurs, like Pliosaurus, had shorter necks but larger heads and stronger jaws. These reptiles used their powerful flippers for underwater propulsion, likely hunting fish, squid, and other marine animals. Plesiosaurs were fully adapted to marine life, giving rise to some of the largest and most specialized marine reptiles of the Mesozoic era.
+    </string>
+
+    <string name="class_carcharodontosaurid_description">
+        Carcharodontosaurids were large, carnivorous theropods from the mid to late Cretaceous period, known for their massive size and serrated teeth. Species like Carcharodontosaurus and Giganotosaurus had long skulls with blade-like teeth designed for slicing through flesh. These theropods were among the largest land predators, rivaling or even exceeding Tyrannosaurus rex in size. Carcharodontosaurids had powerful hind limbs and strong jaws, making them formidable apex predators in their ecosystems, hunting large herbivorous dinosaurs like sauropods.
+    </string>
+
+    <string name="class_pterosaur_description">
+        Pterosaurs were flying reptiles that lived from the Late Triassic to the end of the Cretaceous period, known for being the first vertebrates capable of powered flight. Species ranged from small, bird-sized forms like Pterodactylus to giants like Quetzalcoatlus, with wingspans over 10 meters. Pterosaurs had lightweight, hollow bones, large wing membranes, and a variety of feeding strategies, from fish-eating species to filter-feeders. They were highly diverse, with some species sporting elaborate head crests for display or species recognition, and they thrived in various ecological niches.
+    </string>
+
+    <string name="class_crocodilian_description">
+        Prehistoric crocodilian creatures, such as Sarcosuchus, were massive, semi-aquatic reptiles that lived during the Cretaceous period. Unlike modern crocodiles, Sarcosuchus could grow up to 12 meters long, making it one of the largest crocodile-like creatures to ever exist. These predators had elongated snouts filled with conical teeth, well-adapted for gripping fish and other prey. Sarcosuchus lived in river systems and wetlands, preying on aquatic animals and possibly even large dinosaurs that ventured near water. Their immense size and powerful jaws made them apex predators in their environments.
+    </string>
+
+
+
 
 </resources>

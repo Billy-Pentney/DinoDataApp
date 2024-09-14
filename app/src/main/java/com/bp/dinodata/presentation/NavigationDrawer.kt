@@ -2,7 +2,6 @@ package com.bp.dinodata.presentation
 
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -45,10 +46,45 @@ import com.bp.dinodata.R
 import com.bp.dinodata.theme.DinoDataTheme
 
 enum class NavDrawerItem {
-    CreatureList,
+    GenusList,
     Taxonomy,
-    About
+    About,
+    CreatureTypeList
 }
+
+@Composable
+fun MyNavDrawerItem(
+    currentSelectedItemState: State<NavDrawerItem?>,
+    title: String,
+    targetItem: NavDrawerItem,
+    icon: @Composable () -> Unit,
+    colors: NavigationDrawerItemColors,
+    onClick: () -> Unit
+) {
+    val currentSelectedItem by remember { currentSelectedItemState }
+    val interactionSource = remember { MutableInteractionSource() }
+
+    NavigationDrawerItem(
+        label = {
+            Text(
+                text = title,
+                fontWeight = if (currentSelectedItem == targetItem) {
+                    FontWeight.Bold
+                }
+                else {
+                    FontWeight.Normal
+                }
+            )
+        },
+        icon = icon,
+        shape = RoundedCornerShape(8.dp),
+        selected = currentSelectedItem == targetItem,
+        onClick = onClick,
+        colors = colors,
+        interactionSource = interactionSource
+    )
+}
+
 
 @Composable
 fun MyNavigationDrawer(
@@ -68,19 +104,15 @@ fun MyNavigationDrawer(
         unselectedIconColor = MaterialTheme.colorScheme.onBackground
     )
 
-    val numItems = 3
     val scrimColor = Color(0xAA555555)
 
-    val interactionSources = remember {
-        Array(numItems) { MutableInteractionSource() }
-    }
-
-    val currentSelectedItem by remember {
+    val currentSelectedItemState = remember {
         derivedStateOf {
             when (currentNavRoute) {
-                Screen.ListGenus.route -> NavDrawerItem.CreatureList
+                Screen.ListGenus.route -> NavDrawerItem.GenusList
                 Screen.Taxonomy.route  -> NavDrawerItem.Taxonomy
                 Screen.About.route     -> NavDrawerItem.About
+                Screen.ListCreatureTypes.route -> NavDrawerItem.CreatureTypeList
                 else                   -> null
             }
         }
@@ -106,80 +138,69 @@ fun MyNavigationDrawer(
                     Modifier.padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    NavigationDrawerItem(
-                        label = {
-                            Text(
-                                text = stringResource(R.string.title_creature_list),
-                                fontWeight = if (currentSelectedItem == NavDrawerItem.CreatureList) {
-                                    FontWeight.Bold
-                                }
-                                else {
-                                    FontWeight.Normal
-                                }
-                            )
-                        },
+                    MyNavDrawerItem(
+                        title = stringResource(R.string.title_list_of_genera),
+                        targetItem = NavDrawerItem.GenusList,
                         icon = {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.List,
                                 contentDescription = null
                             )
                         },
-                        shape = RoundedCornerShape(8.dp),
-                        selected = currentSelectedItem == NavDrawerItem.CreatureList,
                         onClick = {
                             Log.d("NavDrawer", "Go to ${Screen.ListGenus}!")
                             navigateTo(Screen.ListGenus)
                         },
                         colors = colors,
-                        interactionSource = interactionSources[0]
+                        currentSelectedItemState = currentSelectedItemState
                     )
-                    NavigationDrawerItem(
-                        label = {
-                            Text(text = stringResource(R.string.screen_title_taxonomy),
-                                fontWeight = if (currentSelectedItem == NavDrawerItem.Taxonomy) {
-                                    FontWeight.Bold
-                                }
-                                else {
-                                    FontWeight.Normal
-                                }
-                            ) },
+                    MyNavDrawerItem(
+                        title = stringResource(R.string.screen_title_taxonomy),
+                        targetItem = NavDrawerItem.Taxonomy,
                         icon = {
                             Icon(
                                 painterResource(id = R.drawable.icon_filled_taxon_tree),
                                 contentDescription = null
                             )
                         },
-                        shape = RoundedCornerShape(8.dp),
-                        selected = currentSelectedItem == NavDrawerItem.Taxonomy,
                         onClick = {
                             Log.d("NavDrawer", "Go to ${Screen.Taxonomy}!")
                             navigateTo(Screen.Taxonomy)
                         },
                         colors = colors,
-                        interactionSource = interactionSources[1]
+                        currentSelectedItemState = currentSelectedItemState
                     )
-                    NavigationDrawerItem(
-                        label = { Text(text = stringResource(R.string.screen_title_about),
-                            fontWeight = if (currentSelectedItem == NavDrawerItem.About) {
-                                FontWeight.Bold
-                            }
-                            else {
-                                FontWeight.Normal
-                            }) },
+                    MyNavDrawerItem(
+                        title = stringResource(R.string.title_creature_type_list),
+                        targetItem = NavDrawerItem.CreatureTypeList,
                         icon = {
                             Icon(
-                                imageVector = Icons.Outlined.Info,
+                                Icons.Filled.LocalOffer,
                                 contentDescription = null
                             )
                         },
-                        shape = RoundedCornerShape(8.dp),
-                        selected = currentSelectedItem == NavDrawerItem.About,
+                        onClick = {
+                            Log.d("NavDrawer", "Go to ${Screen.ListCreatureTypes}!")
+                            navigateTo(Screen.ListCreatureTypes)
+                        },
+                        colors = colors,
+                        currentSelectedItemState = currentSelectedItemState
+                    )
+                    MyNavDrawerItem(
+                        title = stringResource(R.string.screen_title_about),
+                        targetItem = NavDrawerItem.About,
+                        icon = {
+                            Icon(
+                                Icons.Outlined.Info,
+                                contentDescription = null
+                            )
+                        },
                         onClick = {
                             Log.d("NavDrawer", "Go to ${Screen.About}!")
                             navigateTo(Screen.About)
                         },
                         colors = colors,
-                        interactionSource = interactionSources[2]
+                        currentSelectedItemState = currentSelectedItemState
                     )
                 }
             }

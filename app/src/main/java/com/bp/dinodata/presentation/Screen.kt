@@ -10,5 +10,6 @@ sealed class Screen(
     data object ListGenus: Screen("list"), INavigationDrawerScreen
     data object Taxonomy: Screen("taxonomy"), INavigationDrawerScreen
     data object About: Screen("about_app"), INavigationDrawerScreen
+    data object ListCreatureTypes: Screen("list_creature_types"), INavigationDrawerScreen
 }
 

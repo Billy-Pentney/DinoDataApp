@@ -14,13 +14,9 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
@@ -32,6 +28,7 @@ import androidx.navigation.navArgument
 import com.bp.dinodata.presentation.about.AboutScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusViewModel
+import com.bp.dinodata.presentation.list_creature_types_screen.ListCreatureTypesScreen
 import com.bp.dinodata.presentation.list_genus.ListGenusScreen
 import com.bp.dinodata.presentation.list_genus.ListGenusViewModel
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreen
@@ -90,6 +87,10 @@ fun MyNavigation(
                 }
                 Screen.Taxonomy -> {
                     navController.navigate(Screen.Taxonomy.route)
+                    closeDrawer()
+                }
+                Screen.ListCreatureTypes -> {
+                    navController.navigate(Screen.ListCreatureTypes.route)
                     closeDrawer()
                 }
             }
@@ -162,6 +163,17 @@ fun MyNavigation(
                     }
                 )
             }
+
+
+
+            composable(Screen.ListCreatureTypes.route) {
+                ListCreatureTypesScreen(
+                    openNavDrawer = {
+                        coroutineScope.launch { drawerState.open() }
+                    }
+                )
+            }
         }
     }
 }
+

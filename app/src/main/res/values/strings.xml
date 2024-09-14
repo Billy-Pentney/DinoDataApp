@@ -429,6 +429,11 @@
     <string name="section_title_basic_info">Basic Information</string>
     <string name="action_description_choose_genus_color">Choose the color for this genus</string>
     <string name="action_desc_hide_preference_buttons">Hide preference buttons</string>
+    <string name="title_creature_type_list">Creature Types</string>
+    <string name="title_list_of_genera">Genus List</string>
+    <string name="todo">This string is not implemented yet.</string>
+    <string name="title_creature_types">Creature Types</string>
+    <string name="action_open_nav_drawer">Open side navigation panel</string>
 
     <plurals name="num_taxon_children">
         <item quantity="one">%d child</item>

@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
@@ -128,7 +130,9 @@ fun GenusNameMeaningCard(
 @Composable
 fun CreatureTypeCard(
     type: CreatureType,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    padding: PaddingValues = PaddingValues(12.dp),
+    onClick: () -> Unit = {}
 ) {
     val typeName = convertCreatureTypeToString(type)
     val drawableId = convertCreatureTypeToSilhouette(type)
@@ -137,51 +141,38 @@ fun CreatureTypeCard(
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
         ) {
-            drawableId?.let {
-                Image(
-                    painterResource(id = drawableId),
-                    null,
-                    modifier = Modifier
-                        .fillMaxHeight(0.5f)
-                        .alpha(0.5f)
-                        .aspectRatio(2f),
-                    colorFilter = ColorFilter.tint(
-                        MaterialTheme.colorScheme.onBackground,
-                        BlendMode.SrcIn
-                    ),
-                    contentScale = ContentScale.Fit
-                )
-            }
+            Image(
+                painterResource(id = drawableId),
+                null,
+                modifier = Modifier
+                    .fillMaxHeight(0.5f)
+                    .alpha(0.5f)
+                    .aspectRatio(2f),
+                colorFilter = ColorFilter.tint(
+                    MaterialTheme.colorScheme.onBackground,
+                    BlendMode.SrcIn
+                ),
+                contentScale = ContentScale.Fit
+            )
             Text(
-                typeName ?: "Unknown",
+                typeName,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.alpha(0.8f),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Row (
-                modifier = Modifier.alpha(0.6f),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Icon(
-                    Icons.Filled.LocalOffer,
-                    contentDescription = null
-                )
-                Text(
-                    stringResource(id = R.string.label_creature_type),
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
         }
     }
 }

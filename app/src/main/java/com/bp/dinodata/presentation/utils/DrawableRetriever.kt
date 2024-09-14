@@ -24,7 +24,7 @@ fun convertCreatureTypeToSilhouette(type: CreatureType): Int {
         CreatureType.Tyrannosaurid      -> R.drawable.type_tyrannosaur
         CreatureType.MediumTheropod     -> R.drawable.type_allosaur
         CreatureType.Plesiosaur         -> R.drawable.type_plesiosaur
-        CreatureType.Iguanodontid       -> R.drawable.type_iguanodontid
+        CreatureType.Iguanodontian       -> R.drawable.type_iguanodontid
         CreatureType.Crocodilian        -> R.drawable.type_crocodilian
         CreatureType.Serpent            -> R.drawable.type_serpent
         CreatureType.Mosasaur           -> R.drawable.type_mosasaur
@@ -32,8 +32,6 @@ fun convertCreatureTypeToSilhouette(type: CreatureType): Int {
         CreatureType.Synapsid           -> R.drawable.type_synapsid
         CreatureType.SynapsidWithSail     -> R.drawable.type_synapsid_spined
         CreatureType.Aquatic,
-        CreatureType.Euornithopod,
-        CreatureType.Cenezoic,
         CreatureType.Other              -> R.drawable.type_unknown
     }
 }
