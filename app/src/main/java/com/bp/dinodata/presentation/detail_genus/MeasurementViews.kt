@@ -58,13 +58,13 @@ fun GenericMeasurementComposable(
         ) {
             Row (
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.alpha(0.6f)
             ) {
                 icon?.invoke()
                 iconName?.let {
                     Text(
                         iconName,
-                        modifier = Modifier.alpha(0.8f),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -72,7 +72,7 @@ fun GenericMeasurementComposable(
             Text(
                 quantity.toString(),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.alpha(0.6f),
+                modifier = Modifier.alpha(0.8f),
                 fontWeight = FontWeight.SemiBold,
             )
         }

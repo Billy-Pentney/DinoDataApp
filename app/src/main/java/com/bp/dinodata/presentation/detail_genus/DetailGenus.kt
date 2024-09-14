@@ -292,8 +292,8 @@ fun ShowGenusDetail(
         ) {
             SectionLabelRow(labelText = stringResource(R.string.section_title_basic_info))
             BasicCreatureInfoSection(genus, iconModifier = iconModifier)
-
             SectionDivider()
+
             if (genus.getAllMeasurements().isNotEmpty()) {
                 CreatureMeasurementsSection(genus = genus, iconModifier = iconModifier)
                 SectionDivider()

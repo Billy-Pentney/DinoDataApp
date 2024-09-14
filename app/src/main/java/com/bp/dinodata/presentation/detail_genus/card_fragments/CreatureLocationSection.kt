@@ -25,14 +25,15 @@ fun CreatureLocationSection(
     iconModifier: Modifier
 ) {
     val locations = creature.getLocations()
+    val numLocations = locations.size
 
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (locations.isNotEmpty()) {
+        if (numLocations > 0) {
             SectionLabelRow(
-                labelText = stringResource(R.string.label_locations),
+                labelText = stringResource(R.string.label_locations) + " ($numLocations)",
                 leadingIcon = {
                     Icon(
                         Icons.Filled.LocationOn, null,
@@ -47,7 +48,8 @@ fun CreatureLocationSection(
         if (creature is IHasListOfFormations){
             val formations = creature.getFormations()
             if (formations.isNotEmpty()) {
-                if (locations.isNotEmpty()) {
+                // Add a spacer if we showed locations above
+                if (numLocations > 0) {
                     Spacer(Modifier.height(8.dp))
                 }
                 CreatureFormations(formations, iconModifier)
