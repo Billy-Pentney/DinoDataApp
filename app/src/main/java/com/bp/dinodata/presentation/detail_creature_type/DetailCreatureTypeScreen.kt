@@ -28,20 +28,23 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.bp.dinodata.R
 import com.bp.dinodata.data.CreatureType
-import com.bp.dinodata.data.attributions.IResourceAttribution
+import com.bp.dinodata.data.CreatureTypeInfo
+import com.bp.dinodata.data.ICreatureTypeInfo
 import com.bp.dinodata.data.attributions.ResourceAttribution
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
 import com.bp.dinodata.theme.DinoDataTheme
 
+interface IDescribesAttribution {
+    fun getTextAttributionOrNull(): String?
+}
+
 data class TextWithAttribution(
     val text: String,
-    val attribution: IResourceAttribution? = null
-) {
-    fun getTextAttribution(): String? {
-        return attribution?.let {
-            "Text provided by ${attribution.describe()}"
-        }
+    val attribution: ResourceAttribution? = null
+): IDescribesAttribution {
+    override fun getTextAttributionOrNull(): String? {
+        return attribution?.let { "Text provided by ${it.source}" }
     }
 }
 
@@ -90,16 +93,15 @@ fun convertCreatureTypeToDescription(creatureType: CreatureType): TextWithAttrib
 
 @Composable
 fun DetailCreatureTypeDialog(
-    creatureType: CreatureType,
-    attribution: ResourceAttribution = ResourceAttribution.ChatGPT,
+    creatureTypeInfo: ICreatureTypeInfo,
     onClose: () -> Unit
 ) {
+    val creatureType = creatureTypeInfo.getCreatureType()
     val typeName = convertCreatureTypeToString(creatureType)
     val typeImage = convertCreatureTypeToSilhouette(creatureType)
-    val descriptionWithAttribution = convertCreatureTypeToDescription(creatureType)
 
-    val description = descriptionWithAttribution.text
-    val attribution = descriptionWithAttribution.getTextAttribution()
+    val description = creatureTypeInfo.getDescriptionText()
+    val attribution = creatureTypeInfo.getTextAttributionOrNull()
 
     AlertDialog(
         onDismissRequest = { onClose() },
@@ -179,9 +181,12 @@ fun DetailCreatureTypeDialog(
 @Composable
 @Preview
 fun Preview_CreatureTypeDetail() {
-    val type = CreatureType.Ceratopsian
+    val typeInfo = CreatureTypeInfo(
+        CreatureType.Ceratopsian,
+        convertCreatureTypeToDescription(creatureType = CreatureType.Ceratopsian).text
+    )
 
     DinoDataTheme (darkTheme = true) {
-        DetailCreatureTypeDialog(creatureType = type, onClose = {})
+        DetailCreatureTypeDialog(typeInfo, onClose = {})
     }
 }

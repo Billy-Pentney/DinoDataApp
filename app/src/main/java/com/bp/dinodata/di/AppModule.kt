@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import com.bp.dinodata.db.AppDatabase
 import com.bp.dinodata.repo.AudioRepository
 import com.bp.dinodata.repo.ConnectionChecker
+import com.bp.dinodata.repo.CreatureTypeRepository
 import com.bp.dinodata.repo.FormationsRepository
 import com.bp.dinodata.repo.GenusRepository
 import com.bp.dinodata.repo.IAudioRepository
@@ -65,6 +66,16 @@ object AppModule {
         val storage = Firebase.firestore
         return FormationsRepository(
             formationsCollection = storage.collection(FirebaseCollections.FORMATIONS),
+            connectivityChecker = connectionChecker
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesCreatureTypeRepository(connectionChecker: IConnectionChecker): CreatureTypeRepository {
+        val storage = Firebase.firestore
+        return CreatureTypeRepository(
+            creatureTypesCollection = storage.collection(FirebaseCollections.CREATURE_TYPE),
             connectivityChecker = connectionChecker
         )
     }

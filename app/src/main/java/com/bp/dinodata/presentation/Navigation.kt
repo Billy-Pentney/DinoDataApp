@@ -29,10 +29,13 @@ import com.bp.dinodata.presentation.about.AboutScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusScreen
 import com.bp.dinodata.presentation.detail_genus.DetailGenusViewModel
 import com.bp.dinodata.presentation.list_creature_types_screen.ListCreatureTypesScreen
+import com.bp.dinodata.presentation.list_creature_types_screen.ListCreatureTypesScreenContent
+import com.bp.dinodata.presentation.list_creature_types_screen.ListCreatureTypesScreenViewModel
 import com.bp.dinodata.presentation.list_genus.ListGenusScreen
 import com.bp.dinodata.presentation.list_genus.ListGenusViewModel
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreen
 import com.bp.dinodata.presentation.taxonomy_screen.TaxonomyScreenViewModel
+import com.bp.dinodata.repo.CreatureTypeRepository
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -150,6 +153,8 @@ fun MyNavigation(
                 )
             }
 
+
+
             composable(Screen.Taxonomy.route) {
                 TaxonomyScreen(
                     hiltViewModel<TaxonomyScreenViewModel>(),
@@ -168,6 +173,7 @@ fun MyNavigation(
 
             composable(Screen.ListCreatureTypes.route) {
                 ListCreatureTypesScreen(
+                    viewModel = hiltViewModel<ListCreatureTypesScreenViewModel>(),
                     openNavDrawer = {
                         coroutineScope.launch { drawerState.open() }
                     }

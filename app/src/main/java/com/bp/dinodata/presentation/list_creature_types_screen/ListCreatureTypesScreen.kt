@@ -15,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,29 +26,44 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.CreatureType
+import com.bp.dinodata.data.CreatureTypeInfo
+import com.bp.dinodata.data.ICreatureTypeInfo
 import com.bp.dinodata.presentation.detail_creature_type.DetailCreatureTypeDialog
+import com.bp.dinodata.presentation.detail_creature_type.convertCreatureTypeToDescription
 import com.bp.dinodata.presentation.detail_genus.card_fragments.CreatureTypeCard
 import com.bp.dinodata.theme.DinoDataTheme
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListCreatureTypesScreen(
-    creatureTypes: List<CreatureType> = CreatureType.entries,
+    viewModel: IListCreatureTypesScreenViewModel,
     openNavDrawer: () -> Unit
 ) {
-    var showTypeInDialog: CreatureType? by remember { mutableStateOf(null) }
+    val creatureTypeMap by viewModel.getCreatureTypeInfoMapState().collectAsState()
 
-    var dialogVisible by remember { mutableStateOf(showTypeInDialog != null) }
+    ListCreatureTypesScreenContent(
+        creatureTypeMap,
+        openNavDrawer
+    )
+}
 
-    showTypeInDialog?.let {
-        // If we've picked a type, show the dialog
-        if (dialogVisible) {
-            DetailCreatureTypeDialog(
-                creatureType = it,
-                onClose = { dialogVisible = false }
-            )
-        }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ListCreatureTypesScreenContent(
+    creatureTypes: Map<CreatureType, ICreatureTypeInfo>,
+    openNavDrawer: () -> Unit,
+    initiallyVisibleCreatureType: CreatureType? = null
+) {
+    var selectedCreatureType: CreatureType? by remember { mutableStateOf(initiallyVisibleCreatureType) }
+    var dialogVisible by remember { mutableStateOf(selectedCreatureType != null) }
+
+    // If we've picked a type, show the dialog
+    if (selectedCreatureType in creatureTypes.keys && dialogVisible) {
+        DetailCreatureTypeDialog(
+            creatureTypeInfo = creatureTypes[selectedCreatureType]!!,
+            onClose = { dialogVisible = false }
+        )
     }
 
     Scaffold(
@@ -70,28 +86,39 @@ fun ListCreatureTypesScreen(
             modifier = Modifier.padding(pad),
             contentPadding = PaddingValues(all = 16.dp)
         ) {
-            items(creatureTypes) {
+            items(creatureTypes.keys.toList()) {
                 CreatureTypeCard(
                     type = it,
                     padding = PaddingValues(all=16.dp),
                     onClick = {
-                        showTypeInDialog = it
+                        selectedCreatureType = it
                         dialogVisible = true
                     }
                 )
             }
         }
     }
-
 }
 
 
 @Preview
 @Composable
 fun Preview_ListCreatureTypesScreen() {
+
+    val typeInfoMap = CreatureType.entries.associateWith {
+        val attr = convertCreatureTypeToDescription(creatureType = it)
+        CreatureTypeInfo(
+            it,
+            attr.text,
+            attr.attribution
+        )
+    }
+
     DinoDataTheme (darkTheme = true) {
-        ListCreatureTypesScreen(
-            openNavDrawer = {}
+        ListCreatureTypesScreenContent(
+            creatureTypes = typeInfoMap,
+            openNavDrawer = {},
+            initiallyVisibleCreatureType = CreatureType.Ceratopsian
         )
     }
 }
