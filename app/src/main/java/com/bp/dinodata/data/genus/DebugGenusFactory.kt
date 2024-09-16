@@ -60,7 +60,7 @@ object DebugGenusFactory {
         .setNamePronunciation("'sty-RAK-oh-SORE-us'")
         .setNameMeaning("spiked lizard from some mythical place in the world")
         .setLength("5 metres")
-        .setWeight("1-1.5 tonnes")
+        .setMass("1-1.5 tonnes")
         .setCreatureType(CreatureType.Ceratopsian)
         .setStartMya("75.5")
         .setEndMya("74.5")

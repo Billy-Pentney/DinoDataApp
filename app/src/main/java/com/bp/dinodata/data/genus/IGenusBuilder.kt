@@ -14,7 +14,7 @@ interface IGenusBuilder: IDictParser<IGenus>, IBuilder<IGenus> {
     fun setNamePronunciation(pronunciation: String?): IGenusBuilder
     fun setNameMeaning(meaning: String?): IGenusBuilder
     fun setLength(length: String?): IGenusBuilder
-    fun setWeight(weight: String?): IGenusBuilder
+    fun setMass(weight: String?): IGenusBuilder
     fun setCreatureType(type: CreatureType): IGenusBuilder
     fun setCreatureType(type: String?): IGenusBuilder
     fun splitTimePeriodAndYears(periodAndYears: String?): IGenusBuilder

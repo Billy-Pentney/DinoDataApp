@@ -11,58 +11,62 @@ import com.bp.dinodata.data.time_period.intervals.DecimalFormatter
  */
 sealed class Mass(
     valueIn: Float,
-    private val unit: MassUnits
+    private val unit: MassUnit
 ): IMass {
     private var value = valueIn.coerceAtLeast(0f)
 
-    class Tonnes(value: Float): Mass(value, MassUnits.Tonnes) {
-        override fun convert(newUnits: MassUnits): IMass {
+    class Tonnes(value: Float): Mass(value, MassUnit.TONNE) {
+        override fun convert(newUnits: MassUnit): IMass {
             return when (newUnits) {
-                MassUnits.Tonnes -> this
-                MassUnits.TonsImperial -> TonsImperial(getValue() / MassUnitConstants.TONNES_PER_TON_IMP)
-                MassUnits.Kilograms -> Kg(getValue() * 1000f)
-                MassUnits.TonsUS -> TonsUS(getValue() / MassUnitConstants.TONNES_PER_TON_US)
+                MassUnit.TONNE -> this
+                MassUnit.TON_IMPERIAL -> TonsImperial(getValue() / MassUnitConstants.TONNES_PER_TON_IMP)
+                MassUnit.KILOGRAM -> Kilograms(getValue() * 1000f)
+                MassUnit.TON_US -> TonsUS(getValue() / MassUnitConstants.TONNES_PER_TON_US)
             }
         }
     }
-    class TonsImperial(value: Float): Mass(value, MassUnits.TonsImperial) {
-        override fun convert(newUnits: MassUnits): IMass {
+    class TonsImperial(value: Float): Mass(value, MassUnit.TON_IMPERIAL) {
+        override fun convert(newUnits: MassUnit): IMass {
             return when (newUnits) {
-                MassUnits.TonsImperial -> this
-                MassUnits.Tonnes -> Tonnes(getValue() * MassUnitConstants.TONNES_PER_TON_IMP)
-                MassUnits.Kilograms -> Kg(getValue() * MassUnitConstants.KG_PER_TON_IMP)
-                MassUnits.TonsUS -> TonsUS(getValue() * MassUnitConstants.TONNES_PER_TON_IMP / MassUnitConstants.TONNES_PER_TON_US)
+                MassUnit.TON_IMPERIAL -> this
+                MassUnit.TONNE -> Tonnes(getValue() * MassUnitConstants.TONNES_PER_TON_IMP)
+                MassUnit.KILOGRAM -> Kilograms(getValue() * MassUnitConstants.KG_PER_TON_IMP)
+                MassUnit.TON_US -> TonsUS(getValue() * MassUnitConstants.TONNES_PER_TON_IMP / MassUnitConstants.TONNES_PER_TON_US)
             }
         }
     }
-    class TonsUS(value: Float): Mass(value, MassUnits.TonsUS) {
-        override fun convert(newUnits: MassUnits): IMass {
+    class TonsUS(value: Float): Mass(value, MassUnit.TON_US) {
+        override fun convert(newUnits: MassUnit): IMass {
             return when (newUnits) {
-                MassUnits.TonsUS -> this
-                MassUnits.Tonnes -> Tonnes(getValue() * MassUnitConstants.TONNES_PER_TON_US)
-                MassUnits.Kilograms -> Kg(getValue() * MassUnitConstants.KG_PER_TON_US)
-                MassUnits.TonsImperial -> TonsImperial(getValue() * MassUnitConstants.TONNES_PER_TON_US / MassUnitConstants.TONNES_PER_TON_IMP)
+                MassUnit.TON_US -> this
+                MassUnit.TONNE -> Tonnes(getValue() * MassUnitConstants.TONNES_PER_TON_US)
+                MassUnit.KILOGRAM -> Kilograms(getValue() * MassUnitConstants.KG_PER_TON_US)
+                MassUnit.TON_IMPERIAL -> TonsImperial(getValue() * MassUnitConstants.TONNES_PER_TON_US / MassUnitConstants.TONNES_PER_TON_IMP)
             }
         }
     }
-    class Kg(value: Float): Mass(value, MassUnits.Kilograms) {
-        override fun convert(newUnits: MassUnits): IMass {
+    class Kilograms(value: Float): Mass(value, MassUnit.KILOGRAM) {
+        override fun convert(newUnits: MassUnit): IMass {
             return when (newUnits) {
-                MassUnits.Tonnes -> Tonnes(getValue() / 1000f)
-                MassUnits.TonsImperial -> TonsImperial(getValue() / MassUnitConstants.KG_PER_TON_IMP)
-                MassUnits.Kilograms -> this
-                MassUnits.TonsUS -> TonsUS(getValue() / MassUnitConstants.KG_PER_TON_US)
+                MassUnit.TONNE -> Tonnes(getValue() / 1000f)
+                MassUnit.TON_IMPERIAL -> TonsImperial(getValue() / MassUnitConstants.KG_PER_TON_IMP)
+                MassUnit.KILOGRAM -> this
+                MassUnit.TON_US -> TonsUS(getValue() / MassUnitConstants.KG_PER_TON_US)
             }
         }
+    }
+
+    override fun getUnitString(): String {
+        return UnitFormatter.convertToString(this.unit, getValue() != 1f)
     }
 
     override fun toString(): String {
         val formattedValue = DecimalFormatter.formatFloat(value)
-        val units = unit.toString().lowercase()
+        val units = this.getUnitString()
         return "$formattedValue $units"
     }
 
-    override fun getUnit(): MassUnits = this.unit
+    override fun getUnit(): MassUnit = this.unit
     override fun getValue(): Float = value
 
     override fun isAtLeast(minValue: Float): Boolean = this.value >= minValue
@@ -70,30 +74,30 @@ sealed class Mass(
 
     companion object {
         val UnitsMap = mapOf(
-            "kg" to MassUnits.Kilograms,
-            "tonnes" to MassUnits.Tonnes,
-            "tons" to MassUnits.TonsImperial            /// ASSUMPTION
+            "kg" to MassUnit.KILOGRAM,
+            "tonnes" to MassUnit.TONNE,
+            "tons" to MassUnit.TON_IMPERIAL            /// ASSUMPTION
         )
 
-        fun make(floatValue: Float, units: MassUnits): IMass {
+        fun make(floatValue: Float, units: MassUnit): IMass {
 
             // Auto-convert between kg and tonnes, depending on the given quantity
-            if (units == MassUnits.Kilograms && floatValue >= 1000f) {
+            if (units == MassUnit.KILOGRAM && floatValue >= 1000f) {
                 return Tonnes(floatValue / 1000f)
             }
-            else if (units == MassUnits.Tonnes && floatValue <= 1f) {
-                return Kg(floatValue * 1000f)
+            else if (units == MassUnit.TONNE && floatValue <= 1f) {
+                return Kilograms(floatValue * 1000f)
             }
 
             return when (units) {
-                MassUnits.Kilograms -> Kg(floatValue)
-                MassUnits.Tonnes -> Tonnes(floatValue)
-                MassUnits.TonsImperial -> TonsImperial(floatValue)
-                MassUnits.TonsUS -> TonsUS(floatValue)
+                MassUnit.KILOGRAM -> Kilograms(floatValue)
+                MassUnit.TONNE -> Tonnes(floatValue)
+                MassUnit.TON_IMPERIAL -> TonsImperial(floatValue)
+                MassUnit.TON_US -> TonsUS(floatValue)
             }
         }
 
-        fun tryMake(weightValue: String, units: MassUnits): IDescribesMass? {
+        fun tryMake(weightValue: String, units: MassUnit): IDescribesMass? {
             try {
                 if ("-" in weightValue) {
                     // Parse a range e.g. "100-98.1"

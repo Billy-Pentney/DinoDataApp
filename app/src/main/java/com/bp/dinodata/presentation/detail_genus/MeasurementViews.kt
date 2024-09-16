@@ -30,10 +30,10 @@ import com.bp.dinodata.data.quantities.IDescribesMass
 import com.bp.dinodata.data.quantities.IQuantity
 import com.bp.dinodata.data.quantities.Length
 import com.bp.dinodata.data.quantities.LengthRange
-import com.bp.dinodata.data.quantities.LengthUnits
+import com.bp.dinodata.data.quantities.LengthUnit
 import com.bp.dinodata.data.quantities.Mass
 import com.bp.dinodata.data.quantities.MassRange
-import com.bp.dinodata.data.quantities.MassUnits
+import com.bp.dinodata.data.quantities.MassUnit
 import com.bp.dinodata.theme.DinoDataTheme
 
 @Composable
@@ -116,11 +116,11 @@ fun QuantityComposable(
 @Preview(widthDp = 300)
 @Composable
 fun Preview_WeightComposable() {
-    val mass = Mass.make(2.3f, MassUnits.Tonnes)
-    val massRange = MassRange(860f, 1011f, MassUnits.Kilograms)
+    val mass = Mass.make(2.3f, MassUnit.TONNE)
+    val massRange = MassRange(860f, 1011f, MassUnit.KILOGRAM)
 
-    val length = Length.make(11.2f, LengthUnits.Metres)
-    val lengthRange = LengthRange(3.5f, 4.5f, LengthUnits.Metres)
+    val length = Length.make(11.2f, LengthUnit.METRE)
+    val lengthRange = LengthRange(3.5f, 4.5f, LengthUnit.METRE)
 
     val measures = listOf(
         mass,

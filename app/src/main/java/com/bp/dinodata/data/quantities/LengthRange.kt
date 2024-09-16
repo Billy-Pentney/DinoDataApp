@@ -10,10 +10,10 @@ import com.bp.dinodata.data.time_period.intervals.DecimalFormatter
 data class LengthRange(
     val lowerValue: Float,
     val upperValue: Float,
-    private val unit: LengthUnits
+    private val unit: LengthUnit
 ): ILengthRange {
 
-    override fun convert(newUnits: LengthUnits): ILengthRange {
+    override fun convert(newUnits: LengthUnit): ILengthRange {
         if (newUnits == this.getUnit()) {
             return this
         }
@@ -22,11 +22,34 @@ data class LengthRange(
         return LengthRange(lowerConv, upperConv, unit)
     }
 
+    override fun getUnitString(): String {
+        return UnitFormatter.convertToString(this.unit, isPlural = true)
+    }
+
     override fun toString(): String {
         val range = DecimalFormatter.formatRange(lowerValue, upperValue)
-        val units = unit.toString().lowercase()
+        val units = getUnitString()
         return "$range $units"
     }
 
-    override fun getUnit(): LengthUnits = this.unit
+    override fun getUnit(): LengthUnit = this.unit
+
+    companion object {
+        /**
+         * Attempts to construct a MassRange for the given values. Fails if either value cannot
+         * be converted to a non-negative number
+         * */
+        fun tryMake(minValue: String, maxValue: String, units: LengthUnit): LengthRange? {
+            try {
+                val minAsFloat = minValue.toFloat()
+                val maxAsFloat = maxValue.toFloat()
+                if (minAsFloat < 0 || maxAsFloat < 0) {
+                    return null
+                }
+                return LengthRange(minAsFloat, maxAsFloat, units)
+            } catch (ex: NumberFormatException) {
+                return null
+            }
+        }
+    }
 }

@@ -12,7 +12,10 @@ import com.bp.dinodata.data.genus.species.SpeciesBuilder
 import com.bp.dinodata.data.quantities.IDescribesLength
 import com.bp.dinodata.data.quantities.IDescribesMass
 import com.bp.dinodata.data.quantities.Length
+import com.bp.dinodata.data.quantities.LengthRange
 import com.bp.dinodata.data.quantities.Mass
+import com.bp.dinodata.data.quantities.MassRange
+import com.bp.dinodata.data.quantities.UnitParser
 import com.bp.dinodata.data.time_period.IDisplayableTimePeriod
 import com.bp.dinodata.data.time_period.epochs.IProvidesEpoch
 import com.bp.dinodata.data.time_period.intervals.TimeInterval
@@ -26,7 +29,7 @@ class GenusBuilder(
     private var diet: Diet = Diet.Unknown,
     private var timePeriods: MutableList<IDisplayableTimePeriod> = mutableListOf(),
     private var length: IDescribesLength? = null,
-    private var weight: IDescribesMass? = null,
+    private var mass: IDescribesMass? = null,
     private var type: CreatureType = CreatureType.Other,
     private var taxonomy: List<String> = emptyList(),
     private var locations: List<String> = emptyList(),
@@ -42,7 +45,7 @@ class GenusBuilder(
         private const val NAME_KEY = "name"
         private const val DIET_KEY = "diet"
         private const val YEARS_LIVED_KEY = "years_lived_raw"
-        private const val WEIGHT_KEY = "weight"
+        private const val MASS_KEY = "weight"
         private const val LENGTH_KEY = "length"
         private const val CREATURE_TYPE_KEY = "type"
         private const val PRONOUNCE_KEY = "pronunciation"
@@ -69,7 +72,7 @@ class GenusBuilder(
         namePronunciation = null
         diet = Diet.Unknown
         timePeriods = mutableListOf()
-        weight = null
+        mass = null
         length = null
         type = CreatureType.Other
         taxonomy = emptyList()
@@ -96,8 +99,23 @@ class GenusBuilder(
         dataMap[START_MYA_KEY]?.let { builder.setStartMya(it.toString()) }
         dataMap[END_MYA_KEY]?.let { builder.setEndMya(it.toString()) }
 
-        dataMap[WEIGHT_KEY]?.let { builder.setWeight(it.toString()) }
-        dataMap[LENGTH_KEY]?.let { builder.setLength(it.toString()) }
+        dataMap[MASS_KEY]?.let {
+            if (it is Map<*, *>) {
+                builder.setMassFromDict(it)
+            }
+            else {
+                builder.setMass(it.toString())
+            }
+        }
+        dataMap[LENGTH_KEY]?.let {
+            if (it is Map<*, *>) {
+                builder.setLengthFromDict(it)
+            }
+            else {
+                builder.setLength(it.toString())
+            }
+        }
+
         dataMap[CREATURE_TYPE_KEY]?.let { builder.setCreatureType(it.toString()) }
         dataMap[PRONOUNCE_KEY]?.let { builder.setNamePronunciation(it.toString()) }
         dataMap[MEANING_KEY]?.let { builder.setNameMeaning(it.toString()) }
@@ -112,6 +130,64 @@ class GenusBuilder(
         }
         dataMap[SPECIES_KEY]?.let { builder.setSpecies(it) }
         return builder
+    }
+
+    private fun setMassFromDict(weightDict: Map<*, *>): IGenusBuilder {
+        val massUnits = weightDict["units"]?.toString()?.let {
+            UnitParser.parseMassUnit(it)
+        }?: return this
+
+        val weightValue = weightDict["value"]?.toString()
+
+        val mass =
+            if (weightValue != null) {
+                Mass.tryMake(weightValue, massUnits)
+            }
+            else {
+                val weightMin = weightDict["lower"]?.toString()
+                val weightMax = weightDict["upper"]?.toString()
+                if (weightMin != null && weightMax != null) {
+                    MassRange.tryMake(weightMin, weightMax, massUnits)
+                }
+                else {
+                    null
+                }
+            }
+
+        mass?.let {
+            this.mass = it
+        }
+
+        return this
+    }
+
+    private fun setLengthFromDict(lengthDict: Map<*, *>): IGenusBuilder {
+        val lengthUnits = lengthDict["units"]?.toString()?.let {
+            UnitParser.parseLengthUnit(it)
+        }?: return this
+
+        val lengthValue = lengthDict["value"]?.toString()
+
+        val length =
+            if (lengthValue != null) {
+                Length.tryMake(lengthValue, lengthUnits)
+            }
+            else {
+                val lengthMin = lengthDict["lower"]?.toString()
+                val lengthMax = lengthDict["upper"]?.toString()
+                if (lengthMin != null && lengthMax != null) {
+                    LengthRange.tryMake(lengthMin, lengthMax, lengthUnits)
+                }
+                else {
+                    null
+                }
+            }
+
+        length?.let {
+            this.length = it
+        }
+
+        return this
     }
 
     override fun setStartMya(startMya: String?): IGenusBuilder {
@@ -277,7 +353,7 @@ class GenusBuilder(
         return this
     }
 
-    override fun setWeight(weight: String?): IGenusBuilder {
+    override fun setMass(weight: String?): IGenusBuilder {
         if (weight == null)
             return this
 
@@ -290,7 +366,7 @@ class GenusBuilder(
                 val valueOnly = weight.substringBefore(unitStr).trim()
                 val maybeMass = Mass.tryMake(valueOnly, units)
                 if (maybeMass != null) {
-                    this.weight = maybeMass
+                    this.mass = maybeMass
                     return this
                 }
             }
@@ -341,7 +417,7 @@ class GenusBuilder(
             name = name,
             diet = diet,
             length = length,
-            weight = weight,
+            weight = mass,
             timeInterval = timeInterval,
             timePeriods = sortedTimePeriods,
             nameMeaning = nameMeaning,

@@ -440,5 +440,34 @@
         <item quantity="other">%d children</item>
     </plurals>
 
+    <plurals name="mass_units_tonne">
+        <item quantity="one">%d tonne</item>
+        <item quantity="other">%d tonnes</item>
+    </plurals>
+    <plurals name="mass_units_ton_us">
+        <item quantity="one">%d US ton</item>
+        <item quantity="other">%d US tons</item>
+    </plurals>
+    <plurals name="mass_units_ton_imperial">
+        <item quantity="one">%d imperial ton</item>
+        <item quantity="other">%d imperial tons</item>
+    </plurals>
+    <plurals name="mass_units_kilogram">
+        <item quantity="one">%d kg</item>
+        <item quantity="other">%d kg</item>
+    </plurals>
+    <plurals name="length_unit_metre">
+        <item quantity="one">%d metre</item>
+        <item quantity="other">%d metres</item>
+    </plurals>
+    <plurals name="length_unit_centimetre">
+        <item quantity="one">%d cm</item>
+        <item quantity="other">%d cm</item>
+    </plurals>
+    <plurals name="length_unit_foot">
+        <item quantity="one">%d foot</item>
+        <item quantity="other">%d feet</item>
+    </plurals>
+
 
 </resources>
