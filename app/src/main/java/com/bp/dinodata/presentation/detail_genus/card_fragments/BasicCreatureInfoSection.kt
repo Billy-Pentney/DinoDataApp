@@ -42,6 +42,7 @@ import com.bp.dinodata.data.CreatureType
 import com.bp.dinodata.data.genus.IGenusWithImages
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
+import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouetteCentered
 
 @Composable
 fun BasicCreatureInfoSection(
@@ -135,7 +136,7 @@ fun CreatureTypeCard(
     onClick: () -> Unit = {}
 ) {
     val typeName = convertCreatureTypeToString(type)
-    val drawableId = convertCreatureTypeToSilhouette(type)
+    val drawableId = convertCreatureTypeToSilhouetteCentered(type)
 
     Card (
         modifier = modifier,
@@ -146,8 +147,7 @@ fun CreatureTypeCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+                .fillMaxSize().padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
         ) {
@@ -210,23 +210,21 @@ fun CreatureTypeRow(
                 modifier = Modifier.alpha(0.6f)
             )
             Spacer(modifier=Modifier.weight(1f))
-            drawableId?.let {
-                Image(
-                    painterResource(id = drawableId),
-                    null,
-                    modifier = Modifier
-                        .alpha(0.5f)
-                        .aspectRatio(2f)
-                        .weight(1f),
-                    colorFilter = ColorFilter.tint(
-                        MaterialTheme.colorScheme.onBackground,
-                        BlendMode.SrcIn
-                    ),
-                    contentScale = ContentScale.Fit
-                )
-            }
+            Image(
+                painterResource(id = drawableId),
+                null,
+                modifier = Modifier
+                    .alpha(0.5f)
+                    .aspectRatio(2f)
+                    .weight(1f),
+                colorFilter = ColorFilter.tint(
+                    MaterialTheme.colorScheme.onBackground,
+                    BlendMode.SrcIn
+                ),
+                contentScale = ContentScale.Fit
+            )
             Text(
-                typeName ?: "Unknown",
+                typeName,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.alpha(0.8f),
                 fontWeight = FontWeight.SemiBold,

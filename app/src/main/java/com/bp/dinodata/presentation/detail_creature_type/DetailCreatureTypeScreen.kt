@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.detail_creature_type
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,7 @@ import com.bp.dinodata.data.ICreatureTypeInfo
 import com.bp.dinodata.data.attributions.ResourceAttribution
 import com.bp.dinodata.presentation.convertCreatureTypeToString
 import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouette
+import com.bp.dinodata.presentation.utils.convertCreatureTypeToSilhouetteCentered
 import com.bp.dinodata.theme.DinoDataTheme
 
 interface IDescribesAttribution {
@@ -98,7 +100,7 @@ fun DetailCreatureTypeDialog(
 ) {
     val creatureType = creatureTypeInfo.getCreatureType()
     val typeName = convertCreatureTypeToString(creatureType)
-    val typeImage = convertCreatureTypeToSilhouette(creatureType)
+    val typeImage = convertCreatureTypeToSilhouetteCentered(creatureType)
 
     val description = creatureTypeInfo.getDescriptionText()
     val attribution = creatureTypeInfo.getTextAttributionOrNull()
@@ -108,15 +110,18 @@ fun DetailCreatureTypeDialog(
         properties = DialogProperties(dismissOnClickOutside = true),
         title = {
             Column(
-                modifier = Modifier.padding(8.dp),
                 horizontalAlignment = Alignment.Start,
+                modifier=Modifier.padding(top=16.dp)
             ) {
-                Spacer(Modifier.height(16.dp))
                 Image(
                     painter = painterResource(id = typeImage),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                    modifier = Modifier.alpha(0.7f)
+                    alignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .fillMaxHeight(0.17f)
+                        .fillMaxWidth()
                 )
             }
         },
@@ -181,9 +186,10 @@ fun DetailCreatureTypeDialog(
 @Composable
 @Preview
 fun Preview_CreatureTypeDetail() {
+    val type = CreatureType.Plesiosaur
     val typeInfo = CreatureTypeInfo(
-        CreatureType.Ceratopsian,
-        convertCreatureTypeToDescription(creatureType = CreatureType.Ceratopsian).text
+        type,
+        convertCreatureTypeToDescription(type).text
     )
 
     DinoDataTheme (darkTheme = true) {

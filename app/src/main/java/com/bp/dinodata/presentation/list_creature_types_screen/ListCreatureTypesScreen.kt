@@ -101,7 +101,7 @@ fun ListCreatureTypesScreenContent(
 }
 
 
-@Preview
+@Preview(heightDp = 1000)
 @Composable
 fun Preview_ListCreatureTypesScreen() {
 
@@ -118,7 +118,7 @@ fun Preview_ListCreatureTypesScreen() {
         ListCreatureTypesScreenContent(
             creatureTypes = typeInfoMap,
             openNavDrawer = {},
-            initiallyVisibleCreatureType = CreatureType.Ceratopsian
+//            initiallyVisibleCreatureType = CreatureType.Ceratopsian
         )
     }
 }
