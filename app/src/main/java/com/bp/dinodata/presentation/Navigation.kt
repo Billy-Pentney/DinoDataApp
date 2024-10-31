@@ -155,7 +155,11 @@ fun MyNavigation(
 
 
 
-            composable(Screen.Taxonomy.route) {
+            composable(
+                Screen.Taxonomy.route,
+                enterTransition = { fadeIn() + expandIn() },
+                exitTransition = { fadeOut() + shrinkOut() }
+            ) {
                 TaxonomyScreen(
                     hiltViewModel<TaxonomyScreenViewModel>(),
                     openNavDrawer = {
@@ -171,7 +175,11 @@ fun MyNavigation(
 
 
 
-            composable(Screen.ListCreatureTypes.route) {
+            composable(
+                Screen.ListCreatureTypes.route,
+                enterTransition = { fadeIn() + expandIn() },
+                exitTransition = { fadeOut() + shrinkOut() }
+            ) {
                 ListCreatureTypesScreen(
                     viewModel = hiltViewModel<ListCreatureTypesScreenViewModel>(),
                     openNavDrawer = {

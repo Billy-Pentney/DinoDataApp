@@ -1,5 +1,6 @@
 package com.bp.dinodata.presentation.about
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,18 +60,22 @@ fun AboutScreen(
                     .padding(32.dp)
             ) {
                 Text(
-                    "This is where i provide links to all the sources I've used.",
+                    "This application is supported by the following resources",
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(50.dp))
-                Text("Images from:", fontSize = 14.sp, modifier = Modifier.alpha(0.7f))
-                Text(
-                    stringResource(R.string.source_phylopic),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold
+                Text("Images provided by:", fontSize = 14.sp, modifier = Modifier.alpha(0.7f))
+//                Text(
+//                    stringResource(R.string.source_phylopic),
+//                    fontSize = 22.sp,
+//                    fontWeight = FontWeight.SemiBold
+//                )
+                Image(
+                    painterResource(R.drawable.phylopic_credit),
+                    null
                 )
                 Spacer(Modifier.height(50.dp))
-                Text("Genus Data from:", fontSize = 14.sp, modifier = Modifier.alpha(0.7f))
+                Text("Data provided by:", fontSize = 14.sp, modifier = Modifier.alpha(0.7f))
                 Text(
                     stringResource(R.string.source_nhm),
                     fontSize = 22.sp,

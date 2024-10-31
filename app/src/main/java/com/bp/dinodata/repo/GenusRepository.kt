@@ -35,13 +35,16 @@ class GenusRepository @Inject constructor(
     private val hasNetConnectivity
         get() = connectivityChecker.hasNetworkAccess()
 
+
+    private var allGeneraFlow: Flow<List<IGenus>?>? = null
+
     /**
      * Get a flow which emits a list of all known genus data, as retrieved
      * from the firebase collection.
      * If such data does not exist, then null is returned.
      */
     override fun getAllGeneraFlow(): Flow<List<IGenus>?> {
-        return genusCollection
+        return allGeneraFlow ?: genusCollection
             .orderBy("name")
             .snapshots()
             .map { snapshot ->
@@ -56,6 +59,8 @@ class GenusRepository @Inject constructor(
                         generaByName = it.associateBy { genus -> genus.getName() }
                     }
                 }
+            }.also {
+                allGeneraFlow = it
             }
     }
 
