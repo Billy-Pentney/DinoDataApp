@@ -204,7 +204,7 @@ fun CreatureTypeRow(
                 modifier = Modifier.alpha(0.6f)
             )
             Text(
-                stringResource(id = R.string.label_creature_type),
+                stringResource(id = R.string.label_type),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.alpha(0.6f)

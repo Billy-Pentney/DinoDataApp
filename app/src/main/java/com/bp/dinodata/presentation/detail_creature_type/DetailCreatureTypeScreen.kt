@@ -2,12 +2,16 @@ package com.bp.dinodata.presentation.detail_creature_type
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -21,6 +25,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -104,14 +109,16 @@ fun DetailCreatureTypeDialog(
 
     val description = creatureTypeInfo.getDescriptionText()
     val attribution = creatureTypeInfo.getTextAttributionOrNull()
+    val descScrollState = rememberScrollState()
 
     AlertDialog(
         onDismissRequest = { onClose() },
+        modifier = Modifier.height(IntrinsicSize.Min),
         properties = DialogProperties(dismissOnClickOutside = true),
         title = {
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier=Modifier.padding(top=16.dp)
+                modifier=Modifier.padding(top=12.dp)
             ) {
                 Image(
                     painter = painterResource(id = typeImage),
@@ -120,14 +127,14 @@ fun DetailCreatureTypeDialog(
                     alignment = Alignment.CenterStart,
                     modifier = Modifier
                         .alpha(0.6f)
-                        .fillMaxHeight(0.17f)
+                        .fillMaxHeight(0.15f)
                         .fillMaxWidth()
                 )
             }
         },
         text = {
             Column (
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(0.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
@@ -142,7 +149,7 @@ fun DetailCreatureTypeDialog(
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth(0.4f)
@@ -150,13 +157,16 @@ fun DetailCreatureTypeDialog(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(12.dp))
                 Text(
                     description,
                     textAlign = TextAlign.Justify,
-                    modifier = Modifier.alpha(0.75f)
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.alpha(0.7f)
+                        .height(IntrinsicSize.Min)
+                        .verticalScroll(descScrollState)
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
 
                 attribution?.let {
                     Text(

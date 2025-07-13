@@ -136,9 +136,9 @@ object ThemeConverter: ISearchTypeConverter<String> {
     override fun getListOfOptions(): List<String> = listOfColors
 
     fun convertColorNameToColor(name: String?): ColorReference? {
-        for (color in ColorReference.entries){
-            Log.d("ThemeConverter", "Color name ${color.name}, vs. $name")
-        }
+//        for (color in ColorReference.entries){
+//            Log.d("ThemeConverter", "Color name ${color.name}, vs. $name")
+//        }
         return ColorReference.entries.firstOrNull { name?.uppercase() == it.name }
     }
 

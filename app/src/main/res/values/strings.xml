@@ -425,6 +425,7 @@
     <string name="desc_choose_a_color_for_genus">Choose a color for this genus</string>
     <string name="label_name_meaning">Name Meaning</string>
     <string name="label_mass">Mass</string>
+    <string name="label_type">Type</string>
     <string name="label_estimated_measurements">Estimated Measurements</string>
     <string name="section_title_basic_info">Basic Information</string>
     <string name="action_description_choose_genus_color">Choose the color for this genus</string>
