@@ -14,7 +14,8 @@ data class TextFieldState(
     val isHintVisible: Boolean = false,
     val textSelection: TextRange = TextRange.Zero,
     val canAcceptHint: Boolean = false,
-    val isFocused: Boolean = false
+    val isFocused: Boolean = false,
+    val modifiedSinceLastInput: Boolean = false
 ): ITextFieldState {
     companion object {
         const val DEFAULT_HINT = "start typing for suggestions..."

@@ -9,16 +9,19 @@ import com.bp.dinodata.data.genus.IHasName
 class BasicSearchTerm(
     private val query: String,
     private val searchKeywords: List<String> = emptyList(),
+    private val caseSensitive: Boolean = false
 ): ISearchTerm<IHasName> {
     private val filter = this.toFilter()
 
     override fun getType(): SearchTermType = SearchTermType.Text
-    override fun toFilter(): IFilter<IHasName> = TextFilterWithRegex(query)
+    override fun toFilter(): IFilter<IHasName> = TextFilterWithRegex(
+        query, caseSensitive=caseSensitive
+    )
 
     override fun generateSearchSuggestions(): List<String> {
         return DataParsing.getLongestPotentialSuffixes(query, searchKeywords)
     }
-    override fun toString(): String = "Contains text: \"$query\""
+    override fun toString(): String = "Text matches regex: \"$query\""
     override fun toOriginalText(): String = query
     override fun getIconId(): ImageVector? = null
 

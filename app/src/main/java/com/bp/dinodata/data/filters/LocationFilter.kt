@@ -4,18 +4,23 @@ import com.bp.dinodata.data.genus.IHasLocationInfo
 
 class LocationFilter(
     acceptedLocations: List<String>,
-    private val capitalSensitive: Boolean = false
+    private val caseSensitive: Boolean = false
 ): IFilter<IHasLocationInfo> {
 
-    private val _acceptedLocations: List<String> = preprocessList(acceptedLocations)
-
-    private fun preprocessList(list: List<String>): List<String> {
-        return if (capitalSensitive) {
-            list
-        } else {
-            list.map { element -> element.lowercase().replace("_", " ") }
+    private fun preprocessList(locations: List<String>): List<String> {
+        return locations.map { loc ->
+            loc.replace("_", " ")
+                .let {
+                    if (!caseSensitive) {
+                        it.lowercase()
+                    } else {
+                        it
+                    }
+                }
         }
     }
+
+    private val _acceptedLocations: List<String> = preprocessList(acceptedLocations)
 
     override fun acceptsItem(item: IHasLocationInfo): Boolean {
         val locations = preprocessList(item.getLocations())

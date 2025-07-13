@@ -8,7 +8,7 @@ interface IGenusRepository {
     /**
      * Returns a flow which provides the current list of known genera data.
      */
-    fun getAllGeneraFlow(): Flow<List<IGenus>?>
+    fun getAllGeneraFlow(): Flow<List<IGenus>>
 
     /**
      * Get a flow providing an object with the data and images for the given genus, if such
@@ -24,9 +24,9 @@ interface IGenusRepository {
     /** Get a flow providing a list of all distinct taxonomic groups, extracted from the genera. */
     fun getAllTaxaFlow(): Flow<List<String>>
 
+    /** Get the names of all genera as a flow. */
+    fun getAllGeneraNamesFlow(): Flow<List<String>>
+
     /** Get the names of all unique country locations, extracted from the genera. */
     suspend fun getLocations(): List<String>
-
-    /** Get the names of all genera. */
-    suspend fun getAllGeneraNames(): List<String>
 }

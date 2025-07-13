@@ -72,7 +72,7 @@ class SpeciesBuilder(
         return this
     }
 
-    override fun fromDict(dataMap: Map<*, *>): ISpeciesBuilder? {
+    override fun fromDict(dataMap: Map<String, *>): ISpeciesBuilder? {
         val name = dataMap["name"]
 
         if (name == null) {

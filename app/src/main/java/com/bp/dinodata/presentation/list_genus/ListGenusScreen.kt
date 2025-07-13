@@ -84,7 +84,7 @@ import com.bp.dinodata.data.genus.GenusWithPrefs
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.genus.LocalPrefs
-import com.bp.dinodata.data.search.GenusSearchBuilder
+import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
 import com.bp.dinodata.presentation.map
@@ -787,11 +787,11 @@ fun PreviewListGenus() {
                 selectedPageIndex = 0,
             ),
             searchUiState = ListGenusSearchUiState(
-                search = GenusSearchBuilder(
+                search = GenusSearch(
                     query = "taxon:ab",
                     possibleLocations = listOf("USA", "canada"),
                     possibleTaxa = listOf("abelisauridae", "brachiosauridae")
-                ).build(),
+                ),
                 searchResults = DataState.Success(genera),
             ),
             contentMode = ListGenusContentMode.Search,

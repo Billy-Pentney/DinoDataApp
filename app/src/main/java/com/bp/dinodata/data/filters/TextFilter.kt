@@ -1,6 +1,5 @@
 package com.bp.dinodata.data.filters
 
-import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IHasName
 import com.bp.dinodata.data.taxon.ITaxon
 
@@ -19,9 +18,11 @@ class TextFilter(
     }
 }
 
+
 class TextFilterWithRegex(
     private val queryText: String,
-    private val acceptPartialMatches: Boolean = true
+    private val acceptPartialMatches: Boolean = true,
+    private val caseSensitive: Boolean = false
 ): IFilter<IHasName> {
 
     private var regexStr: String = queryText
@@ -30,7 +31,13 @@ class TextFilterWithRegex(
         // Substitute our wildcard with the regex wildcard
         .replace("*", ".*")
 
-    private val regexPattern: Regex = regexStr.toRegex()
+    private val regexOptions: Set<RegexOption> =
+        if (!caseSensitive)
+            setOf(RegexOption.IGNORE_CASE)
+        else
+            emptySet()
+
+    private val regexPattern: Regex = Regex(regexStr, regexOptions)
 
     override fun acceptsItem(item: IHasName): Boolean {
         val itemName = item.getName().lowercase()

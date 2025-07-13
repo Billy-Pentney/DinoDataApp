@@ -9,7 +9,7 @@ import com.bp.dinodata.data.genus.IHasCreatureType
 
 class CreatureTypeSearchTerm(
     originalText: String,
-    possibleTypes: List<String> = CreatureTypeConverter.getListOfOptions()
+    possibleTypes: List<String> = CreatureTypeConverter.getListOfOptions(),
 ): ListBasedSearchTerm(
     originalText,
     termType = SearchTermType.CreatureType,

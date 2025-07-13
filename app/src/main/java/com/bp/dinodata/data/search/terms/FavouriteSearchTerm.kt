@@ -23,7 +23,7 @@ class FavouriteSearchTerm(
         val splits = originalText.split(":")
 
         if (splits.size > 1) {
-            queryValue = splits[1]
+            queryValue = splits[1].lowercase()
             acceptFavourites = queryValue == "true"
         }
         else {

@@ -59,7 +59,7 @@ class GenusBuilder(
         private const val FORMATIONS_KEY = "formations"
         const val TIME_AGES_KEY = "time_period_ages"
 
-        fun fromDict(dataMap: Map<*, *>): IBuilder<IGenus>? {
+        fun fromDict(dataMap: Map<String, *>): IBuilder<IGenus>? {
             val name = (dataMap[NAME_KEY] as String?) ?: return null
             return GenusBuilder(name).fromDict(
                 dataMap
@@ -84,7 +84,7 @@ class GenusBuilder(
         return this
     }
 
-    override fun fromDict(dataMap: Map<*, *>): IBuilder<IGenus>? {
+    override fun fromDict(dataMap: Map<String, *>): IBuilder<IGenus>? {
         val name = dataMap[NAME_KEY] ?: return null
         // Only proceed if a name is given
 
@@ -238,15 +238,16 @@ class GenusBuilder(
             if (speciesInfo !is Map<*, *>) {
                 continue
             }
-            val speciesDataMap = speciesInfo as Map<*, *>?
+            val speciesDataMap = speciesInfo as Map<String, *>?
             if (speciesDataMap != null) {
                 speciesBuilder.fromDict(speciesDataMap)
                 speciesBuilder.build().let {
-                    Log.i(TAG, "Successfully parsed species ${it.getName()}!")
+//                    Log.d(TAG, "Successfully parsed species \"${it.getName()}\"!")
                     species.add(it)
                 }
             }
         }
+        Log.i(TAG, "Parsed ${species.size} species for genus \"${this.name}\"")
         this.species = species
         return this
     }

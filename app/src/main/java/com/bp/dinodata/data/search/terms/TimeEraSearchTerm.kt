@@ -9,15 +9,19 @@ import com.bp.dinodata.data.genus.IHasTimePeriodInfo
 
 class TimeEraSearchTerm(
     originalText: String,
-    validOptions: List<String> = EraConverter.getListOfOptions()
+    validOptions: List<String> = EraConverter.getListOfOptions(),
+    caseSensitive: Boolean = false
 ): ListBasedSearchTerm(
     originalText = originalText,
     allPossibleValues = validOptions,
     termType = SearchTermType.TimePeriod,
-    imageIconVector = Icons.Filled.AccessTime
+    imageIconVector = Icons.Filled.AccessTime,
+    caseSensitive = caseSensitive
 ) {
     override fun toFilter(): IFilter<in IHasTimePeriodInfo> {
         val eras = queryArguments.mapNotNull { EraConverter.matchType(it) }
-        return EraFilter(eras.map { it.getEraId() })
+        return EraFilter(
+            eras.map { it.getEraId() }
+        )
     }
 }

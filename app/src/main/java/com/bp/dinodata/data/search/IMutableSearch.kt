@@ -4,10 +4,13 @@ import com.bp.dinodata.data.search.terms.ISearchTerm
 
 interface IMutableSearch<T>: ISearch<T> {
 
-//    fun updateQuery(
-//        textContent: String,
-//        terms: List<ISearchTerm<T>>,
-//        locations: List<String>,
-//        taxa: List<String>
-//    ): IMutableSearch<T>
+    fun updateQuery(
+        query: String,
+        locations: List<String>,
+        generaNames: List<String>,
+        taxa: List<String>
+    ): IMutableSearch<T>
+
+    override fun withoutQuery(): IMutableSearch<T>
+    override fun withoutTerm(term: ISearchTerm<in T>): IMutableSearch<T>
 }

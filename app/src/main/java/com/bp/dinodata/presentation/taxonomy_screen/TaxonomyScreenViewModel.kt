@@ -38,7 +38,7 @@ class TaxonomyScreenViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             taxonomyFlow.value = DataState.LoadInProgress()
-            genusUseCases.getTaxonomyList().take(1).collect {
+            genusUseCases.getTaxonomyListFlow().take(1).collect {
                 taxonomyFlow.value = it
             }
         }

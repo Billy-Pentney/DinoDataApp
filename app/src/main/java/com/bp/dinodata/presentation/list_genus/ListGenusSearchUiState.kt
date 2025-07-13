@@ -1,10 +1,12 @@
 package com.bp.dinodata.presentation.list_genus
 
+import android.util.Log
 import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.IResultsByLetter
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.genus.IGenusWithPrefs
 import com.bp.dinodata.data.search.BlankSearch
+import com.bp.dinodata.data.search.IMutableSearch
 import com.bp.dinodata.data.search.ISearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
@@ -13,12 +15,13 @@ data class ListGenusSearchUiState(
     val searchResults: DataState<out List<IGenus>> = DataState.Idle(),
     private val firstVisibleItem: Int = 0,
     private val firstVisibleItemOffset: Int = 0,
-    private val search: ISearch<IGenus> = BlankSearch(),
+    private val search: IMutableSearch<IGenus> = BlankSearch(),
     private val searchBarTextFieldState: TextFieldState = TextFieldState(
         text = search.getQuery(),
-        hintContent = ListGenusUiState.DEFAULT_HINT_TEXT
+        hintContent = search.getAutofillSuggestion()
     )
 ): IMutableSearchBarUiState {
+
     override fun getSearchTextFieldState(): TextFieldState = searchBarTextFieldState
 
     override fun getSearchResultsAsList(): List<IGenus> {
@@ -31,7 +34,7 @@ data class ListGenusSearchUiState(
     override fun getFirstVisibleItemIndex(): Int = firstVisibleItem
     override fun getFirstVisibleItemOffset(): Int = firstVisibleItemOffset
 
-    override fun getSearch(): ISearch<IGenus> = search
+    override fun getSearch(): IMutableSearch<IGenus> = search
 
 
 
@@ -50,6 +53,7 @@ data class ListGenusSearchUiState(
         val newQuery = newSearch.getQuery()
         val hasCompletedSearchTerms = newSearch.getCompletedTerms().isNotEmpty()
         val autofillSuggestion = newSearch.getAutofillSuggestion()
+        Log.d("UpdateSearchState", "Got suggestion: \"${autofillSuggestion}\"")
 
         // Now update the TextFieldState to reflect the constructed search.
         // This will remove the text which has been converted to SearchTerms.
@@ -73,7 +77,8 @@ data class ListGenusSearchUiState(
             text = newQuery,
             hintContent = hintText,
             canAcceptHint = canAutofillHint,
-            isHintVisible = hintVisible
+            isHintVisible = hintVisible,
+            modifiedSinceLastInput = true
         )
     }
 
@@ -88,12 +93,14 @@ data class ListGenusSearchUiState(
 
     override fun updateSearchTextState(
         newQueryText: String,
-        selection: TextRange
+        selection: TextRange,
+        modifiedByApp: Boolean
     ): ListGenusSearchUiState {
         return this.copy(
             searchBarTextFieldState = this.searchBarTextFieldState.copy(
                 text = newQueryText,
-                textSelection = selection
+                textSelection = selection,
+                modifiedSinceLastInput = modifiedByApp
             )
         )
     }
@@ -115,7 +122,7 @@ data class ListGenusSearchUiState(
             // Update the visible query text with the last term in the search object.
             // This removes completed terms (i.e. those followed by a space).
             searchBarTextFieldState = newTextFieldState,
-            search = newSearch,
+            search = newSearch.toMutableSearch(),
             searchResults = DataState.LoadInProgress()
         )
     }

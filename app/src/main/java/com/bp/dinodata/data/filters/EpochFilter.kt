@@ -7,7 +7,7 @@ import com.bp.dinodata.data.time_period.epochs.IEpochId
 import com.bp.dinodata.data.time_period.era.IProvidesEra
 
 class EraFilter(
-    private val acceptedEra: List<EraId>
+    private val acceptedEra: List<EraId>,
 ): IFilter<IHasTimePeriodInfo> {
     override fun acceptsItem(item: IHasTimePeriodInfo): Boolean {
         val itemPeriod = item.getTimePeriod()

@@ -25,5 +25,7 @@ interface ISearch<T>: IConvertToFilter<T>, IFilter<T>, IHasSearchQuery {
 
     /** Returns a copy of this search with an empty query string but preserving completed terms */
     fun withoutQuery(): ISearch<T>
+
+    fun toMutableSearch(): IMutableSearch<T>
 }
 

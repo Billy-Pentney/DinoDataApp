@@ -33,11 +33,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -59,12 +60,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bp.dinodata.R
 import com.bp.dinodata.data.genus.IGenus
-import com.bp.dinodata.data.search.GenusSearchBuilder
+import com.bp.dinodata.data.search.GenusSearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.theme.DinoDataTheme
 import com.bp.dinodata.theme.MyGrey600
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 @Composable
@@ -120,7 +123,7 @@ fun<T> SearchTermInputChip(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun ListGenusSearchBar(
     updateSearchQuery: (TextFieldValue) -> Unit,
@@ -155,18 +158,19 @@ fun ListGenusSearchBar(
     )
 
     val keyboardOptions = KeyboardOptions.Default.copy(
-            autoCorrectEnabled = false,
-            capitalization = KeyboardCapitalization.None,
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Next
-        )
-
-    val coroutineScope = rememberCoroutineScope()
+        autoCorrectEnabled = false,
+        capitalization = KeyboardCapitalization.None,
+        keyboardType = KeyboardType.Text,
+        imeAction = ImeAction.Next
+    )
 
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
     var canAutofill by remember { mutableStateOf(false) }
     var hintText by remember { mutableStateOf("") }
+    val showHint by remember { derivedStateOf { hintText.isNotEmpty() } }
+
+    val clearSearchIconVisible by remember { derivedStateOf { textFieldValue.text.isNotEmpty() } }
 
     val (searchTextFocus) = remember { FocusRequester.createRefs() }
 
@@ -177,7 +181,17 @@ fun ListGenusSearchBar(
     }
 
     LaunchedEffect(searchTextFieldState) {
-        if (textFieldValue.text != searchTextFieldState.getTextContent()) {
+//        if (searchTextFieldState.isFocused) {
+//            // Take focus of the search bar when it is first opened
+//            isFocused = true
+//            searchTextFocus.requestFocus()
+//        } else {
+//            isFocused = false
+//            focusManager.clearFocus()
+//        }
+
+        // Only update the text field if the state had an update by the app, not the user
+        if (searchTextFieldState.modifiedSinceLastInput) {
             textFieldValue = textFieldValue.copy(
                 text = searchTextFieldState.getTextContent(),
                 selection = searchTextFieldState.textSelection
@@ -188,23 +202,22 @@ fun ListGenusSearchBar(
         isFocused = searchTextFieldState.isFocused
     }
 
-    LaunchedEffect(null) {
-        if (searchTextFieldState.isFocused) {
-            // Take focus of the search bar when it is first opened
-            isFocused = true
-            searchTextFocus.requestFocus()
-        } else {
-            isFocused = false
-            focusManager.clearFocus()
-        }
-    }
+    Log.d("ListGenusSearchBar", "Got hint \"${hintText}\"")
 
-    val textChangeFlow = remember { MutableSharedFlow<TextFieldValue>() }
-    LaunchedEffect(textFieldValue) {
-        textChangeFlow.collect {
-            Log.d("SearchBar", "Got \'${it.text}\'")
-            updateSearchQuery(it)
-        }
+    var newText by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        // Handle a single update to the query at once
+        val textFlow = snapshotFlow { newText }
+
+        textFlow
+            .distinctUntilChanged()
+            .collect { newText ->
+                Log.d("ListGenusSearchBar", "Received new search text \'${newText}\'")
+                if (newText != searchTextFieldState.getTextContent()) {
+                    updateSearchQuery(textFieldValue)
+                }
+            }
     }
 
     Column (modifier = Modifier.fillMaxWidth()) {
@@ -228,20 +241,15 @@ fun ListGenusSearchBar(
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = {
-                        textFieldValue = textFieldValue.copy(
-                            it.text,
-                            it.selection
-                        )
-                        coroutineScope.launch {
-                            textChangeFlow.emit(it)
-                        }
+                        textFieldValue = it
+                        newText = it.text
                     },
                     decorationBox = { innerTextField ->
                         TextFieldDefaults.DecorationBox(
                             value = textFieldValue.text,
                             innerTextField = {
                                 Box {
-                                    if (searchTextFieldState.isHintVisible) {
+                                    if (showHint) {
                                         Text(
                                             hintText,
                                             modifier = Modifier.alpha(0.4f),
@@ -264,9 +272,12 @@ fun ListGenusSearchBar(
                                 )
                             },
                             trailingIcon = {
-                                if (textFieldValue.text.isNotEmpty()) {
+                                if (clearSearchIconVisible) {
                                     IconButton(
-                                        onClick = { clearSearchQuery() },
+                                        onClick = {
+                                            textFieldValue = TextFieldValue()
+                                            clearSearchQuery()
+                                        },
                                         modifier = Modifier.padding(end=8.dp)
                                     ) {
                                         Icon(
@@ -295,7 +306,10 @@ fun ListGenusSearchBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(searchTextFocus)
-                        .onFocusChanged { onSearchBarFocusChanged(it.isFocused) },
+                        .onFocusChanged {
+                            isFocused = it.isFocused
+                            onSearchBarFocusChanged(it.isFocused)
+                        },
                     enabled = true,
                     keyboardActions = KeyboardActions(
                         onSearch = {
@@ -334,10 +348,12 @@ fun ListGenusSearchBar(
 @Preview
 @Composable
 fun PreviewSearchBar() {
-    val search = GenusSearchBuilder(query = "abs diet:carnivore+omnivore loc").build()
-    val uiState = ListGenusSearchUiState(
-        search = search
+    val search = GenusSearch(
+        query = "abs diet:carnivore+omnivore tyr",
+        possibleTaxa = listOf("ceratopsian", "tyrannosaurid"),
+        possibleGeneraNames = listOf("Styracosaurus", "tyrannosaurus")
     )
+    val uiState = ListGenusSearchUiState(search = search)
 
     DinoDataTheme {
         Surface {

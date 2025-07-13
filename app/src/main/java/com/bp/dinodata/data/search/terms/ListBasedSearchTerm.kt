@@ -9,7 +9,8 @@ abstract class ListBasedSearchTerm(
     private val originalText: String,
     private val termType: SearchTermType,
     private val allPossibleValues: List<String> = emptyList(),
-    private val imageIconVector: ImageVector? = null
+    private val imageIconVector: ImageVector? = null,
+    protected val caseSensitive: Boolean = false
 ): ISearchTerm<IGenus> {
     protected var queryArguments = listOf<String>()
 
@@ -45,7 +46,7 @@ abstract class ListBasedSearchTerm(
                 // Encourages to add additional argument
                 listOf("+")
             } else {
-                DataParsing.getLongestPotentialSuffixes(lastArgument, unusedValues)
+                DataParsing.getLongestPotentialSuffixes(lastArgument, unusedValues, caseSensitive)
             }
         }
         return emptyList()

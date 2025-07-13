@@ -3,6 +3,7 @@ package com.bp.dinodata.presentation.list_genus
 import androidx.compose.ui.text.TextRange
 import com.bp.dinodata.data.genus.IGenus
 import com.bp.dinodata.data.search.IHasSearchQuery
+import com.bp.dinodata.data.search.IMutableSearch
 import com.bp.dinodata.data.search.ISearch
 import com.bp.dinodata.data.search.terms.ISearchTerm
 import com.bp.dinodata.presentation.DataState
@@ -25,8 +26,11 @@ interface IListGenusSearchUiState: IHasSearchQuery {
 interface IMutableSearchBarUiState: IListGenusSearchUiState {
     fun updateSearchTextState(
         newQueryText: String,
-        selection: TextRange = TextRange(newQueryText.length)
+        selection: TextRange = TextRange(newQueryText.length),
+        modifiedByApp: Boolean = false
     ): IListGenusSearchUiState
+
+    override fun getSearch(): IMutableSearch<IGenus>
 
     /** Attempt to drop the given term from the search, while retaining all others */
     fun removeSearchTerm(term: ISearchTerm<in IGenus>): IListGenusSearchUiState

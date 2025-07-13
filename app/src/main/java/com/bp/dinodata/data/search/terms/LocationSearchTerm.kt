@@ -9,18 +9,20 @@ import com.bp.dinodata.data.genus.IGenus
 
 class LocationSearchTerm(
     originalText: String,
-    allLocations: List<String> = emptyList()
+    allLocations: List<String> = emptyList(),
+    caseSensitive: Boolean = false
 ): ListBasedSearchTerm(
     originalText = originalText,
     termType = SearchTermType.Location,
     allPossibleValues = allLocations.map { it.lowercase().replace(" ", "_") },
-    imageIconVector = Icons.Filled.LocationOn
+    imageIconVector = Icons.Filled.LocationOn,
+    caseSensitive = caseSensitive
 ) {
     init {
         Log.d("LocationSearchTerm", "Got locations length ${queryArguments.size}")
     }
 
     override fun toFilter(): IFilter<in IGenus> {
-        return LocationFilter(queryArguments)
+        return LocationFilter(queryArguments, this.caseSensitive)
     }
 }

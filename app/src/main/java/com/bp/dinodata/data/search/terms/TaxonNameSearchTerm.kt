@@ -8,12 +8,14 @@ import com.bp.dinodata.data.genus.IHasTaxonomy
 
 class TaxonNameSearchTerm(
     originalText: String,
-    possibleTaxa: List<String> = emptyList()
+    possibleTaxa: List<String> = emptyList(),
+    caseSensitive: Boolean = false
 ): ListBasedSearchTerm(
     originalText = originalText,
     termType = SearchTermType.Taxon,
     allPossibleValues = possibleTaxa.map { it.lowercase() },
-    imageIconVector = Icons.Filled.AccountTree
+    imageIconVector = Icons.Filled.AccountTree,
+    caseSensitive = caseSensitive
 ) {
     override fun toFilter(): IFilter<in IHasTaxonomy> = TaxonFilter(queryArguments)
 }

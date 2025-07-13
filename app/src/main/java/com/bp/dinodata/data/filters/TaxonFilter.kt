@@ -14,6 +14,6 @@ class TaxonFilter(
     }
 
     override fun toString(): String {
-        return "${acceptedTaxa.map{"\'$it\'"}.joinToString(" or ")} in TAXONOMY"
+        return "${acceptedTaxa.joinToString(" or ") { "\'$it\'" }} in TAXONOMY"
     }
 }

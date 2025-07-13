@@ -21,5 +21,5 @@ interface IDictParser<T> {
      * representation, and will fail if the given map does not contain the minimum required
      * fields (typically only a name).
      */
-    fun fromDict(dataMap: Map<*,*>): IBuilder<T>?
+    fun fromDict(dataMap: Map<String,*>): IBuilder<T>?
 }
